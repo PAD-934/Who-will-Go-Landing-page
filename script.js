@@ -8,7 +8,7 @@ try {
   console.log('EmailJS not yet loaded, will retry on form submission');
 }
 
-// ===== CONFIGURATION =====
+// ===== CONFIGURATION yes =====
 const EMAILJS_CONFIG = {
   serviceId: 'service_lf4em7r',
   templateId: 'template_fzkxekp',
