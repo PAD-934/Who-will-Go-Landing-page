@@ -23,7 +23,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ========== NOISE TEXTURE OVERLAY ========== */
+/* ========== NOISE TEXTURE OVERLAY layers ========== */
 body::before {
   content: '';
   position: fixed;
