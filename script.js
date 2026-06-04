@@ -440,14 +440,10 @@ function submitToGoogleForm(orderData, selectedItems) {
       payment: orderData.payment
     });
     
-    // Submit using fetch with no-cors mode
+    // Submit using fetch. We've removed 'no-cors' to see the real error from Google.
     fetch(GOOGLE_FORM_CONFIG.formUrl, {
       method: 'POST',
-      mode: 'no-cors',
-      body: formData,
-      headers: {
-        'Accept': '*/*'
-      }
+      body: formData
     })
     .then(() => {
       console.log('✅ Google Forms: Order submitted successfully');
