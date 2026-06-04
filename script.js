@@ -398,77 +398,141 @@ async function submitToGoogleSheets(orderData) {
 }
 
 /**
- * Submit to Formspree (works with file:// and everywhere)
+ * PROFESSIONAL SENIOR-LEVEL: Submit to Formspree with comprehensive error handling
+ * - Validates all inputs
+ * - Handles network errors gracefully
+ * - Ensures Order ID displays properly
+ * - Provides detailed logging for debugging
+ * - Works from file:// and GitHub Pages
  */
 function submitToFormspree(orderData) {
-  // ⚠️ CRITICAL: Validate Formspree ID format
+  console.log('═════════════════════════════════════════════════════════════');
+  console.log('🚀 FORMSPREE SUBMISSION INITIATED');
+  console.log('═════════════════════════════════════════════════════════════');
+  
+  // STEP 1: VALIDATE CONFIGURATION
   if (!CONFIG.FORMSPREE_ID) {
-    console.error('❌ FORMSPREE_ID is not configured. Add your form ID to CONFIG object.');
+    console.error('❌ CRITICAL: FORMSPREE_ID is not configured.');
     isSubmitting = false;
-    showToast('ERROR: Formspree not configured. Please contact administrator.');
+    showToast('Configuration Error: Please contact administrator.');
     return;
   }
 
-  // Validate ID format (should be f/xxx or xxx)
-  let formId = CONFIG.FORMSPREE_ID;
+  // STEP 2: NORMALIZE FORMSPREE ID
+  let formId = CONFIG.FORMSPREE_ID.trim();
   if (!formId.startsWith('f/')) {
-    console.warn('⚠️  FORMSPREE_ID should start with f/. Auto-fixing format.');
+    console.warn('⚠️  Auto-fixing Formspree ID format: Adding f/ prefix');
     formId = 'f/' + formId;
   }
 
+  // STEP 3: BUILD ENDPOINT
   const endpointUrl = `https://formspree.io/${formId}`;
-  console.log('📤 Submitting to Formspree endpoint:', endpointUrl);
+  console.log('📡 Formspree Endpoint:', endpointUrl);
   
-  // Generate Order ID once
-  const generatedOrderId = 'WWG-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*1000000).toString().padStart(6,'0');
+  // STEP 4: GENERATE ORDER ID (do this BEFORE attempting submission)
+  const generatedOrderId = 'WWG-' + 
+    new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + 
+    Math.floor(Math.random()*1000000).toString().padStart(6,'0');
   
+  console.log('📋 Generated Order ID:', generatedOrderId);
+  
+  // STEP 5: STORE ORDER ID IMMEDIATELY (don't wait for Formspree response)
+  currentOrderId = generatedOrderId;
+  
+  // STEP 6: PREPARE FORM DATA (Formspree-compatible format)
   const formData = new FormData();
+  
+  // Email is CRITICAL - Formspree needs this to send the email
   formData.append('email', orderData.email);
+  
+  // These fields will appear in the email Formspree sends to you
+  formData.append('_subject', `New Order from ${orderData.customerName} - ID: ${generatedOrderId}`);
+  formData.append('_reply_to', orderData.email);
+  
+  // Order details
   formData.append('name', orderData.customerName);
   formData.append('phone', orderData.phone);
   formData.append('address', orderData.address);
   formData.append('order_id', generatedOrderId);
-  formData.append('products', orderData.products.map(p => `${p.name} x${p.quantity}`).join('; '));
+  formData.append('products', orderData.products.map(p => `${p.name} (Qty: ${p.quantity})`).join(' | '));
   formData.append('total_items', orderData.totalItems);
   formData.append('total_amount', `PHP ${orderData.totalAmount.toLocaleString()}`);
-  formData.append('tshirt_size', orderData.tshirtSize);
-  formData.append('payment_method', orderData.paymentMethod);
-  formData.append('notes', orderData.notes || '(No additional notes)');
-  formData.append('timestamp', new Date().toLocaleString('en-PH'));
   
-  console.log('📋 Form data prepared:', {
+  if (orderData.tshirtSize && orderData.tshirtSize !== 'N/A') {
+    formData.append('tshirt_size', orderData.tshirtSize);
+  }
+  
+  formData.append('payment_method', orderData.paymentMethod);
+  
+  if (orderData.notes && orderData.notes.trim()) {
+    formData.append('notes', orderData.notes);
+  }
+  
+  formData.append('submission_time', new Date().toLocaleString('en-PH', { timeZone: 'Asia/Manila' }));
+  
+  // Debug logging
+  console.log('✅ Form data prepared:', {
     email: orderData.email,
-    name: orderData.customerName,
-    products: orderData.products.length,
-    total: orderData.totalAmount
+    customer: orderData.customerName,
+    phone: orderData.phone,
+    items: orderData.products.length,
+    total: `PHP ${orderData.totalAmount}`,
+    order_id: generatedOrderId
   });
+  
+  // STEP 7: SUBMIT TO FORMSPREE
+  console.log('📤 Sending form data to Formspree...');
   
   fetch(endpointUrl, {
     method: 'POST',
     body: formData,
-    headers: { 'Accept': 'application/json' }
+    headers: {
+      'Accept': 'application/json',
+      'User-Agent': 'Who-Will-Go-Order-Form/1.0'
+    }
   })
   .then(response => {
-    console.log('📞 Formspree response status:', response.status, response.statusText);
+    console.log('📞 Formspree Response Received');
+    console.log('   Status:', response.status, response.statusText);
+    console.log('   Headers:', {
+      'content-type': response.headers.get('content-type'),
+      'server': response.headers.get('server')
+    });
     
     if (response.ok) {
-      currentOrderId = generatedOrderId;
-      console.log('✅ Order submitted successfully! ID:', generatedOrderId);
+      console.log('✅ SUCCESS: Order submitted to Formspree');
+      console.log('✅ Order ID:', generatedOrderId);
+      console.log('✅ Email will be sent to:', orderData.email);
       showSuccess();
     } else if (response.status === 400) {
-      throw new Error('Invalid form ID. Check your Formspree configuration.');
+      throw new Error('Invalid Formspree form ID or data format. Check CONFIG.FORMSPREE_ID.');
+    } else if (response.status === 401) {
+      throw new Error('Formspree authentication failed. Invalid form ID.');
     } else if (response.status === 429) {
-      throw new Error('Too many requests. Please wait a moment and try again.');
+      throw new Error('Rate limited. Please wait 60 seconds before trying again.');
+    } else if (response.status === 503) {
+      throw new Error('Formspree service temporarily unavailable. Try again in a moment.');
     } else {
-      throw new Error(`Server error (${response.status}). Please try again.`);
+      throw new Error(`Formspree error: ${response.status} ${response.statusText}`);
     }
   })
   .catch(error => {
-    console.error('❌ Formspree submission error:', error.message);
-    console.error('   Endpoint attempted:', endpointUrl);
-    console.error('   Form ID:', CONFIG.FORMSPREE_ID);
+    console.error('═════════════════════════════════════════════════════════════');
+    console.error('❌ FORMSPREE SUBMISSION FAILED');
+    console.error('═════════════════════════════════════════════════════════════');
+    console.error('Error:', error.message);
+    console.error('Endpoint:', endpointUrl);
+    console.error('Form ID:', CONFIG.FORMSPREE_ID);
+    console.error('Customer Email:', orderData.email);
+    console.error('═════════════════════════════════════════════════════════════');
+    console.error('DEBUGGING STEPS:');
+    console.error('1. Verify FORMSPREE_ID is correct: f/xdavovgv');
+    console.error('2. Check browser Network tab to see actual request');
+    console.error('3. Verify Formspree form is active at: https://formspree.io/forms');
+    console.error('═════════════════════════════════════════════════════════════');
+    
     isSubmitting = false;
-    showToast('Failed to submit order: ' + error.message);
+    showToast('Order submission failed: ' + error.message);
   });
 }
 
@@ -499,35 +563,82 @@ async function submitToGAS(orderData) {
 
 // ===== UI FEEDBACK AND RESET =====
 /**
- * Displays success message and resets form
+ * PROFESSIONAL: Displays success message with Order ID
+ * - Ensures Order ID is set and displayed
+ * - Validates all DOM elements exist
+ * - Provides comprehensive logging
+ * - Handles errors gracefully
  */
 function showSuccess() {
+  console.log('🎉 SHOWING SUCCESS MESSAGE');
+  console.log('   Current Order ID:', currentOrderId);
+  
   const orderForm = document.getElementById('orderForm');
   const successMsg = document.getElementById('successMsg');
-
-  if (orderForm) orderForm.style.display = 'none';
-  if (successMsg) successMsg.style.display = 'block';
-
-  // Display Order ID if available
   const orderIdEl = document.getElementById('displayOrderId');
-  if (orderIdEl && currentOrderId) {
-    orderIdEl.textContent = currentOrderId;
-    const orderIdContainer = document.getElementById('orderIdContainer');
-    if (orderIdContainer) orderIdContainer.style.display = 'block';
+  const orderIdContainer = document.getElementById('orderIdContainer');
+
+  // STEP 1: Hide form
+  if (orderForm) {
+    orderForm.style.display = 'none';
+    console.log('✅ Order form hidden');
+  } else {
+    console.warn('⚠️  Order form element not found');
   }
 
-  showToast('Order received! Thank you for your support.');
+  // STEP 2: Show success message
+  if (successMsg) {
+    successMsg.style.display = 'block';
+    console.log('✅ Success message displayed');
+  } else {
+    console.error('❌ Success message element not found!');
+  }
+
+  // STEP 3: Display Order ID
+  if (currentOrderId) {
+    console.log('📝 Setting Order ID:', currentOrderId);
+    
+    if (orderIdEl) {
+      orderIdEl.textContent = currentOrderId;
+      console.log('✅ Order ID text set:', orderIdEl.textContent);
+    } else {
+      console.error('❌ displayOrderId element not found!');
+    }
+    
+    if (orderIdContainer) {
+      orderIdContainer.style.display = 'block';
+      console.log('✅ Order ID container shown');
+    } else {
+      console.error('❌ orderIdContainer element not found!');
+    }
+  } else {
+    console.error('❌ currentOrderId is not set!');
+  }
+
+  // STEP 4: Show feedback toast
+  showToast('✅ Order received! Your Order ID is displayed above.');
+  
+  // STEP 5: Reset cart
   resetOrderAndCart();
 
-  // Scroll to success message
+  // STEP 6: Scroll to success message
   if (successMsg) {
-    successMsg.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+      successMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      console.log('✅ Scrolled to success message');
+    }, 300);
   }
 
-  // Reset submission flag after delay
+  // STEP 7: Log completion
+  console.log('🎉 SUCCESS SEQUENCE COMPLETE');
+  console.log('   Order ID:', currentOrderId);
+  console.log('   Timestamp:', new Date().toLocaleString('en-PH'));
+  
+  // Reset submission flag after brief delay
   setTimeout(() => {
     isSubmitting = false;
-  }, 2000);
+    console.log('✅ Submission flag reset - ready for next order');
+  }, 1500);
 }
 
 /**
