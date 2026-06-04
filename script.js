@@ -36,6 +36,7 @@ const products = [
 ];
 
 let cart = [];
+let isSubmitting = false;
 
 // ===== RENDER PRODUCTS =====
 function renderProducts(filter = 'all') {
@@ -210,6 +211,12 @@ function updateFormCheckboxes() {
 function submitOrder(e) {
   e.preventDefault();
   
+  // Prevent double submission
+  if (isSubmitting) {
+    showToast('Please wait, your order is being processed...');
+    return;
+  }
+  
   const selectedItems = [];
   products.forEach(p => {
     const checkbox = document.getElementById(`pcheck_${p.id}`);
@@ -247,6 +254,7 @@ function submitOrder(e) {
     notes: document.getElementById('fnotes').value,
   };
 
+  isSubmitting = true;
   showToast('Submitting your order...');
   submitToGoogleForm(orderData, selectedItems);
 }
@@ -254,10 +262,21 @@ function submitOrder(e) {
 // ===== GOOGLE FORM SUBMISSION (RELIABLE METHOD) =====
 function submitToGoogleForm(orderData, selectedItems) {
   try {
+    // Ensure hidden iframe exists
+    let hiddenIframe = document.getElementById('hidden-form-iframe');
+    if (!hiddenIframe) {
+      hiddenIframe = document.createElement('iframe');
+      hiddenIframe.id = 'hidden-form-iframe';
+      hiddenIframe.name = 'hidden-iframe';
+      hiddenIframe.style.display = 'none';
+      document.body.appendChild(hiddenIframe);
+    }
+    
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = GOOGLE_FORM_CONFIG.formUrl;
     form.target = 'hidden-iframe';
+    form.style.display = 'none';
     
     const formFields = {
       [`entry.${GOOGLE_FORM_CONFIG.entryIds.name}`]: orderData.name,
@@ -290,13 +309,19 @@ function submitToGoogleForm(orderData, selectedItems) {
     form.submit();
     
     setTimeout(() => {
-      try { document.body.removeChild(form); } catch (e) {}
+      try { 
+        if (form.parentNode) {
+          document.body.removeChild(form); 
+        }
+      } catch (e) {
+        console.error('Error removing form:', e);
+      }
       showSuccess();
-    }, 1000);
+    }, 800);
     
   } catch (error) {
     console.error('Form submission error:', error);
-    showSuccess(); // Show success anyway
+    showSuccess();
   }
 }
 
@@ -305,13 +330,41 @@ function showSuccess() {
   document.getElementById('orderForm').style.display = 'none';
   document.getElementById('successMsg').style.display = 'block';
   showToast('Order received! Thank you.');
+  isSubmitting = false;
   resetOrderAndCart();
 }
 
 function continueOrdering() {
-  document.getElementById('orderForm').style.display = 'block';
-  document.getElementById('successMsg').style.display = 'none';
-  document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
+  const form = document.getElementById('orderForm');
+  const successMsg = document.getElementById('successMsg');
+  
+  if (form) {
+    form.reset();
+    form.style.display = 'block';
+  }
+  if (successMsg) {
+    successMsg.style.display = 'none';
+  }
+  
+  cart = [];
+  updateCart();
+  
+  products.forEach(p => {
+    const checkbox = document.getElementById(`pcheck_${p.id}`);
+    const qtyInput = document.getElementById(`qty_${p.id}`);
+    if (checkbox) checkbox.checked = false;
+    if (qtyInput) {
+      qtyInput.value = 1;
+      qtyInput.disabled = true;
+    }
+  });
+  
+  updateSizeField();
+  
+  if (form) {
+    form.scrollIntoView({ behavior: 'smooth' });
+  }
+  showToast('Ready for another order!');
 }
 
 function scrollToShop() {
