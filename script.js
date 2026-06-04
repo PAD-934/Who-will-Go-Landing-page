@@ -206,8 +206,10 @@ function updateCart() {
 
   if (cart.length === 0) {
     body.innerHTML = '';
-    body.appendChild(empty);
-    empty.style.display = 'block';
+    if (empty) { // Check if the element exists before appending
+      body.appendChild(empty);
+      empty.style.display = 'block';
+    }
     return;
   }
 
@@ -471,7 +473,7 @@ function submitViaHiddenForm(orderData, selectedItems, productNames) {
       [`entry.${GOOGLE_FORM_CONFIG.entryIds.notes}`]: String(orderData.notes || '')
     };
     
-    // Add hidden input fields
+    // Add hidden input fields for standard data
     Object.entries(formFields).forEach(([key, value]) => {
       const input = document.createElement('input');
       input.type = 'hidden';
@@ -479,6 +481,17 @@ function submitViaHiddenForm(orderData, selectedItems, productNames) {
       input.value = value;
       form.appendChild(input);
     });
+
+    // Correctly handle multiple products for checkboxes
+    if (selectedItems && selectedItems.length > 0) {
+      selectedItems.forEach(item => {
+        const productInput = document.createElement('input');
+        productInput.type = 'hidden';
+        productInput.name = `entry.${GOOGLE_FORM_CONFIG.entryIds.products}`;
+        productInput.value = item.name;
+        form.appendChild(productInput);
+      });
+    }
     
     // Append to document and submit
     document.body.appendChild(form);
@@ -518,8 +531,20 @@ function submitViaFetch(orderData, selectedItems, productNames) {
     params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.qty}`, String(orderData.totalQuantity || 1));
     params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.payment}`, String(orderData.payment || ''));
     params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.notes}`, String(orderData.notes || ''));
-    
+
+    // Correctly handle multiple products for checkboxes
+    if (selectedItems && selectedItems.length > 0) {
+        selectedItems.forEach(item => {
+            params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.products}`, item.name);
+        });
+    }
+
     console.log('📤 Method 2: Submitting via fetch...');
+
+    fetch(GOOGLE_FORM_CONFIG.formUrl + '&' + params.toString(), {
+      method: 'POST',
+      mode: 'no-cors', 
+    });
     
     fetch(GOOGLE_FORM_CONFIG.formUrl, {
       method: 'POST',
