@@ -19,7 +19,7 @@
 const CONFIG = {
   // === METHOD 1: FORMSPREE (Recommended - works from file:// and everywhere) ===
   USE_FORMSPREE: true,
-  FORMSPREE_ID: 'xdavovgv', // Replace 'mnqendlj' with YOUR form ID from Formspree
+  FORMSPREE_ID: 'f/xdavovgv', // ⚠️ IMPORTANT: Must include 'f/' prefix! Format: 'f/yourformid'
   
   // === METHOD 2: GOOGLE APPS SCRIPT (if you have it deployed) ===
   USE_GAS: false,
@@ -401,38 +401,74 @@ async function submitToGoogleSheets(orderData) {
  * Submit to Formspree (works with file:// and everywhere)
  */
 function submitToFormspree(orderData) {
+  // ⚠️ CRITICAL: Validate Formspree ID format
+  if (!CONFIG.FORMSPREE_ID) {
+    console.error('❌ FORMSPREE_ID is not configured. Add your form ID to CONFIG object.');
+    isSubmitting = false;
+    showToast('ERROR: Formspree not configured. Please contact administrator.');
+    return;
+  }
+
+  // Validate ID format (should be f/xxx or xxx)
+  let formId = CONFIG.FORMSPREE_ID;
+  if (!formId.startsWith('f/')) {
+    console.warn('⚠️  FORMSPREE_ID should start with f/. Auto-fixing format.');
+    formId = 'f/' + formId;
+  }
+
+  const endpointUrl = `https://formspree.io/${formId}`;
+  console.log('📤 Submitting to Formspree endpoint:', endpointUrl);
+  
+  // Generate Order ID once
+  const generatedOrderId = 'WWG-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*1000000).toString().padStart(6,'0');
+  
   const formData = new FormData();
   formData.append('email', orderData.email);
   formData.append('name', orderData.customerName);
   formData.append('phone', orderData.phone);
   formData.append('address', orderData.address);
-  formData.append('order_id', 'WWG-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*1000000).toString().padStart(6,'0'));
+  formData.append('order_id', generatedOrderId);
   formData.append('products', orderData.products.map(p => `${p.name} x${p.quantity}`).join('; '));
   formData.append('total_items', orderData.totalItems);
   formData.append('total_amount', `PHP ${orderData.totalAmount.toLocaleString()}`);
   formData.append('tshirt_size', orderData.tshirtSize);
   formData.append('payment_method', orderData.paymentMethod);
-  formData.append('notes', orderData.notes);
+  formData.append('notes', orderData.notes || '(No additional notes)');
   formData.append('timestamp', new Date().toLocaleString('en-PH'));
   
-  fetch(`https://formspree.io/${CONFIG.FORMSPREE_ID}`, {
+  console.log('📋 Form data prepared:', {
+    email: orderData.email,
+    name: orderData.customerName,
+    products: orderData.products.length,
+    total: orderData.totalAmount
+  });
+  
+  fetch(endpointUrl, {
     method: 'POST',
     body: formData,
     headers: { 'Accept': 'application/json' }
   })
   .then(response => {
+    console.log('📞 Formspree response status:', response.status, response.statusText);
+    
     if (response.ok) {
-      currentOrderId = 'WWG-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*1000000).toString().padStart(6,'0');
+      currentOrderId = generatedOrderId;
+      console.log('✅ Order submitted successfully! ID:', generatedOrderId);
       showSuccess();
-      console.log('✅ Order submitted successfully via Formspree');
+    } else if (response.status === 400) {
+      throw new Error('Invalid form ID. Check your Formspree configuration.');
+    } else if (response.status === 429) {
+      throw new Error('Too many requests. Please wait a moment and try again.');
     } else {
-      throw new Error('Server error');
+      throw new Error(`Server error (${response.status}). Please try again.`);
     }
   })
   .catch(error => {
-    console.error('❌ Formspree error:', error);
+    console.error('❌ Formspree submission error:', error.message);
+    console.error('   Endpoint attempted:', endpointUrl);
+    console.error('   Form ID:', CONFIG.FORMSPREE_ID);
     isSubmitting = false;
-    showToast('Failed to submit order. Please try again.');
+    showToast('Failed to submit order: ' + error.message);
   });
 }
 
