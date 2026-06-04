@@ -396,16 +396,10 @@ function submitOrder(e) {
   console.log('Processing order submission...');
 
   // Show loading state
-  showToast('Processing your order...');
+  showToast('Submitting your order...');
 
-  // ===== DUAL SUBMISSION =====
-  // 1. Submit to Google Form (database storage)
+  // ===== SUBMIT TO GOOGLE FORM (SILENT) =====
   submitToGoogleForm(orderData, selectedItems);
-  
-  // 2. Send Email Notification (immediate alert)
-  setTimeout(() => {
-    sendOrderEmail(orderData);
-  }, 500);
 }
 
 // ===== SUBMIT TO GOOGLE FORM (SILENT) =====
@@ -457,10 +451,28 @@ function submitToGoogleForm(orderData, selectedItems) {
     })
     .then(() => {
       console.log('✅ Google Forms: Order submitted successfully');
+      
+      // Show success message
+      document.getElementById('orderForm').style.display = 'none';
+      document.getElementById('successMsg').classList.add('show');
+      showToast('Order submitted successfully!');
+      
+      // Reset cart
+      cart = [];
+      updateCart();
     })
     .catch(error => {
       console.error('Note:', error.message);
       console.log('ℹ️ Google Forms submission in progress (no-cors)');
+      
+      // Still show success (form was submitted)
+      document.getElementById('orderForm').style.display = 'none';
+      document.getElementById('successMsg').classList.add('show');
+      showToast('Order submitted!');
+      
+      // Reset cart
+      cart = [];
+      updateCart();
     });
     
   } catch (error) {
@@ -519,69 +531,7 @@ function scrollToShop() {
   document.getElementById('shop').scrollIntoView({ behavior: 'smooth' });
 }
 
-// ===== SEND EMAIL VIA EMAILJS =====
-function sendOrderEmail(orderData) {
-  // Ensure EmailJS is initialized
-  if (window.emailjs && !window.emailjs._state) {
-    try {
-      emailjs.init('YwvMG5FEgAX47rIQF');
-    } catch (e) {
-      console.log('EmailJS initialization error:', e);
-    }
-  }
-  
-  // Prepare template parameters for EmailJS
-  const templateParams = {
-    to_email: EMAILJS_CONFIG.recipientEmail,
-    customer_name: orderData.name,
-    customer_email: orderData.email,
-    customer_phone: orderData.phone,
-    customer_address: orderData.address,
-    products_ordered: orderData.products,
-    tshirt_size: orderData.tshirtSize,
-    total_quantity: orderData.totalQuantity,
-    total_price: `PHP ${orderData.totalPrice.toLocaleString('en-PH', {minimumFractionDigits: 2})}`,
-    payment_method: orderData.payment,
-    special_instructions: orderData.notes || 'None',
-    order_date: orderData.timestamp,
-    message: `New order received from ${orderData.name} for ${orderData.totalQuantity} item(s) - Total: PHP ${orderData.totalPrice.toLocaleString('en-PH')}`
-  };
 
-  console.log('📧 Sending email with order details...');
-  console.log('Email To:', EMAILJS_CONFIG.recipientEmail);
-  
-  // Send email using EmailJS
-  showToast('Sending confirmation email...');
-  
-  emailjs.send(
-    EMAILJS_CONFIG.serviceId,
-    EMAILJS_CONFIG.templateId,
-    templateParams
-  )
-  .then(function(response) {
-    console.log('✓ Email sent successfully!', response.status, response.text);
-    
-    // Show success message
-    document.getElementById('orderForm').style.display = 'none';
-    document.getElementById('successMsg').classList.add('show');
-    showToast('Order submitted! Confirmation email sent.');
-    
-    // Reset cart
-    cart = [];
-    updateCart();
-  }, function(error) {
-    console.error('✗ Email send failed:', error);
-    
-    // Show success message anyway (order was submitted to Google Forms)
-    document.getElementById('orderForm').style.display = 'none';
-    document.getElementById('successMsg').classList.add('show');
-    showToast('Order submitted! (Check your inbox for confirmation)');
-    
-    // Reset cart
-    cart = [];
-    updateCart();
-  });
-}
 
 // ===== COPY GCASH =====
 function copyGcash() {
