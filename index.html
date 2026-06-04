@@ -6,8 +6,6 @@
   <title>Who Will Go - Missionary Fundraising</title>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="styles.css">
-  <!-- EmailJS Library -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/index.min.js"></script>
 </head>
 <body>
 
@@ -213,6 +211,13 @@
         </svg>
       </div>
       <p class="success-title">Order Received!</p>
+      
+      <!-- Order ID Container (Hidden by default, shown on success) -->
+      <div id="orderIdContainer" style="display:none; background-color:rgba(201,168,76,0.1); padding:16px; border-radius:8px; margin-bottom:20px; border-left:4px solid #C9A84C;">
+        <p style="font-size:0.75rem; letter-spacing:1px; color:var(--text-light); text-transform:uppercase; margin:0 0 8px 0;">Your Order ID</p>
+        <p style="font-family:'Cinzel',serif; font-size:1.1rem; letter-spacing:2px; color:#C9A84C; margin:0; font-weight:bold;" id="displayOrderId">WWG-00000000-000000</p>
+      </div>
+      
       <p style="color:var(--text-light); line-height:1.7; max-width:460px; margin:0 auto 24px;">
         Thank you for your support! We have received your order and will contact you shortly to confirm details and provide payment instructions.
       </p>

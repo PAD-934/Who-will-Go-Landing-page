@@ -1,24 +1,32 @@
 // ═══════════════════════════════════════════════════════════════════
 // WHO WILL GO - MISSIONARY FUNDRAISING PLATFORM
-// Professional Order Management System v3.0 - Final
+// Professional Order Management System with Google Sheets Backend
 // ═══════════════════════════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════════════════
-// GOOGLE FORM CONFIGURATION
-// ═══════════════════════════════════════════════════════════════════
-const GOOGLE_FORM_CONFIG = {
-  formUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc_-PXZCU-JIw9RMsS5bwcLMq7ZTSmUBQMGtEaRBLA-Fx6Bzg/formResponse',
-  entryIds: {
-    name: '1743232616',
-    phone: '177811076',
-    email: '836049442',
-    address: '154821055',
-    products: '1796804161', // This is the ID for the Checkbox question
-    size: '409057574',
-    qty: '1791107185',
-    payment: '83423007',
-    notes: '688366974'
-  }
+/**
+ * CONFIGURATION
+ * 
+ * METHOD 1: FORMSPREE (RECOMMENDED - Works immediately, no setup needed)
+ * - Sign up free at: https://formspree.io
+ * - Create a new form
+ * - Copy your Form ID: https://formspree.io/f/YOUR_FORM_ID
+ * - Paste the ID below in FORMSPREE_ID
+ * 
+ * METHOD 2: GOOGLE APPS SCRIPT (Alternative, requires setup)
+ * - Deploy as Web App with "Execute as" = your account, "Who has access" = Anyone
+ * - Paste URL below in GOOGLE_APPS_SCRIPT_URL
+ */
+const CONFIG = {
+  // === METHOD 1: FORMSPREE (Recommended - works from file:// and everywhere) ===
+  USE_FORMSPREE: true,
+  FORMSPREE_ID: 'xdavovgv', // Replace 'mnqendlj' with YOUR form ID from Formspree
+  
+  // === METHOD 2: GOOGLE APPS SCRIPT (if you have it deployed) ===
+  USE_GAS: false,
+  GOOGLE_APPS_SCRIPT_URL: '', // Paste Web App URL here if using Google Apps Script
+  
+  // System settings
+  ORDER_PREFIX: 'WWG'
 };
 
 // ===== PRODUCT DATA =====
@@ -35,8 +43,12 @@ const products = [
   { id: 10, name: "Ptr. Adewale Booksfile", category: "onsite", price: 200, tag: "ON-SITE", desc: "Exclusive biography and teachings of Pastor Adewale.", requiresSize: false, maxQuantity: 50, quantityNote: "Limited copies - up to 50", icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>` },
 ];
 
+// ═══════════════════════════════════════════════════════════════════
+// STATE MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════
 let cart = [];
 let isSubmitting = false;
+let currentOrderId = null;
 
 // ===== RENDER PRODUCTS =====
 function renderProducts(filter = 'all') {
@@ -208,162 +220,306 @@ function updateFormCheckboxes() {
 }
 
 // ===== SUBMIT ORDER =====
+/**
+ * Main form submission handler
+ * Validates and sends order to Google Apps Script backend
+ */
 function submitOrder(e) {
   e.preventDefault();
-  
+
   // Prevent double submission
   if (isSubmitting) {
     showToast('Please wait, your order is being processed...');
     return;
   }
-  
+
+  // Validate form fields
+  const formErrors = validateForm();
+  if (formErrors.length > 0) {
+    showToast(formErrors[0]);
+    return;
+  }
+
+  // Validate product selection and quantities
+  const productErrors = validateProducts();
+  if (productErrors.length > 0) {
+    showToast(productErrors[0]);
+    return;
+  }
+
+  // Collect selected products
   const selectedItems = [];
+  let totalAmount = 0;
+
   products.forEach(p => {
     const checkbox = document.getElementById(`pcheck_${p.id}`);
     if (checkbox && checkbox.checked) {
       const qtyInput = document.getElementById(`qty_${p.id}`);
       const qty = parseInt(qtyInput.value) || 1;
-      if (qty < 1 || qty > p.maxQuantity) {
-        showToast(`${p.name}: Quantity must be between 1 and ${p.maxQuantity}`);
-        return;
-      }
-      selectedItems.push({ ...p, quantity: qty });
+
+      selectedItems.push({
+        name: p.name,
+        quantity: qty,
+        price: p.price
+      });
+
+      totalAmount += p.price * qty;
     }
   });
-  
-  if (selectedItems.length === 0) {
-    showToast('Please select at least one product.');
-    return;
-  }
-  
-  const tshirtSelected = selectedItems.some(item => item.name === 'T-shirts');
-  const selectedSize = document.getElementById('fsize').value;
-  if (tshirtSelected && !selectedSize) {
-    showToast('Please select a size for T-shirts.');
-    return;
-  }
 
+  // Prepare order data
   const orderData = {
-    name: document.getElementById('fname').value,
-    phone: document.getElementById('fphone').value,
-    email: document.getElementById('femail').value,
-    address: document.getElementById('faddress').value,
-    tshirtSize: selectedSize || 'N/A',
-    totalQuantity: selectedItems.reduce((sum, item) => sum + item.quantity, 0),
-    payment: document.getElementById('fpayment').value,
-    notes: document.getElementById('fnotes').value,
+    customerName: document.getElementById('fname').value.trim(),
+    email: document.getElementById('femail').value.trim().toLowerCase(),
+    phone: document.getElementById('fphone').value.trim(),
+    address: document.getElementById('faddress').value.trim(),
+    products: selectedItems,
+    totalItems: selectedItems.reduce((sum, item) => sum + item.quantity, 0),
+    totalAmount: totalAmount,
+    tshirtSize: document.getElementById('fsize').value || 'N/A',
+    paymentMethod: document.getElementById('fpayment').value,
+    notes: document.getElementById('fnotes').value.trim()
   };
 
+  // Set submission flag and send to backend
   isSubmitting = true;
   showToast('Submitting your order...');
-  submitToGoogleForm(orderData, selectedItems);
+  submitToGoogleSheets(orderData);
 }
 
-// ===== GOOGLE FORM SUBMISSION (RELIABLE METHOD) =====
-function submitToGoogleForm(orderData, selectedItems) {
-  try {
-    // Ensure hidden iframe exists
-    let hiddenIframe = document.getElementById('hidden-form-iframe');
-    if (!hiddenIframe) {
-      hiddenIframe = document.createElement('iframe');
-      hiddenIframe.id = 'hidden-form-iframe';
-      hiddenIframe.name = 'hidden-iframe';
-      hiddenIframe.style.display = 'none';
-      document.body.appendChild(hiddenIframe);
-    }
-    
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = GOOGLE_FORM_CONFIG.formUrl;
-    form.target = 'hidden-iframe';
-    form.style.display = 'none';
-    
-    const formFields = {
-      [`entry.${GOOGLE_FORM_CONFIG.entryIds.name}`]: orderData.name,
-      [`entry.${GOOGLE_FORM_CONFIG.entryIds.phone}`]: orderData.phone,
-      [`entry.${GOOGLE_FORM_CONFIG.entryIds.email}`]: orderData.email,
-      [`entry.${GOOGLE_FORM_CONFIG.entryIds.address}`]: orderData.address,
-      [`entry.${GOOGLE_FORM_CONFIG.entryIds.size}`]: orderData.tshirtSize,
-      [`entry.${GOOGLE_FORM_CONFIG.entryIds.qty}`]: orderData.totalQuantity,
-      [`entry.${GOOGLE_FORM_CONFIG.entryIds.payment}`]: orderData.payment,
-      [`entry.${GOOGLE_FORM_CONFIG.entryIds.notes}`]: orderData.notes
-    };
-    
-    Object.entries(formFields).forEach(([key, value]) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = String(value);
-      form.appendChild(input);
-    });
+/**
+ * Validates customer form inputs
+ * Returns array of error messages, or empty array if valid
+ */
+function validateForm() {
+  const errors = [];
 
-    selectedItems.forEach(item => {
-      const productInput = document.createElement('input');
-      productInput.type = 'hidden';
-      productInput.name = `entry.${GOOGLE_FORM_CONFIG.entryIds.products}`;
-      productInput.value = `${item.name} (Qty: ${item.quantity})`;
-      form.appendChild(productInput);
+  // Validate name
+  const name = document.getElementById('fname').value.trim();
+  if (!name || name.length < 3) {
+    errors.push('Full name must be at least 3 characters');
+  }
+
+  // Validate phone
+  const phone = document.getElementById('fphone').value.trim();
+  if (!phone || phone.length < 7) {
+    errors.push('Please enter a valid phone number');
+  }
+
+  // Validate email
+  const email = document.getElementById('femail').value.trim();
+  if (!isValidEmail(email)) {
+    errors.push('Please enter a valid email address');
+  }
+
+  // Validate address
+  const address = document.getElementById('faddress').value.trim();
+  if (!address || address.length < 5) {
+    errors.push('Please enter a complete delivery address');
+  }
+
+  // Validate payment method
+  const payment = document.getElementById('fpayment').value;
+  if (!payment) {
+    errors.push('Please select a payment method');
+  }
+
+  return errors;
+}
+
+/**
+ * Validates selected products
+ * Returns array of validation errors
+ */
+function validateProducts() {
+  const errors = [];
+
+  const selectedItems = [];
+  products.forEach(p => {
+    const checkbox = document.getElementById(`pcheck_${p.id}`);
+    if (checkbox && checkbox.checked) {
+      const qtyInput = document.getElementById(`qty_${p.id}`);
+      const qty = parseInt(qtyInput.value) || 0;
+
+      if (qty < 1 || qty > p.maxQuantity) {
+        errors.push(`${p.name}: Quantity must be between 1 and ${p.maxQuantity}`);
+      } else {
+        selectedItems.push({ ...p, quantity: qty });
+      }
+    }
+  });
+
+  if (selectedItems.length === 0) {
+    errors.push('Please select at least one product');
+  }
+
+  // Validate T-shirts size if selected
+  const tshirtSelected = selectedItems.some(item => item.name === 'T-shirts');
+  if (tshirtSelected) {
+    const selectedSize = document.getElementById('fsize').value;
+    if (!selectedSize) {
+      errors.push('Please select a size for T-shirts');
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Simple email validation using regex
+ */
+function isValidEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+
+/**
+ * Sends order data to backend (Formspree or Google Apps Script)
+ * Handles both methods seamlessly
+ */
+async function submitToGoogleSheets(orderData) {
+  try {
+    if (CONFIG.USE_FORMSPREE) {
+      // Method 1: FORMSPREE (Recommended)
+      submitToFormspree(orderData);
+    } else if (CONFIG.USE_GAS && CONFIG.GOOGLE_APPS_SCRIPT_URL) {
+      // Method 2: GOOGLE APPS SCRIPT
+      submitToGAS(orderData);
+    } else {
+      // Fallback to Formspree if nothing configured
+      CONFIG.USE_FORMSPREE = true;
+      submitToFormspree(orderData);
+    }
+  } catch (error) {
+    console.error('❌ Submission error:', error);
+    isSubmitting = false;
+    showToast('Error: ' + error.message);
+  }
+}
+
+/**
+ * Submit to Formspree (works with file:// and everywhere)
+ */
+function submitToFormspree(orderData) {
+  const formData = new FormData();
+  formData.append('email', orderData.email);
+  formData.append('name', orderData.customerName);
+  formData.append('phone', orderData.phone);
+  formData.append('address', orderData.address);
+  formData.append('order_id', 'WWG-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*1000000).toString().padStart(6,'0'));
+  formData.append('products', orderData.products.map(p => `${p.name} x${p.quantity}`).join('; '));
+  formData.append('total_items', orderData.totalItems);
+  formData.append('total_amount', `PHP ${orderData.totalAmount.toLocaleString()}`);
+  formData.append('tshirt_size', orderData.tshirtSize);
+  formData.append('payment_method', orderData.paymentMethod);
+  formData.append('notes', orderData.notes);
+  formData.append('timestamp', new Date().toLocaleString('en-PH'));
+  
+  fetch(`https://formspree.io/${CONFIG.FORMSPREE_ID}`, {
+    method: 'POST',
+    body: formData,
+    headers: { 'Accept': 'application/json' }
+  })
+  .then(response => {
+    if (response.ok) {
+      currentOrderId = 'WWG-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*1000000).toString().padStart(6,'0');
+      showSuccess();
+      console.log('✅ Order submitted successfully via Formspree');
+    } else {
+      throw new Error('Server error');
+    }
+  })
+  .catch(error => {
+    console.error('❌ Formspree error:', error);
+    isSubmitting = false;
+    showToast('Failed to submit order. Please try again.');
+  });
+}
+
+/**
+ * Submit to Google Apps Script (if you have it deployed)
+ */
+async function submitToGAS(orderData) {
+  try {
+    const response = await fetch(CONFIG.GOOGLE_APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify(orderData),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
     
-    document.body.appendChild(form);
-    form.submit();
-    
-    setTimeout(() => {
-      try { 
-        if (form.parentNode) {
-          document.body.removeChild(form); 
-        }
-      } catch (e) {
-        console.error('Error removing form:', e);
-      }
-      showSuccess();
-    }, 800);
-    
-  } catch (error) {
-    console.error('Form submission error:', error);
+    // With no-cors mode, we can't check response, so assume success
+    currentOrderId = orderData.orderId;
     showSuccess();
+    console.log('✅ Order submitted successfully via Google Apps Script');
+  } catch (error) {
+    console.error('❌ Google Apps Script error:', error);
+    isSubmitting = false;
+    showToast('Failed to submit order. Check your internet connection.');
   }
 }
 
 // ===== UI FEEDBACK AND RESET =====
+/**
+ * Displays success message and resets form
+ */
 function showSuccess() {
-  document.getElementById('orderForm').style.display = 'none';
-  document.getElementById('successMsg').style.display = 'block';
-  showToast('Order received! Thank you.');
-  isSubmitting = false;
+  const orderForm = document.getElementById('orderForm');
+  const successMsg = document.getElementById('successMsg');
+
+  if (orderForm) orderForm.style.display = 'none';
+  if (successMsg) successMsg.style.display = 'block';
+
+  // Display Order ID if available
+  const orderIdEl = document.getElementById('displayOrderId');
+  if (orderIdEl && currentOrderId) {
+    orderIdEl.textContent = currentOrderId;
+    const orderIdContainer = document.getElementById('orderIdContainer');
+    if (orderIdContainer) orderIdContainer.style.display = 'block';
+  }
+
+  showToast('Order received! Thank you for your support.');
   resetOrderAndCart();
+
+  // Scroll to success message
+  if (successMsg) {
+    successMsg.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // Reset submission flag after delay
+  setTimeout(() => {
+    isSubmitting = false;
+  }, 2000);
 }
 
+/**
+ * Prepares for placing another order
+ */
 function continueOrdering() {
   const form = document.getElementById('orderForm');
   const successMsg = document.getElementById('successMsg');
-  
+  const orderIdContainer = document.getElementById('orderIdContainer');
+
   if (form) {
     form.reset();
     form.style.display = 'block';
   }
-  if (successMsg) {
-    successMsg.style.display = 'none';
-  }
-  
+
+  if (successMsg) successMsg.style.display = 'none';
+  if (orderIdContainer) orderIdContainer.style.display = 'none';
+
+  // Reset form state
   cart = [];
   updateCart();
-  
-  products.forEach(p => {
-    const checkbox = document.getElementById(`pcheck_${p.id}`);
-    const qtyInput = document.getElementById(`qty_${p.id}`);
-    if (checkbox) checkbox.checked = false;
-    if (qtyInput) {
-      qtyInput.value = 1;
-      qtyInput.disabled = true;
-    }
-  });
-  
-  updateSizeField();
-  
+  updateFormCheckboxes();
+
+  // Scroll to form
   if (form) {
     form.scrollIntoView({ behavior: 'smooth' });
   }
+
   showToast('Ready for another order!');
 }
 
@@ -378,29 +534,73 @@ function resetOrderAndCart() {
   updateCart();
 }
 
-function showToast(message) {
+// ═══════════════════════════════════════════════════════════════════
+// NOTIFICATION AND UTILITY SECTION
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Displays a temporary toast notification
+ * @param {string} message - Message to display
+ * @param {number} duration - How long to show (ms), default 3000
+ */
+function showToast(message, duration = 3000) {
   const toast = document.getElementById('toast');
-  if (!toast) return;
+  if (!toast) {
+    console.warn('Toast element not found in DOM');
+    return;
+  }
+
   toast.textContent = message;
   toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3000);
+
+  // Auto-hide after duration
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, duration);
+}
+
+/**
+ * Copies GCash number to clipboard
+ */
+function copyGcash() {
+  const gcashText = document.getElementById('gcashNumber').textContent;
+  navigator.clipboard.writeText(gcashText).then(() => {
+    showToast('GCash number copied to clipboard!');
+  }).catch(() => {
+    showToast('Could not copy. Please copy manually.');
+  });
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// INITIALIZATION
+// PAGE INITIALIZATION SECTION
 // ═══════════════════════════════════════════════════════════════════
+
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 APP INITIALIZATION COMPLETE');
-  console.log(`✓ Products: ${products.length} items available`);
-  console.log('✓ Google Forms Integration: Ready');
-  console.log('✓ Dual-Method Submission: Active');
-  console.log('✓ Professional Code v2.0 Loaded');
-  
+  console.log('🚀 WHO WILL GO - Initializing Application');
+
+  // Initialize product display
   renderProducts();
+  console.log(`✓ Rendered ${products.length} products`);
+
+  // Initialize order form
   buildFormCheckboxes();
+  console.log('✓ Built order form checkboxes');
+
+  // Initialize cart display
   updateCart();
-  
+  console.log('✓ Initialized cart');
+
+  // Add event listeners for product checkboxes
   document.querySelectorAll('.product-checkbox').forEach(cb => {
     cb.addEventListener('change', updateSizeField);
   });
+
+  console.log('✅ Application Ready');
+  console.log(`API Endpoint: ${CONFIG.GOOGLE_APPS_SCRIPT_URL}`);
+
+  // Check if API is configured
+  if (CONFIG.GOOGLE_APPS_SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbyrhPY5XA134AJCKg9b26xfgaa2PNvqa5Y3v0vB1CMV_pLeJxpRdQU4VKK3yY21v4cxzg/exec') {
+    console.warn('⚠️ Google Apps Script URL not configured!');
+    showToast('⚠️ System not fully configured. Please contact administrator.', 5000);
+  }
 });
