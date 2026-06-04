@@ -33,161 +33,100 @@ const GOOGLE_FORM_CONFIG = {
 
 // ===== PRODUCT DATA =====
 const products = [
+  // ===== PRE-ORDER PRODUCTS =====
   {
-    id: 1, name: "Go Forth Tee", category: "shirt",
-    price: 450, tag: "BESTSELLER",
-    desc: "Premium cotton shirt with Isaiah 6:8 printed on the back. Available in multiple colors.",
+    id: 1, name: "T-shirts", category: "preorder",
+    price: 450, tag: "PRE-ORDER",
+    desc: "Premium cotton t-shirts with custom design. Available in multiple colors and sizes. Lead time: 2-3 weeks.",
+    requiresSize: true,
+    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+    maxQuantity: 100,
+    quantityNote: "Order up to 100 pieces",
     icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>`
   },
   {
-    id: 2, name: "Mission Mug", category: "mug",
-    price: 320, tag: "NEW",
-    desc: "11oz ceramic mug with 'Who Will Go?' scripture design. Perfect for your morning devotion.",
+    id: 2, name: "Mugs", category: "preorder",
+    price: 320, tag: "PRE-ORDER",
+    desc: "Custom ceramic mugs with personalized design. 11oz ceramic with durable print. Lead time: 2-3 weeks.",
+    requiresSize: false,
+    maxQuantity: 100,
+    quantityNote: "Order up to 100 pieces",
     icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M17 8h1a4 4 0 010 8h-1"/><path d="M3 8h14v9a4 4 0 01-4 4H7a4 4 0 01-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>`
   },
   {
-    id: 3, name: "Missionary Cap", category: "cap",
-    price: 380, tag: "",
-    desc: "Structured 6-panel cap embroidered with the 'WWG' logo and cross motif.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>`
-  },
-  {
-    id: 4, name: "Isaiah Bracelet", category: "accessory",
-    price: 180, tag: "NEW",
-    desc: "Leather-wrapped cuff bracelet engraved with 'Isaiah 6:8' - a daily reminder of your calling.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>`
-  },
-  {
-    id: 5, name: "Go Nations Tote", category: "accessory",
-    price: 280, tag: "",
-    desc: "Heavy-duty canvas tote bag with the global mission map print and scripture reference.",
+    id: 3, name: "String Bag", category: "preorder",
+    price: 280, tag: "PRE-ORDER",
+    desc: "Eco-friendly canvas string bag with custom branding. Perfect for shopping or events. Lead time: 2-3 weeks.",
+    requiresSize: false,
+    sizes: ['One Size'],
+    maxQuantity: 100,
+    quantityNote: "Order up to 100 pieces",
     icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>`
   },
   {
-    id: 6, name: "Prayer Warrior Hoodie", category: "shirt",
-    price: 890, tag: "LIMITED",
-    desc: "Heavyweight fleece hoodie with large back print. The ultimate statement of faith in comfort.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>`
+    id: 4, name: "Keychain", category: "preorder",
+    price: 150, tag: "PRE-ORDER",
+    desc: "Custom engraved keychain in metal or plastic. Compact and personalized. Lead time: 1-2 weeks.",
+    requiresSize: false,
+    maxQuantity: 200,
+    quantityNote: "Order up to 200 pieces",
+    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M12 2v20M2 12h20" stroke-width="2"/></svg>`
+  },
+
+  // ===== ONSITE PRODUCTS =====
+  {
+    id: 5, name: "Photobooth", category: "onsite",
+    price: 2500, tag: "ON-SITE",
+    desc: "Professional photobooth rental for events. Includes backdrop, props, and instant prints. Available on-site only.",
+    requiresSize: false,
+    maxQuantity: 1,
+    quantityNote: "Event service - Quantity: 1",
+    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="3"/></svg>`
   },
   {
-    id: 7, name: "Travel Tumbler", category: "mug",
-    price: 490, tag: "",
-    desc: "Stainless steel 500ml tumbler. Keeps drinks hot for 12hrs. Engraved WWG emblem.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M17 8h1a4 4 0 010 8h-1"/><path d="M3 8h14v9a4 4 0 01-4 4H7a4 4 0 01-4-4V8z"/></svg>`
+    id: 6, name: "Bookmark", category: "onsite",
+    price: 50, tag: "ON-SITE",
+    desc: "Beautifully designed bookmarks. Available at events while supplies last. Perfect gift with purchases.",
+    requiresSize: false,
+    maxQuantity: 50,
+    quantityNote: "Limited stock - up to 50",
+    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>`
   },
   {
-    id: 8, name: "Cross Keychain", category: "accessory",
-    price: 120, tag: "",
-    desc: "Solid metal cross keychain with antique gold finish and micro scripture inscription.",
+    id: 7, name: "Pins", category: "onsite",
+    price: 75, tag: "ON-SITE",
+    desc: "Custom enamel pins and badges. Limited quantities available on-site only.",
+    requiresSize: false,
+    maxQuantity: 100,
+    quantityNote: "Limited stock - up to 100",
     icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M12 2v20M2 12h20" stroke-width="2"/></svg>`
   },
   {
-    id: 9, name: "Gospel Messenger Shirt", category: "shirt",
-    price: 495, tag: "NEW",
-    desc: "Classic crew neck with 'Gospel' scripture message. Premium 100% cotton comfort fit.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>`
-  },
-  {
-    id: 10, name: "Faith Over Fear Hoodie", category: "shirt",
-    price: 850, tag: "",
-    desc: "Cozy hoodie with inspiring 'Faith Over Fear' design. Perfect for missionaries on the field.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>`
-  },
-  {
-    id: 11, name: "Scripture Coffee Mug", category: "mug",
-    price: 350, tag: "",
-    desc: "Ceramic mug with daily scripture verses. Inspire your morning prayers with comfort.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M17 8h1a4 4 0 010 8h-1"/><path d="M3 8h14v9a4 4 0 01-4 4H7a4 4 0 01-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>`
-  },
-  {
-    id: 12, name: "Witness Baseball Cap", category: "cap",
-    price: 400, tag: "NEW",
-    desc: "Unstructured baseball cap with embroidered 'Witness' design. Breathable and stylish.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>`
-  },
-  {
-    id: 13, name: "Mission Bracelet Set", category: "accessory",
-    price: 250, tag: "BESTSELLER",
-    desc: "Pack of 3 wooden and leather bracelets with mission-inspired engraving and colors.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>`
-  },
-  {
-    id: 14, name: "Canvas Church Tote", category: "accessory",
-    price: 320, tag: "",
-    desc: "Large canvas tote perfect for carrying Bibles, books, and ministry supplies to church.",
+    id: 8, name: "Bamboo Notebook with Pen", category: "onsite",
+    price: 180, tag: "ON-SITE",
+    desc: "Eco-friendly bamboo notebook with matching pen. Perfect for notes and signatures. On-site purchase only.",
+    requiresSize: false,
+    maxQuantity: 30,
+    quantityNote: "Limited stock - up to 30",
     icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>`
   },
   {
-    id: 15, name: "Stainless Steel Water Bottle", category: "mug",
-    price: 550, tag: "NEW",
-    desc: "750ml eco-friendly water bottle with 'Go Make Disciples' engraving. Keeps drinks cold 24hrs.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M17 8h1a4 4 0 010 8h-1"/><path d="M3 8h14v9a4 4 0 01-4 4H7a4 4 0 01-4-4V8z"/></svg>`
-  },
-  {
-    id: 16, name: "Missionary Medal Pendant", category: "accessory",
-    price: 275, tag: "",
-    desc: "Sterling silver medal pendant with missionary saint design. Includes adjustable cord.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>`
-  },
-  {
-    id: 17, name: "Blessed T-Shirt", category: "shirt",
-    price: 420, tag: "BESTSELLER",
-    desc: "Soft 100% cotton tee with 'Blessed' calligraphy design. Comfortable everyday wear.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>`
-  },
-  {
-    id: 18, name: "Praying Hands Hoodie", category: "shirt",
-    price: 920, tag: "LIMITED",
-    desc: "Premium blend hoodie with embroidered praying hands design. Perfect for cold missions.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>`
-  },
-  {
-    id: 19, name: "Thermal Prayer Mug", category: "mug",
-    price: 480, tag: "NEW",
-    desc: "Insulated thermal mug with scripture design. Keeps beverages hot for 8+ hours.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M17 8h1a4 4 0 010 8h-1"/><path d="M3 8h14v9a4 4 0 01-4 4H7a4 4 0 01-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>`
-  },
-  {
-    id: 20, name: "Missionary Dad Cap", category: "cap",
-    price: 360, tag: "",
-    desc: "Classic unstructured dad cap with gold stitching. Great for outdoor ministry work.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>`
-  },
-  {
-    id: 21, name: "Leather Wrist Cuff", category: "accessory",
-    price: 325, tag: "NEW",
-    desc: "Premium genuine leather wrist cuff with cross embossing. Durable and stylish.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>`
-  },
-  {
-    id: 22, name: "Ministry Supply Backpack", category: "accessory",
-    price: 1250, tag: "LIMITED",
-    desc: "Durable 45L capacity backpack with multiple compartments. Ideal for mission trips.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>`
-  },
-  {
-    id: 23, name: "Portable Prayer Journal", category: "accessory",
-    price: 285, tag: "",
-    desc: "Leather-bound 200-page prayer journal with guided prompts. Perfect for daily devotions.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>`
-  },
-  {
-    id: 24, name: "Scripture Engraved Tumbler", category: "mug",
-    price: 520, tag: "BESTSELLER",
-    desc: "Double-wall insulated tumbler with personalized scripture engraving option.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M17 8h1a4 4 0 010 8h-1"/><path d="M3 8h14v9a4 4 0 01-4 4H7a4 4 0 01-4-4V8z"/></svg>`
-  },
-  {
-    id: 25, name: "Mission Statement Tank Top", category: "shirt",
-    price: 380, tag: "",
-    desc: "Breathable sleeveless tank with mission-focused design. Perfect for summer outreach.",
-    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>`
-  },
-  {
-    id: 26, name: "Gold Cross Enamel Pin", category: "accessory",
-    price: 145, tag: "NEW",
-    desc: "Beautifully designed enamel pin with gold cross. Perfect for hats, jackets, or bags.",
+    id: 9, name: "Laser Engraving", category: "onsite",
+    price: 300, tag: "ON-SITE",
+    desc: "Professional laser engraving service for your items. Custom designs available. On-site service only.",
+    requiresSize: false,
+    maxQuantity: 1,
+    quantityNote: "Service - Quantity: 1",
     icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M12 2v20M2 12h20" stroke-width="2"/></svg>`
+  },
+  {
+    id: 10, name: "Ptr. Adewale Booksfile", category: "onsite",
+    price: 200, tag: "ON-SITE",
+    desc: "Exclusive biography and teachings of Pastor Adewale. Limited copies available at events.",
+    requiresSize: false,
+    maxQuantity: 50,
+    quantityNote: "Limited copies - up to 50",
+    icon: `<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1" opacity="0.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>`
   },
 ];
 
@@ -310,61 +249,168 @@ function scrollToOrder() {
   document.getElementById('order').scrollIntoView({ behavior: 'smooth' });
 }
 
-// ===== ORDER FORM CHECKBOXES =====
+// ===== ORDER FORM - PRODUCT SELECTOR WITH QUANTITIES =====
 function buildFormCheckboxes() {
   const container = document.getElementById('productSelectorForm');
+  
   container.innerHTML = products.map(p => `
-    <div class="product-checkbox-item">
-      <input type="checkbox" id="pcheck_${p.id}" name="products" value="${p.name} - PHP ${p.price}"/>
-      <label for="pcheck_${p.id}">${p.name} - PHP ${p.price}</label>
+    <div class="product-checkbox-item" style="display:flex; gap:12px; margin-bottom:16px; padding:12px; border:1px solid rgba(201,168,76,0.2); border-radius:4px; background:rgba(201,168,76,0.03);">
+      <div style="flex:1;">
+        <div style="display:flex; align-items:center; margin-bottom:8px;">
+          <input type="checkbox" id="pcheck_${p.id}" name="products" value="${p.name}" class="product-checkbox" onchange="updateSizeField()"/>
+          <label for="pcheck_${p.id}" style="margin-left:8px; cursor:pointer; flex:1;">
+            <span style="font-weight:500;">${p.name}</span>
+            <span style="color:var(--gold); margin-left:8px;">PHP ${p.price}</span>
+          </label>
+        </div>
+        <div style="font-size:0.85rem; color:var(--text-light);">${p.quantityNote}</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label for="qty_${p.id}" style="font-size:0.85rem; color:var(--text-light);">Qty:</label>
+        <input type="number" id="qty_${p.id}" class="product-qty-input" min="1" max="${p.maxQuantity}" value="1" style="width:60px; padding:6px; border:1px solid var(--gold); border-radius:3px; background:transparent; color:var(--cream); text-align:center;" disabled/>
+      </div>
     </div>
   `).join('');
+}
+
+// ===== UPDATE QUANTITY FIELDS BASED ON CHECKBOX =====
+function updateQuantityFields() {
+  products.forEach(p => {
+    const checkbox = document.getElementById(`pcheck_${p.id}`);
+    const qtyInput = document.getElementById(`qty_${p.id}`);
+    if (checkbox && qtyInput) {
+      qtyInput.disabled = !checkbox.checked;
+      if (checkbox.checked && qtyInput.value < 1) {
+        qtyInput.value = 1;
+      }
+    }
+  });
+}
+
+// ===== UPDATE SIZE FIELD VISIBILITY =====
+function updateSizeField() {
+  updateQuantityFields();
+  
+  const sizeGroup = document.getElementById('sizeGroup');
+  if (!sizeGroup) return;
+  
+  // Check if T-shirts is selected
+  const tshirtsCheckbox = document.getElementById('pcheck_1');
+  const showSize = tshirtsCheckbox && tshirtsCheckbox.checked;
+  
+  if (showSize) {
+    sizeGroup.style.display = 'block';
+    document.getElementById('fsize').required = true;
+  } else {
+    sizeGroup.style.display = 'none';
+    document.getElementById('fsize').required = false;
+    document.getElementById('fsize').value = '';
+  }
 }
 
 function updateFormCheckboxes() {
   cart.forEach(item => {
     const cb = document.getElementById('pcheck_' + item.id);
-    if (cb) cb.checked = true;
+    const qtyInput = document.getElementById('qty_' + item.id);
+    if (cb) {
+      cb.checked = true;
+      if (qtyInput) {
+        qtyInput.value = item.qty || 1;
+        qtyInput.disabled = false;
+      }
+    }
   });
+  updateSizeField();
 }
 
 // ===== SUBMIT ORDER =====
 function submitOrder(e) {
   e.preventDefault();
-  const selected = [...document.querySelectorAll('input[name="products"]:checked')].map(c => c.value);
-  if (selected.length === 0) {
+  
+  // Get selected products with quantities
+  const selectedItems = [];
+  products.forEach(p => {
+    const checkbox = document.getElementById(`pcheck_${p.id}`);
+    const qtyInput = document.getElementById(`qty_${p.id}`);
+    
+    if (checkbox && checkbox.checked) {
+      const qty = parseInt(qtyInput.value) || 1;
+      
+      // Validate quantity
+      if (qty < 1 || qty > p.maxQuantity) {
+        showToast(`${p.name}: Quantity must be between 1 and ${p.maxQuantity}`);
+        return;
+      }
+      
+      selectedItems.push({
+        name: p.name,
+        price: p.price,
+        quantity: qty,
+        requiresSize: p.requiresSize
+      });
+    }
+  });
+  
+  if (selectedItems.length === 0) {
     showToast('Please select at least one product.');
     return;
   }
+  
+  // Validate size if T-shirts selected
+  const tshirtSelected = selectedItems.some(item => item.name === 'T-shirts');
+  const selectedSize = document.getElementById('fsize').value;
+  
+  if (tshirtSelected && !selectedSize) {
+    showToast('Please select a size for T-shirts.');
+    return;
+  }
+
+  // Build product list with quantities
+  const productList = selectedItems.map(item => {
+    let productStr = `${item.name} (Qty: ${item.quantity})`;
+    if (item.name === 'T-shirts' && selectedSize) {
+      productStr += ` - Size: ${selectedSize}`;
+    }
+    productStr += ` x PHP ${item.price} = PHP ${item.price * item.quantity}`;
+    return productStr;
+  }).join('\n');
+  
+  // Calculate total
+  const totalPrice = selectedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const orderData = {
     name: document.getElementById('fname').value,
     phone: document.getElementById('fphone').value,
     email: document.getElementById('femail').value,
     address: document.getElementById('faddress').value,
-    products: selected,
-    size: document.getElementById('fsize').value,
-    qty: document.getElementById('fqty').value,
+    products: productList,
+    tshirtSize: selectedSize || 'N/A',
+    totalQuantity: selectedItems.reduce((sum, item) => sum + item.quantity, 0),
+    totalPrice: totalPrice,
     payment: document.getElementById('fpayment').value,
     notes: document.getElementById('fnotes').value,
     timestamp: new Date().toLocaleString('en-PH')
   };
 
   console.log('=== NEW ORDER ===', orderData);
+  console.log('Processing order submission...');
 
   // Show loading state
   showToast('Processing your order...');
 
-  // Submit to Google Form (silent - in background)
-  submitToGoogleForm(orderData);
+  // ===== DUAL SUBMISSION =====
+  // 1. Submit to Google Form (database storage)
+  submitToGoogleForm(orderData, selectedItems);
+  
+  // 2. Send Email Notification (immediate alert)
+  setTimeout(() => {
+    sendOrderEmail(orderData);
+  }, 500);
 }
 
 // ===== SUBMIT TO GOOGLE FORM (SILENT) =====
-function submitToGoogleForm(orderData) {
+function submitToGoogleForm(orderData, selectedItems) {
   try {
-    const baseUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSc_-PXZCU-JIw9RMsS5bwcLMq7ZTSmUBQMGtEaRBLA-Fx6Bzg/formResponse';
-    
-    // Create FormData object (correct way to submit to Google Forms)
     const formData = new FormData();
     
     // Add basic fields with correct entry IDs
@@ -372,27 +418,36 @@ function submitToGoogleForm(orderData) {
     formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.phone}`, orderData.phone);
     formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.email}`, orderData.email);
     formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.address}`, orderData.address);
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.size}`, orderData.size || 'N/A');
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.qty}`, orderData.qty);
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.payment}`, orderData.payment);
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.notes}`, orderData.notes);
     
-    // Add products (join with comma for multiple selections)
-    const productNames = orderData.products.map(productName => 
-      productName.split(' - PHP')[0]
-    ).join(', ');
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.products}`, productNames);
+    // Add size for T-shirts
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.size}`, orderData.tshirtSize);
+    
+    // Add total quantity
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.qty}`, orderData.totalQuantity);
+    
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.payment}`, orderData.payment);
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.notes}`, orderData.notes || 'None');
+    
+    // Add each selected product name as a separate entry for the checkbox question
+    if (selectedItems && selectedItems.length > 0) {
+      selectedItems.forEach(item => {
+        formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.products}`, item.name);
+      });
+    }
     
     console.log('📤 Submitting order to Google Forms...');
-    console.log('Order Data:', {
+    console.log('Order Summary:', {
       name: orderData.name,
       email: orderData.email,
-      products: productNames,
-      total: orderData.products.length
+      phone: orderData.phone,
+      totalQuantity: orderData.totalQuantity,
+      totalPrice: `PHP ${orderData.totalPrice.toLocaleString('en-PH')}`,
+      tshirtSize: orderData.tshirtSize,
+      payment: orderData.payment
     });
     
-    // Submit using fetch with no-cors mode (necessary for Google Forms cross-origin)
-    fetch(baseUrl, {
+    // Submit using fetch with no-cors mode
+    fetch(GOOGLE_FORM_CONFIG.formUrl, {
       method: 'POST',
       mode: 'no-cors',
       body: formData,
@@ -401,20 +456,15 @@ function submitToGoogleForm(orderData) {
       }
     })
     .then(() => {
-      console.log('✅ Order successfully submitted to Google Forms!');
-      console.log('📊 Check your Google Form responses to see the data');
-      showSuccessMessage();
+      console.log('✅ Google Forms: Order submitted successfully');
     })
     .catch(error => {
-      console.error('❌ Error:', error.message);
-      // Still show success since no-cors requests always "fail" but still submit
-      console.log('✓ Order submitted anyway (no-cors limitation)');
-      showSuccessMessage();
+      console.error('Note:', error.message);
+      console.log('ℹ️ Google Forms submission in progress (no-cors)');
     });
     
   } catch (error) {
-    console.error('Error creating form submission:', error);
-    showSuccessMessage();
+    console.error('Error with Google Forms submission:', error);
   }
 }
 
@@ -434,14 +484,20 @@ function continueOrdering() {
   cart = [];
   updateCart();
   
-  // Uncheck all product checkboxes in form
-  document.querySelectorAll('input[name="products"]').forEach(checkbox => {
-    checkbox.checked = false;
+  // Uncheck all product checkboxes and reset quantities
+  products.forEach(p => {
+    const checkbox = document.getElementById(`pcheck_${p.id}`);
+    const qtyInput = document.getElementById(`qty_${p.id}`);
+    if (checkbox) checkbox.checked = false;
+    if (qtyInput) qtyInput.value = 1;
   });
   
   // Hide success message and show form
   document.getElementById('successMsg').classList.remove('show');
   document.getElementById('orderForm').style.display = 'block';
+  
+  // Reset size field visibility
+  updateSizeField();
   
   // Scroll back to order form
   document.getElementById('orderFormWrapper').scrollIntoView({ behavior: 'smooth' });
@@ -474,35 +530,25 @@ function sendOrderEmail(orderData) {
     }
   }
   
-  // Get product details
-  const productDetails = products.filter(p => orderData.products.includes(String(p.id)));
-  const productList = productDetails.map(p => `${p.name} (PHP ${p.price})`).join('\n');
-  
-  // Calculate total price
-  let totalPrice = 0;
-  productDetails.forEach(p => {
-    totalPrice += p.price;
-  });
-  
   // Prepare template parameters for EmailJS
-  // These variable names MUST match your EmailJS template exactly
   const templateParams = {
     to_email: EMAILJS_CONFIG.recipientEmail,
     customer_name: orderData.name,
     customer_email: orderData.email,
     customer_phone: orderData.phone,
     customer_address: orderData.address,
-    products_ordered: productList,
-    total_price: `PHP ${totalPrice.toLocaleString('en-PH', {minimumFractionDigits: 2})}`,
-    size_selected: orderData.size || 'N/A',
-    quantity: orderData.qty,
+    products_ordered: orderData.products,
+    tshirt_size: orderData.tshirtSize,
+    total_quantity: orderData.totalQuantity,
+    total_price: `PHP ${orderData.totalPrice.toLocaleString('en-PH', {minimumFractionDigits: 2})}`,
     payment_method: orderData.payment,
     special_instructions: orderData.notes || 'None',
     order_date: orderData.timestamp,
-    message: `New order received from ${orderData.name}`
+    message: `New order received from ${orderData.name} for ${orderData.totalQuantity} item(s) - Total: PHP ${orderData.totalPrice.toLocaleString('en-PH')}`
   };
 
-  console.log('📧 Sending email with parameters:', templateParams);
+  console.log('📧 Sending email with order details...');
+  console.log('Email To:', EMAILJS_CONFIG.recipientEmail);
   
   // Send email using EmailJS
   showToast('Sending confirmation email...');
@@ -525,12 +571,11 @@ function sendOrderEmail(orderData) {
     updateCart();
   }, function(error) {
     console.error('✗ Email send failed:', error);
-    console.log('Error details:', JSON.stringify(error));
     
-    // Show success message anyway (order was submitted)
+    // Show success message anyway (order was submitted to Google Forms)
     document.getElementById('orderForm').style.display = 'none';
     document.getElementById('successMsg').classList.add('show');
-    showToast('Order submitted! (Email details in console)');
+    showToast('Order submitted! (Check your inbox for confirmation)');
     
     // Reset cart
     cart = [];

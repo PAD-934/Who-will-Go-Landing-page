@@ -132,10 +132,8 @@
 
   <div class="category-tabs">
     <button class="cat-tab active" onclick="filterProducts('all', this)">All Items</button>
-    <button class="cat-tab" onclick="filterProducts('shirt', this)">Shirts</button>
-    <button class="cat-tab" onclick="filterProducts('mug', this)">Mugs</button>
-    <button class="cat-tab" onclick="filterProducts('cap', this)">Caps</button>
-    <button class="cat-tab" onclick="filterProducts('accessory', this)">Accessories</button>
+    <button class="cat-tab" onclick="filterProducts('preorder', this)">Pre-Order</button>
+    <button class="cat-tab" onclick="filterProducts('onsite', this)">On-Site</button>
   </div>
 
   <div class="products-grid" id="productsGrid"></div>
@@ -177,8 +175,9 @@
         </div>
 
         <div class="form-grid">
-          <div class="form-group">
+          <div class="form-group full">
             <label class="form-label">Size (for apparel)</label>
+            <p style="font-size:0.85rem; color:var(--text-light); margin-bottom:8px;">Only required if ordering T-shirts</p>
             <select class="form-select" id="fsize">
               <option value="">Select size</option>
               <option>XS</option>
@@ -187,12 +186,7 @@
               <option>L</option>
               <option>XL</option>
               <option>XXL</option>
-              <option>N/A</option>
             </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Quantity</label>
-            <input class="form-input" type="number" min="1" value="1" id="fqty" required/>
           </div>
           <div class="form-group full">
             <label class="form-label">Payment Method</label>
