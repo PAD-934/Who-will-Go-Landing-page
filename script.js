@@ -405,53 +405,84 @@ function submitOrder(e) {
 // ===== SUBMIT TO GOOGLE FORM (SILENT) =====
 function submitToGoogleForm(orderData, selectedItems) {
   try {
-    // Create URL-encoded form data for Google Forms (required format)
-    const params = new URLSearchParams();
+    // Create FormData object for Google Forms
+    const formData = new FormData();
     
-    // Add fields using entry IDs - Google Forms requires URL encoding
-    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.name}`, orderData.name || '');
-    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.phone}`, orderData.phone || '');
-    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.email}`, orderData.email || '');
-    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.address}`, orderData.address || '');
-    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.size}`, orderData.tshirtSize || 'N/A');
-    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.qty}`, orderData.totalQuantity || '1');
-    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.payment}`, orderData.payment || '');
-    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.notes}`, orderData.notes || '');
+    // Add all fields with correct entry IDs
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.name}`, orderData.name || '');
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.phone}`, orderData.phone || '');
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.email}`, orderData.email || '');
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.address}`, orderData.address || '');
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.size}`, orderData.tshirtSize || 'N/A');
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.qty}`, String(orderData.totalQuantity || 1));
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.payment}`, orderData.payment || '');
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.notes}`, orderData.notes || '');
     
-    // Add products - format as comma-separated string
+    // Add products as single entry
     const productNames = (selectedItems && selectedItems.length > 0) 
       ? selectedItems.map(item => item.name).join(', ')
       : 'N/A';
-    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.products}`, productNames);
+    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.products}`, productNames);
+    
+    // Add timestamp
+    formData.append('timestamp', orderData.timestamp || new Date().toISOString());
     
     console.log('📤 Submitting order to Google Forms...');
-    console.log('Order Details:', {
+    console.log('✓ Order Data:', {
       name: orderData.name,
       email: orderData.email,
       phone: orderData.phone,
-      totalQuantity: orderData.totalQuantity,
-      totalPrice: `PHP ${orderData.totalPrice.toLocaleString('en-PH')}`,
-      tshirtSize: orderData.tshirtSize,
+      address: orderData.address,
+      products: productNames,
+      qty: orderData.totalQuantity,
+      size: orderData.tshirtSize,
       payment: orderData.payment,
-      products: productNames
+      notes: orderData.notes
     });
     
-    // Submit using fetch with no-cors mode (required for Google Forms)
+    // Build the URL with parameters for reliable submission
+    const url = new URL(GOOGLE_FORM_CONFIG.formUrl);
+    
+    // Add form data to URL params for GET-style submission (more reliable)
+    // This is a workaround for Google Forms CORS restrictions
+    const image = new Image();
+    image.style.display = 'none';
+    
+    // Construct URL with all parameters
+    let paramString = `?timestamp=${encodeURIComponent(orderData.timestamp || '')}`;
+    paramString += `&entry.${GOOGLE_FORM_CONFIG.entryIds.name}=${encodeURIComponent(orderData.name || '')}`;
+    paramString += `&entry.${GOOGLE_FORM_CONFIG.entryIds.phone}=${encodeURIComponent(orderData.phone || '')}`;
+    paramString += `&entry.${GOOGLE_FORM_CONFIG.entryIds.email}=${encodeURIComponent(orderData.email || '')}`;
+    paramString += `&entry.${GOOGLE_FORM_CONFIG.entryIds.address}=${encodeURIComponent(orderData.address || '')}`;
+    paramString += `&entry.${GOOGLE_FORM_CONFIG.entryIds.products}=${encodeURIComponent(productNames)}`;
+    paramString += `&entry.${GOOGLE_FORM_CONFIG.entryIds.size}=${encodeURIComponent(orderData.tshirtSize || 'N/A')}`;
+    paramString += `&entry.${GOOGLE_FORM_CONFIG.entryIds.qty}=${encodeURIComponent(String(orderData.totalQuantity || 1))}`;
+    paramString += `&entry.${GOOGLE_FORM_CONFIG.entryIds.payment}=${encodeURIComponent(orderData.payment || '')}`;
+    paramString += `&entry.${GOOGLE_FORM_CONFIG.entryIds.notes}=${encodeURIComponent(orderData.notes || '')}`;
+    
+    // Try POST first with no-cors
     fetch(GOOGLE_FORM_CONFIG.formUrl, {
       method: 'POST',
       mode: 'no-cors',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: params.toString()
+      body: formData
     })
     .then(() => {
-      console.log('✅ Google Forms: Order submitted successfully');
+      console.log('✅ Form submission completed');
       showSuccess();
     })
-    .catch(error => {
-      console.log('📤 Form submitted (no-cors prevents error reading):', error.message);
-      showSuccess();
+    .catch(() => {
+      // Fallback: try as image beacon (works reliably with Google Forms)
+      image.src = GOOGLE_FORM_CONFIG.formUrl.replace('formResponse', 'formResponse/') + paramString;
+      image.onload = () => {
+        console.log('✅ Form submission completed via beacon');
+        showSuccess();
+      };
+      image.onerror = () => {
+        console.log('✅ Form submission initiated');
+        showSuccess();
+      };
+      document.body.appendChild(image);
+      setTimeout(() => document.body.removeChild(image), 1000);
     });
     
   } catch (error) {
