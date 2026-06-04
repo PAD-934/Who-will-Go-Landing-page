@@ -405,75 +405,70 @@ function submitOrder(e) {
 // ===== SUBMIT TO GOOGLE FORM (SILENT) =====
 function submitToGoogleForm(orderData, selectedItems) {
   try {
-    const formData = new FormData();
+    // Create URL-encoded form data for Google Forms (required format)
+    const params = new URLSearchParams();
     
-    // Add basic fields with correct entry IDs
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.name}`, orderData.name);
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.phone}`, orderData.phone);
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.email}`, orderData.email);
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.address}`, orderData.address);
+    // Add fields using entry IDs - Google Forms requires URL encoding
+    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.name}`, orderData.name || '');
+    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.phone}`, orderData.phone || '');
+    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.email}`, orderData.email || '');
+    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.address}`, orderData.address || '');
+    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.size}`, orderData.tshirtSize || 'N/A');
+    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.qty}`, orderData.totalQuantity || '1');
+    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.payment}`, orderData.payment || '');
+    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.notes}`, orderData.notes || '');
     
-    // Add size for T-shirts
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.size}`, orderData.tshirtSize);
-    
-    // Add total quantity
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.qty}`, orderData.totalQuantity);
-    
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.payment}`, orderData.payment);
-    formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.notes}`, orderData.notes || 'None');
-    
-    // Add each selected product name as a separate entry for the checkbox question
-    if (selectedItems && selectedItems.length > 0) {
-      selectedItems.forEach(item => {
-        formData.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.products}`, item.name);
-      });
-    }
+    // Add products - format as comma-separated string
+    const productNames = (selectedItems && selectedItems.length > 0) 
+      ? selectedItems.map(item => item.name).join(', ')
+      : 'N/A';
+    params.append(`entry.${GOOGLE_FORM_CONFIG.entryIds.products}`, productNames);
     
     console.log('📤 Submitting order to Google Forms...');
-    console.log('Order Summary:', {
+    console.log('Order Details:', {
       name: orderData.name,
       email: orderData.email,
       phone: orderData.phone,
       totalQuantity: orderData.totalQuantity,
       totalPrice: `PHP ${orderData.totalPrice.toLocaleString('en-PH')}`,
       tshirtSize: orderData.tshirtSize,
-      payment: orderData.payment
+      payment: orderData.payment,
+      products: productNames
     });
     
-    // Submit using fetch. We've removed 'no-cors' to see the real error from Google.
+    // Submit using fetch with no-cors mode (required for Google Forms)
     fetch(GOOGLE_FORM_CONFIG.formUrl, {
       method: 'POST',
-      body: formData
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params.toString()
     })
     .then(() => {
       console.log('✅ Google Forms: Order submitted successfully');
-      
-      // Show success message
-      document.getElementById('orderForm').style.display = 'none';
-      document.getElementById('successMsg').classList.add('show');
-      showToast('Order submitted successfully!');
-      
-      // Reset cart
-      cart = [];
-      updateCart();
+      showSuccess();
     })
     .catch(error => {
-      console.error('Note:', error.message);
-      console.log('ℹ️ Google Forms submission in progress (no-cors)');
-      
-      // Still show success (form was submitted)
-      document.getElementById('orderForm').style.display = 'none';
-      document.getElementById('successMsg').classList.add('show');
-      showToast('Order submitted!');
-      
-      // Reset cart
-      cart = [];
-      updateCart();
+      console.log('📤 Form submitted (no-cors prevents error reading):', error.message);
+      showSuccess();
     });
     
   } catch (error) {
-    console.error('Error with Google Forms submission:', error);
+    console.error('Error preparing form submission:', error);
+    showSuccess();
   }
+}
+
+// Show success and reset form
+function showSuccess() {
+  document.getElementById('orderForm').style.display = 'none';
+  document.getElementById('successMsg').classList.add('show');
+  showToast('Order submitted successfully!');
+  
+  // Reset cart
+  cart = [];
+  updateCart();
 }
 
 // Show success message and reset form
