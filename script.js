@@ -1,21 +1,11 @@
-// ===== EMAILJS INITIALIZATION =====
-// Initialize EmailJS with your Public Key - wrapped in try-catch so it doesn't block other functions
-try {
-  if (window.emailjs) {
-    emailjs.init('YwvMG5FEgAX47rIQF');
-  }
-} catch (e) {
-  console.log('EmailJS not yet loaded, will retry on form submission');
-}
+// ═══════════════════════════════════════════════════════════════════
+// WHO WILL GO - MISSIONARY FUNDRAISING PLATFORM
+// Professional Order Management System v2.0
+// ═══════════════════════════════════════════════════════════════════
 
-// ===== CONFIGURATION yes =====
-const EMAILJS_CONFIG = {
-  serviceId: 'service_lf4em7r',
-  templateId: 'template_fzkxekp',
-  recipientEmail: 'paulallendiaz86@gmail.com'
-};
-
-// ===== GOOGLE FORM CONFIGURATION =====
+// ═══════════════════════════════════════════════════════════════════
+// GOOGLE FORM CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════
 const GOOGLE_FORM_CONFIG = {
   formUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc_-PXZCU-JIw9RMsS5bwcLMq7ZTSmUBQMGtEaRBLA-Fx6Bzg/formResponse',
   entryIds: {
@@ -640,14 +630,65 @@ function copyGcash() {
   });
 }
 
-// ===== TOAST =====
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+// ═══════════════════════════════════════════════════════════════════
+// UI FEEDBACK
+// ═══════════════════════════════════════════════════════════════════
+function showSuccess() {
+  const form = document.getElementById('orderForm');
+  const success = document.getElementById('orderSuccess');
+  if (form && success) {
+    form.style.display = 'none';
+    success.style.display = 'block';
+    success.scrollIntoView({ behavior: 'smooth' });
+    cart = [];
+    updateCart();
+  }
 }
 
-// ===== AUTO-INIT - Removed, handled in HTML =====
-console.log('✓ new-script.js loaded successfully');
-console.log(`✓ Products: ${products.length} items available`);
+function continueOrdering() {
+  document.getElementById('orderForm').reset();
+  cart = [];
+  updateCart();
+  
+  products.forEach(p => {
+    const checkbox = document.getElementById(`pcheck_${p.id}`);
+    const qtyInput = document.getElementById(`qty_${p.id}`);
+    if (checkbox) checkbox.checked = false;
+    if (qtyInput) qtyInput.value = 1;
+  });
+  
+  document.getElementById('orderSuccess').style.display = 'none';
+  document.getElementById('orderForm').style.display = 'block';
+  updateSizeField();
+  document.getElementById('orderForm').scrollIntoView({ behavior: 'smooth' });
+  showToast('Ready for another order!');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TOAST NOTIFICATIONS
+// ═══════════════════════════════════════════════════════════════════
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ═══════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🚀 APP INITIALIZATION COMPLETE');
+  console.log(`✓ Products: ${products.length} items available`);
+  console.log('✓ Google Forms Integration: Ready');
+  console.log('✓ Dual-Method Submission: Active');
+  console.log('✓ Professional Code v2.0 Loaded');
+  
+  renderProducts();
+  buildFormCheckboxes();
+  updateCart();
+  
+  document.querySelectorAll('.product-checkbox').forEach(cb => {
+    cb.addEventListener('change', updateSizeField);
+  });
+});
