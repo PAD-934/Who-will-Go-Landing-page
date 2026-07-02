@@ -1,340 +1,674 @@
-﻿<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="WHO WILL GO? - Send missionaries through intentional shopping. Every purchase funds active missions worldwide." />
-  <meta name="keywords" content="missions, church fundraising, missionary support, faith-based shopping" />
-  <title>WHO WILL GO? - Mission Fundraising Through Shopping</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="WHO WILL GO? - Send missionaries through intentional shopping. Every purchase funds active missions worldwide."
+    />
+    <meta
+      name="keywords"
+      content="missions, church fundraising, missionary support, faith-based shopping"
+    />
+    <title>WHO WILL GO? - Mission Fundraising Through Shopping</title>
 
-  <!-- Font Awesome for Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Font Awesome for Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="nav-container">
-      <a href="#" class="logo" aria-label="WHO WILL GO? Home">
-        <i class="fas fa-cross"></i>
-        <span>WHO WILL <strong>GO?</strong></span>
-      </a>
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <a href="#" class="logo" aria-label="WHO WILL GO? Home">
+          <i class="fas fa-cross"></i>
+          <span class="logo-text">WHO WILL <strong>GO?</strong></span>
+        </a>
 
-      <ul class="nav-menu">
-        <li><a href="#shop">Shop</a></li>
-        <li><a href="#missions">Missions</a></li>
-        <li><a href="#impact">Impact</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
+        <ul class="nav-menu">
+          <li><a href="#shop">Shop</a></li>
+          <li><a href="#missions">Missions</a></li>
+          <li><a href="#impact">Impact</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
 
-      <div class="nav-right">
-        <button class="nav-icon-btn" title="Shopping Cart" aria-label="Shopping Cart">
-          <i class="fas fa-shopping-bag"></i>
-        </button>
-        <button class="cta-btn cta-primary" data-action="open-love-gift" title="Support a Missionary">
-          <i class="fas fa-heart"></i> Support a Missionary
+        <div class="nav-right">
+          <button
+            class="nav-icon-btn"
+            id="cartButton"
+            title="Shopping Cart"
+            aria-label="Shopping Cart"
+          >
+            <i class="fas fa-shopping-bag"></i>
+            <span class="cart-badge" id="cartCount">0</span>
+          </button>
+          <button
+            class="cta-btn cta-primary"
+            data-action="open-love-gift"
+            title="Support a Missionary"
+          >
+            <i class="fas fa-heart"></i>
+            <span class="support-text">Support a Missionary</span>
+          </button>
+        </div>
+
+        <button class="hamburger" aria-label="Toggle menu" type="button">
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
       </div>
+    </nav>
 
-      <button class="hamburger" aria-label="Toggle menu" type="button">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-    </div>
-  </nav>
-
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-overlay"></div>
-    <div class="hero-content container">
-      <p class="eyebrow">A Christian missionary fundraising initiative</p>
-      <h1 class="hero-headline">
-        <span class="hero-who">Who</span>
-        <span class="hero-will">WILL</span>
-        <span class="hero-go">GO?</span>
-      </h1>
-      <p class="hero-subheading">Supporting foreign missionaries. Advancing the Gospel to the nations.</p>
-
-      <div class="hero-actions">
-        <a href="#shop" class="cta-btn cta-primary">Shop with Purpose</a>
-        <button class="cta-btn cta-secondary" data-action="open-love-gift">Give a Love Gift</button>
+    <!-- Cart Sidebar & Overlay -->
+    <div id="cartOverlay" class="cart-overlay"></div>
+    <aside id="cartSidebar" class="cart-sidebar" aria-hidden="true">
+      <div class="cart-header">
+        <h3>Your Cart</h3>
+        <button id="closeCart" class="cart-close" aria-label="Close cart">
+          &times;
+        </button>
       </div>
+      <div class="cart-body" id="cartItems">
+        <p class="cart-empty">Your cart is empty.</p>
+      </div>
+      <div class="cart-footer">
+        <div class="cart-total-row">
+          <span class="cart-total-label">Total</span>
+          <span class="cart-total-val" id="cartTotal">$0.00</span>
+        </div>
+        <div class="cart-actions">
+          <button id="clearCart" class="cta-btn cta-outline">Clear</button>
+          <button id="checkoutBtn" class="cta-btn cta-primary">Checkout</button>
+        </div>
+      </div>
+    </aside>
 
-      <div class="scripture-card">
-        <p class="scripture-ref">ISAIAH 6:8</p>
-        <p class="scripture-text">
-          "Then I heard the voice of the Lord saying, Whom shall I send? And who will go for us?"<br />
-          <span>Here am I. Send me!</span>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content container">
+        <p class="eyebrow">A Christian missionary fundraising initiative</p>
+        <h1 class="hero-headline">
+          <span class="hero-who">Who</span>
+          <span class="hero-will">WILL</span>
+          <span class="hero-go">GO?</span>
+        </h1>
+        <p class="hero-subheading">
+          Supporting foreign missionaries. Advancing the Gospel to the nations.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#shop" class="cta-btn cta-primary">Shop with Purpose</a>
+          <button class="cta-btn cta-secondary" data-action="open-love-gift">
+            Give a Love Gift
+          </button>
+        </div>
+
+        <div class="scripture-card">
+          <p class="scripture-ref">ISAIAH 6:8</p>
+          <p class="scripture-text">
+            "Then I heard the voice of the Lord saying, Whom shall I send? And
+            who will go for us?"<br />
+            <span>Here am I. Send me!</span>
+          </p>
+        </div>
+
+        <p class="hero-tagline">
+          <strong>Answer the call.</strong> 🙏
+          <strong>Change a nation.</strong> ❤️ <strong>Send the Gospel.</strong>
         </p>
       </div>
+    </section>
 
-      <p class="hero-tagline">
-        <strong>Answer the call.</strong> 🙏 <strong>Change a nation.</strong> ❤️ <strong>Send the Gospel.</strong>
-      </p>
-    </div>
-  </section>
-
-  <!-- Mission Statement -->
-  <section class="mission-statement" id="missions">
-    <div class="container mission-grid">
-      <div class="mission-image">
-        <img src="https://v3b.fal.media/files/b/0a9b7c4b/qvyZ3j0TEbi-bTl2ow9_D_4e26648e36bc45e8ae9a89600eedf566.webp?ar=landscape" alt="Missionaries going to the world" />
-      </div>
-      <div class="mission-content">
-        <button class="section-badge">Our Calling</button>
-        <h2>From every purchase, a <span class="accent">missionary goes.</span></h2>
-        <p>WHO WILL GO? began with a question from Isaiah 6:8. Our answer is simple: we will go — and we will help others go too. Every product is more than a purchase; it is a passport for the Gospel.</p>
-        <p>100% of proceeds support missionaries serving in spiritually dark regions. Your tee, mug, or wall art becomes a real tool for the harvest.</p>
-        <div class="mission-buttons">
-          <a href="#impact" class="cta-btn cta-dark">See Active Missions <i class="fas fa-arrow-right"></i></a>
-          <a href="#contact" class="cta-btn cta-outline">Learn Our Story</a>
+    <!-- Mission Statement -->
+    <section class="mission-statement" id="missions">
+      <div class="container mission-grid">
+        <div class="mission-image">
+          <img
+            src="https://v3b.fal.media/files/b/0a9b7c4b/qvyZ3j0TEbi-bTl2ow9_D_4e26648e36bc45e8ae9a89600eedf566.webp?ar=landscape"
+            alt="Missionaries going to the world"
+          />
+        </div>
+        <div class="mission-content">
+          <button class="section-badge">Our Calling</button>
+          <h2>
+            From every purchase, a <span class="accent">missionary goes.</span>
+          </h2>
+          <p>
+            WHO WILL GO? began with a question from Isaiah 6:8. Our answer is
+            simple: we will go — and we will help others go too. Every product
+            is more than a purchase; it is a passport for the Gospel.
+          </p>
+          <p>
+            100% of proceeds support missionaries serving in spiritually dark
+            regions. Your tee, mug, or wall art becomes a real tool for the
+            harvest.
+          </p>
+          <div class="mission-buttons">
+            <a href="#impact" class="cta-btn cta-dark"
+              >See Active Missions <i class="fas fa-arrow-right"></i
+            ></a>
+            <a href="#contact" class="cta-btn cta-outline">Learn Our Story</a>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- How It Works -->
-  <section class="how-it-works">
-    <div class="container">
-      <button class="section-badge">How It Works</button>
-      <h2 class="section-title">Shop. Send. <span class="accent">Transform Lives.</span></h2>
-      <p class="section-subtitle">Three simple steps turn everyday purchases into eternal impact.</p>
+    <!-- How It Works -->
+    <section class="how-it-works">
+      <div class="container">
+        <button class="section-badge">How It Works</button>
+        <h2 class="section-title">
+          Shop. Send. <span class="accent">Transform Lives.</span>
+        </h2>
+        <p class="section-subtitle">
+          Three simple steps turn everyday purchases into eternal impact.
+        </p>
 
-      <div class="steps-grid">
-        <article class="step-card">
-          <div class="step-number">1</div>
-          <h3>Shop with Purpose</h3>
-          <p>Browse apparel, home goods, accessories, and more — each item carries a message and a mission.</p>
-        </article>
-        <article class="step-card">
-          <div class="step-number">2</div>
-          <h3>100% Funds the Mission</h3>
-          <p>Every cent of profit directly supports missionaries in the field with Bibles, transport, housing, and ministry resources.</p>
-        </article>
-        <article class="step-card">
-          <div class="step-number">3</div>
-          <h3>Lives Are Transformed</h3>
-          <p>Communities encounter Christ, churches are planted, and the Gospel spreads — all because you chose to give.</p>
-        </article>
+        <div class="steps-grid">
+          <article class="step-card">
+            <div class="step-number">1</div>
+            <h3>Shop with Purpose</h3>
+            <p>
+              Browse apparel, home goods, accessories, and more — each item
+              carries a message and a mission.
+            </p>
+          </article>
+          <article class="step-card">
+            <div class="step-number">2</div>
+            <h3>100% Funds the Mission</h3>
+            <p>
+              Every cent of profit directly supports missionaries in the field
+              with Bibles, transport, housing, and ministry resources.
+            </p>
+          </article>
+          <article class="step-card">
+            <div class="step-number">3</div>
+            <h3>Lives Are Transformed</h3>
+            <p>
+              Communities encounter Christ, churches are planted, and the Gospel
+              spreads — all because you chose to give.
+            </p>
+          </article>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Products -->
-  <section class="products" id="shop">
-    <div class="container">
-      <h2 class="section-title">Every purchase has a <span class="accent">purpose.</span></h2>
-      <p class="section-subtitle">Products that carry the message and fund the mission — 100% of profits go to the field.</p>
+    <!-- Products -->
+    <section class="products" id="shop">
+      <div class="container">
+        <h2 class="section-title">
+          Every purchase has a <span class="accent">purpose.</span>
+        </h2>
+        <p class="section-subtitle">
+          Products that carry the message and fund the mission — 100% of profits
+          go to the field.
+        </p>
 
-      <div class="products-grid">
-        <article class="product-card">
-          <div class="product-image">
-            <img src="https://via.placeholder.com/600x400?text=Premium+T-Shirt" alt="Here Am I, Send Me Tee" />
-            <span class="product-badge product-new">New</span>
-          </div>
-          <div class="product-info">
-            <p class="product-category">APPAREL</p>
-            <h3>Here Am I, Send Me Tee</h3>
-            <p class="product-description">Premium cotton tee featuring Isaiah 6:8. Wear the calling.</p>
-            <div class="product-footer">
-              <span class="product-price">$28</span>
-              <button class="cta-btn cta-primary cta-small" type="button">View</button>
+        <div class="products-grid">
+          <article class="product-card" data-product-id="1">
+            <div class="product-image">
+              <img
+                src="https://via.placeholder.com/600x400?text=Premium+T-Shirt"
+                alt="Here Am I, Send Me Tee"
+              />
+              <span class="product-badge product-new">New</span>
+            </div>
+            <div class="product-info">
+              <p class="product-category">APPAREL</p>
+              <h3>Here Am I, Send Me Tee</h3>
+              <p class="product-description">
+                Premium cotton tee featuring Isaiah 6:8. Wear the calling.
+              </p>
+              <div class="product-footer">
+                <span class="product-price">$28</span>
+                <button
+                  class="cta-btn cta-primary cta-small add-to-cart"
+                  type="button"
+                  data-id="1"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="product-card" data-product-id="2">
+            <div class="product-image">
+              <img
+                src="https://via.placeholder.com/600x400?text=Wall+Art"
+                alt="Great Commission Wall Art"
+              />
+            </div>
+            <div class="product-info">
+              <p class="product-category">HOME &amp; DECOR</p>
+              <h3>Great Commission Wall Art</h3>
+              <p class="product-description">
+                Beautiful scripture print for your home — a daily reminder to
+                pray for the nations.
+              </p>
+              <div class="product-footer">
+                <span class="product-price">$34</span>
+                <button
+                  class="cta-btn cta-primary cta-small add-to-cart"
+                  type="button"
+                  data-id="2"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="product-card" data-product-id="3">
+            <div class="product-image">
+              <img
+                src="https://via.placeholder.com/600x400?text=Wristband"
+                alt="Who Will Go Wristband"
+              />
+              <span class="product-badge product-bestseller">Bestseller</span>
+            </div>
+            <div class="product-info">
+              <p class="product-category">ACCESSORIES</p>
+              <h3>Who Will Go? Wristband</h3>
+              <p class="product-description">
+                Silicone wristband — wear it as a daily prayer prompt for
+                missionaries worldwide.
+              </p>
+              <div class="product-footer">
+                <span class="product-price">$12</span>
+                <button
+                  class="cta-btn cta-primary cta-small add-to-cart"
+                  type="button"
+                  data-id="3"
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="products-footer">
+          <button class="cta-btn cta-outline cta-large" type="button">
+            Browse All Products <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Impact Statistics -->
+    <section class="impact-stats" id="impact">
+      <div class="stats-overlay">
+        <div class="stat-item">
+          <p class="stat-number">47+</p>
+          <p class="stat-label">Active missionaries supported</p>
+        </div>
+        <div class="stat-item">
+          <p class="stat-number">18</p>
+          <p class="stat-label">Countries reached</p>
+        </div>
+        <div class="stat-item">
+          <p class="stat-number">$127K+</p>
+          <p class="stat-label">Deployed to the field</p>
+        </div>
+      </div>
+
+      <div class="scripture-overlay">
+        <p class="large-quote">
+          Also I heard the voice of the Lord, saying, Whom shall I send, and who
+          will go for us? Then said I, Here am I; send me.
+        </p>
+        <p class="quote-source">ISAIAH 6:8 (KJV)</p>
+      </div>
+    </section>
+
+    <!-- Impact Stories -->
+    <section class="impact-stories">
+      <div class="container">
+        <button class="section-badge">Real Impact</button>
+        <h2 class="section-title">
+          Stories of <span class="accent">Transformation</span>
+        </h2>
+        <p class="section-subtitle">
+          See how generosity is changing lives and advancing the Gospel across
+          the globe.
+        </p>
+
+        <div class="stories-grid">
+          <article class="story-card">
+            <div class="story-icon"><i class="fas fa-heart"></i></div>
+            <h3>A church planted in remote Kenya</h3>
+            <p>
+              Pastor David used funds from WHO WILL GO? to establish a church in
+              an unreached region of Kenya. Within one year, 150 souls have come
+              to Christ.
+            </p>
+            <p class="story-stat">
+              <strong>$8,400 deployed</strong> •
+              <strong>150 believers</strong> • <strong>1 church planted</strong>
+            </p>
+          </article>
+
+          <article class="story-card">
+            <div class="story-icon"><i class="fas fa-globe"></i></div>
+            <h3>Bibles reach a persecuted underground church</h3>
+            <p>
+              In a hostile nation where Christianity is illegal, donations
+              provided 500 Bibles and training materials to an underground
+              network. Their faith is growing despite persecution.
+            </p>
+            <p class="story-stat">
+              <strong>500 Bibles distributed</strong> •
+              <strong>47 small groups</strong> • <strong>Growing safely</strong>
+            </p>
+          </article>
+
+          <article class="story-card">
+            <div class="story-icon"><i class="fas fa-users"></i></div>
+            <h3>Leadership training in Southeast Asia</h3>
+            <p>
+              Missionary Maria established a discipleship center to train local
+              leaders. With your support, 300+ young church planters are now
+              equipped and sent out to unreached villages.
+            </p>
+            <p class="story-stat">
+              <strong>300+ trained leaders</strong> •
+              <strong>45 new churches</strong> •
+              <strong>Spiritual multiplication</strong>
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="contact" id="contact">
+      <div class="container">
+        <button class="section-badge">Get in Touch</button>
+        <h2 class="section-title">
+          Ready to answer <span class="accent">the call?</span>
+        </h2>
+        <p class="section-subtitle">
+          Have questions about our mission, products, or how to get involved?
+          We'd love to hear from you.
+        </p>
+
+        <div class="contact-grid">
+          <div class="contact-info">
+            <h3>Contact Info</h3>
+            <div class="info-item">
+              <i class="fas fa-envelope"></i>
+              <div>
+                <p class="info-label">Email</p>
+                <p class="info-value">paulallendiaz934@gmail.com</p>
+              </div>
+            </div>
+            <div class="info-item">
+              <i class="fas fa-phone"></i>
+              <div>
+                <p class="info-label">Phone</p>
+                <p class="info-value">(123) 456-7890</p>
+              </div>
+            </div>
+            <div class="info-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <div>
+                <p class="info-label">Based in</p>
+                <p class="info-value">Serving missions worldwide</p>
+              </div>
+            </div>
+            <div class="info-highlight">
+              <p>
+                <strong>100% of proceeds</strong> from every purchase go
+                directly to supporting active missionaries in the field.
+              </p>
             </div>
           </div>
-        </article>
 
-        <article class="product-card">
-          <div class="product-image">
-            <img src="https://via.placeholder.com/600x400?text=Wall+Art" alt="Great Commission Wall Art" />
+          <div class="contact-form-wrapper">
+            <form class="contact-form" id="contactForm">
+              <div class="form-group">
+                <label for="fullName">Full Name *</label
+                ><input
+                  type="text"
+                  id="fullName"
+                  name="fullName"
+                  placeholder="Your full name"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="email">Email Address *</label
+                ><input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="phone">Phone Number</label
+                ><input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  placeholder="(555) 000-0000"
+                />
+              </div>
+              <div class="form-group">
+                <label for="message">Your Message *</label
+                ><textarea
+                  id="message"
+                  name="message"
+                  placeholder="Tell us how you'd like to get involved or ask a question..."
+                  required
+                ></textarea>
+              </div>
+              <div class="form-status" id="formStatus"></div>
+              <button type="submit" class="cta-btn cta-primary cta-full">
+                <i class="fas fa-paper-plane"></i> Send Message
+              </button>
+            </form>
           </div>
-          <div class="product-info">
-            <p class="product-category">HOME &amp; DECOR</p>
-            <h3>Great Commission Wall Art</h3>
-            <p class="product-description">Beautiful scripture print for your home — a daily reminder to pray for the nations.</p>
-            <div class="product-footer">
-              <span class="product-price">$34</span>
-              <button class="cta-btn cta-primary cta-small" type="button">View</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Banner -->
+    <section class="cta-banner">
+      <div class="container banner-content">
+        <h2>Ready to answer the call?</h2>
+        <p>
+          Your purchase today sends a missionary tomorrow. Join believers
+          funding the Great Commission, one purchase at a time.
+        </p>
+        <div class="banner-buttons">
+          <a href="#shop" class="cta-btn cta-white"
+            >Shop Now &amp; Send Missionaries <i class="fas fa-arrow-right"></i
+          ></a>
+          <button class="cta-btn cta-secondary" data-action="open-love-gift">
+            <i class="fas fa-heart"></i> Make a Love Gift
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container footer-container">
+        <div class="footer-section footer-brand">
+          <div class="footer-logo">
+            <i class="fas fa-cross"></i
+            ><span>WHO WILL <strong>GO?</strong></span>
+          </div>
+          <p>
+            Answering Isaiah 6:8 — every purchase sends a missionary and every
+            gift spreads the Gospel. Shop with purpose, give with heart.
+          </p>
+          <div class="social-icons">
+            <a href="#" aria-label="Facebook"
+              ><i class="fab fa-facebook-f"></i
+            ></a>
+            <a href="#" aria-label="Instagram"
+              ><i class="fab fa-instagram"></i
+            ></a>
+            <a href="#" aria-label="Twitter"
+              ><i class="fab fa-x-twitter"></i
+            ></a>
+            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-section">
+          <h4>Shop &amp; Give</h4>
+          <ul>
+            <li><a href="#shop">Shop All Products</a></li>
+            <li><a href="#contact">Love Gift</a></li>
+            <li><a href="#impact">Our Impact</a></li>
+            <li><a href="#missions">Active Missions</a></li>
+            <li><a href="#">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Learn</h4>
+          <ul>
+            <li><a href="#missions">About Us</a></li>
+            <li><a href="#impact">Our Impact</a></li>
+            <li><a href="#contact">Get Involved</a></li>
+            <li><a href="#">Stories</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <ul class="contact-footer">
+            <li>
+              <i class="fas fa-envelope"></i
+              ><a href="mailto:paulallendiaz934@gmail.com"
+                >paulallendiaz934@gmail.com</a
+              >
+            </li>
+            <li>
+              <i class="fas fa-phone"></i
+              ><a href="tel:+1234567890">(123) 456-7890</a>
+            </li>
+            <li>
+              <i class="fas fa-map-marker-alt"></i
+              ><span>Serving Missions Worldwide</span>
+            </li>
+            <li>
+              <a href="#contact" class="footer-contact-link">Contact Form</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>
+          &copy; 2026 WHO WILL GO?. All rights reserved. |
+          <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+        </p>
+      </div>
+    </footer>
+
+    <!-- Love Gift Modal -->
+    <div
+      class="modal"
+      id="loveGiftModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="loveGiftTitle"
+    >
+      <div class="modal-content">
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+        <h2 id="loveGiftTitle">Love Gift — Give Generously</h2>
+        <p class="modal-subtitle">
+          Every gift funds active missions worldwide. No purchase necessary —
+          just pure generosity for the Great Commission.
+        </p>
+
+        <form class="love-gift-form" id="loveGiftForm">
+          <div class="gift-amounts">
+            <button type="button" class="amount-btn" data-amount="25">
+              $25
+            </button>
+            <button type="button" class="amount-btn" data-amount="50">
+              $50
+            </button>
+            <button type="button" class="amount-btn" data-amount="100">
+              $100
+            </button>
+            <button type="button" class="amount-btn" data-amount="250">
+              $250
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label for="customAmount">Or enter a custom amount</label>
+            <div class="input-group">
+              <span>$</span
+              ><input
+                type="number"
+                id="customAmount"
+                name="customAmount"
+                placeholder="0.00"
+                min="1"
+                step="0.01"
+              />
             </div>
           </div>
-        </article>
 
-        <article class="product-card">
-          <div class="product-image">
-            <img src="https://via.placeholder.com/600x400?text=Wristband" alt="Who Will Go Wristband" />
-            <span class="product-badge product-bestseller">Bestseller</span>
+          <div class="form-group">
+            <label for="giftName">Your Name *</label
+            ><input
+              type="text"
+              id="giftName"
+              name="giftName"
+              placeholder="Your name"
+              required
+            />
           </div>
-          <div class="product-info">
-            <p class="product-category">ACCESSORIES</p>
-            <h3>Who Will Go? Wristband</h3>
-            <p class="product-description">Silicone wristband — wear it as a daily prayer prompt for missionaries worldwide.</p>
-            <div class="product-footer">
-              <span class="product-price">$12</span>
-              <button class="cta-btn cta-primary cta-small" type="button">View</button>
-            </div>
+          <div class="form-group">
+            <label for="giftEmail">Email Address *</label
+            ><input
+              type="email"
+              id="giftEmail"
+              name="giftEmail"
+              placeholder="you@example.com"
+              required
+            />
           </div>
-        </article>
-      </div>
-
-      <div class="products-footer">
-        <button class="cta-btn cta-outline cta-large" type="button">Browse All Products <i class="fas fa-arrow-right"></i></button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Impact Statistics -->
-  <section class="impact-stats" id="impact">
-    <div class="stats-overlay">
-      <div class="stat-item">
-        <p class="stat-number">47+</p>
-        <p class="stat-label">Active missionaries supported</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-number">18</p>
-        <p class="stat-label">Countries reached</p>
-      </div>
-      <div class="stat-item">
-        <p class="stat-number">$127K+</p>
-        <p class="stat-label">Deployed to the field</p>
+          <div class="form-group">
+            <label for="giftMessage">Message (Optional)</label
+            ><textarea
+              id="giftMessage"
+              name="giftMessage"
+              placeholder="Share why you're giving..."
+            ></textarea>
+          </div>
+          <button type="submit" class="cta-btn cta-primary cta-full">
+            <i class="fas fa-heart"></i> Give Love Gift
+          </button>
+        </form>
       </div>
     </div>
 
-    <div class="scripture-overlay">
-      <p class="large-quote">Also I heard the voice of the Lord, saying, Whom shall I send, and who will go for us? Then said I, Here am I; send me.</p>
-      <p class="quote-source">ISAIAH 6:8 (KJV)</p>
-    </div>
-  </section>
+    <!-- Toast -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <!-- Impact Stories -->
-  <section class="impact-stories">
-    <div class="container">
-      <button class="section-badge">Real Impact</button>
-      <h2 class="section-title">Stories of <span class="accent">Transformation</span></h2>
-      <p class="section-subtitle">See how generosity is changing lives and advancing the Gospel across the globe.</p>
-
-      <div class="stories-grid">
-        <article class="story-card">
-          <div class="story-icon"><i class="fas fa-heart"></i></div>
-          <h3>A church planted in remote Kenya</h3>
-          <p>Pastor David used funds from WHO WILL GO? to establish a church in an unreached region of Kenya. Within one year, 150 souls have come to Christ.</p>
-          <p class="story-stat"><strong>$8,400 deployed</strong> • <strong>150 believers</strong> • <strong>1 church planted</strong></p>
-        </article>
-
-        <article class="story-card">
-          <div class="story-icon"><i class="fas fa-globe"></i></div>
-          <h3>Bibles reach a persecuted underground church</h3>
-          <p>In a hostile nation where Christianity is illegal, donations provided 500 Bibles and training materials to an underground network. Their faith is growing despite persecution.</p>
-          <p class="story-stat"><strong>500 Bibles distributed</strong> • <strong>47 small groups</strong> • <strong>Growing safely</strong></p>
-        </article>
-
-        <article class="story-card">
-          <div class="story-icon"><i class="fas fa-users"></i></div>
-          <h3>Leadership training in Southeast Asia</h3>
-          <p>Missionary Maria established a discipleship center to train local leaders. With your support, 300+ young church planters are now equipped and sent out to unreached villages.</p>
-          <p class="story-stat"><strong>300+ trained leaders</strong> • <strong>45 new churches</strong> • <strong>Spiritual multiplication</strong></p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- Contact -->
-  <section class="contact" id="contact">
-    <div class="container">
-      <button class="section-badge">Get in Touch</button>
-      <h2 class="section-title">Ready to answer <span class="accent">the call?</span></h2>
-      <p class="section-subtitle">Have questions about our mission, products, or how to get involved? We'd love to hear from you.</p>
-
-      <div class="contact-grid">
-        <div class="contact-info">
-          <h3>Contact Info</h3>
-          <div class="info-item"><i class="fas fa-envelope"></i><div><p class="info-label">Email</p><p class="info-value">paulallendiaz934@gmail.com</p></div></div>
-          <div class="info-item"><i class="fas fa-phone"></i><div><p class="info-label">Phone</p><p class="info-value">(123) 456-7890</p></div></div>
-          <div class="info-item"><i class="fas fa-map-marker-alt"></i><div><p class="info-label">Based in</p><p class="info-value">Serving missions worldwide</p></div></div>
-          <div class="info-highlight"><p><strong>100% of proceeds</strong> from every purchase go directly to supporting active missionaries in the field.</p></div>
-        </div>
-
-        <div class="contact-form-wrapper">
-          <form class="contact-form" id="contactForm">
-            <div class="form-group"><label for="fullName">Full Name *</label><input type="text" id="fullName" name="fullName" placeholder="Your full name" required /></div>
-            <div class="form-group"><label for="email">Email Address *</label><input type="email" id="email" name="email" placeholder="you@example.com" required /></div>
-            <div class="form-group"><label for="phone">Phone Number</label><input type="tel" id="phone" name="phone" placeholder="(555) 000-0000" /></div>
-            <div class="form-group"><label for="message">Your Message *</label><textarea id="message" name="message" placeholder="Tell us how you'd like to get involved or ask a question..." required></textarea></div>
-            <div class="form-status" id="formStatus"></div>
-            <button type="submit" class="cta-btn cta-primary cta-full"><i class="fas fa-paper-plane"></i> Send Message</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA Banner -->
-  <section class="cta-banner">
-    <div class="container banner-content">
-      <h2>Ready to answer the call?</h2>
-      <p>Your purchase today sends a missionary tomorrow. Join believers funding the Great Commission, one purchase at a time.</p>
-      <div class="banner-buttons">
-        <a href="#shop" class="cta-btn cta-white">Shop Now &amp; Send Missionaries <i class="fas fa-arrow-right"></i></a>
-        <button class="cta-btn cta-secondary" data-action="open-love-gift"><i class="fas fa-heart"></i> Make a Love Gift</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container footer-container">
-      <div class="footer-section footer-brand">
-        <div class="footer-logo"><i class="fas fa-cross"></i><span>WHO WILL <strong>GO?</strong></span></div>
-        <p>Answering Isaiah 6:8 — every purchase sends a missionary and every gift spreads the Gospel. Shop with purpose, give with heart.</p>
-        <div class="social-icons">
-          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
-          <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-        </div>
-      </div>
-      <div class="footer-section"><h4>Shop &amp; Give</h4><ul><li><a href="#shop">Shop All Products</a></li><li><a href="#contact">Love Gift</a></li><li><a href="#impact">Our Impact</a></li><li><a href="#missions">Active Missions</a></li><li><a href="#">FAQ</a></li></ul></div>
-      <div class="footer-section"><h4>Learn</h4><ul><li><a href="#missions">About Us</a></li><li><a href="#impact">Our Impact</a></li><li><a href="#contact">Get Involved</a></li><li><a href="#">Stories</a></li><li><a href="#">Blog</a></li></ul></div>
-      <div class="footer-section"><h4>Contact</h4><ul class="contact-footer"><li><i class="fas fa-envelope"></i><a href="mailto:paulallendiaz934@gmail.com">paulallendiaz934@gmail.com</a></li><li><i class="fas fa-phone"></i><a href="tel:+1234567890">(123) 456-7890</a></li><li><i class="fas fa-map-marker-alt"></i><span>Serving Missions Worldwide</span></li><li><a href="#contact" class="footer-contact-link">Contact Form</a></li></ul></div>
-    </div>
-    <div class="footer-bottom"><p>&copy; 2026 WHO WILL GO?. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p></div>
-  </footer>
-
-  <!-- Love Gift Modal -->
-  <div class="modal" id="loveGiftModal" role="dialog" aria-modal="true" aria-labelledby="loveGiftTitle">
-    <div class="modal-content">
-      <button class="modal-close" aria-label="Close modal">&times;</button>
-      <h2 id="loveGiftTitle">Love Gift — Give Generously</h2>
-      <p class="modal-subtitle">Every gift funds active missions worldwide. No purchase necessary — just pure generosity for the Great Commission.</p>
-
-      <form class="love-gift-form" id="loveGiftForm">
-        <div class="gift-amounts">
-          <button type="button" class="amount-btn" data-amount="25">$25</button>
-          <button type="button" class="amount-btn" data-amount="50">$50</button>
-          <button type="button" class="amount-btn" data-amount="100">$100</button>
-          <button type="button" class="amount-btn" data-amount="250">$250</button>
-        </div>
-
-        <div class="form-group">
-          <label for="customAmount">Or enter a custom amount</label>
-          <div class="input-group"><span>$</span><input type="number" id="customAmount" name="customAmount" placeholder="0.00" min="1" step="0.01" /></div>
-        </div>
-
-        <div class="form-group"><label for="giftName">Your Name *</label><input type="text" id="giftName" name="giftName" placeholder="Your name" required /></div>
-        <div class="form-group"><label for="giftEmail">Email Address *</label><input type="email" id="giftEmail" name="giftEmail" placeholder="you@example.com" required /></div>
-        <div class="form-group"><label for="giftMessage">Message (Optional)</label><textarea id="giftMessage" name="giftMessage" placeholder="Share why you're giving..."></textarea></div>
-        <button type="submit" class="cta-btn cta-primary cta-full"><i class="fas fa-heart"></i> Give Love Gift</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Toast -->
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-  <script src="script.js"></script>
-</body>
+    <script src="script.js"></script>
+  </body>
 </html>
