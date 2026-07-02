@@ -29,1132 +29,1227 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-      <div class="nav-container">
-        <a href="#" class="logo" aria-label="WHO WILL GO? Home">
-          <i class="fas fa-cross"></i>
-          <span class="logo-text">WHO WILL <strong>GO?</strong></span>
-        </a>
+    <button
+      id="mobilePreviewToggle"
+      class="mobile-preview-toggle"
+      type="button"
+      aria-label="Toggle mobile preview"
+      aria-pressed="false"
+    >
+      <i class="fas fa-mobile-alt"></i>
+      <span>Mobile Preview</span>
+    </button>
 
-        <ul class="nav-menu">
-          <li><a href="#shop">Shop</a></li>
-          <li><a href="#missions">Missions</a></li>
-          <li><a href="#impact">Impact</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
+    <div id="appShell" class="app-shell">
+      <div
+        id="mobilePreviewBanner"
+        class="mobile-preview-banner"
+        role="status"
+        aria-live="polite"
+      >
+        Mobile preview mode is active. Click the button again to return to
+        desktop view.
+      </div>
 
-        <div class="nav-right">
+      <!-- Navigation -->
+      <nav class="navbar">
+        <div class="nav-container">
+          <a href="#" class="logo" aria-label="WHO WILL GO? Home">
+            <i class="fas fa-cross"></i>
+            <span class="logo-text">WHO WILL <strong>GO?</strong></span>
+          </a>
+
+          <ul class="nav-menu" id="mainNav">
+            <li><a href="#shop">Shop</a></li>
+            <li><a href="#missions">Missions</a></li>
+            <li><a href="#impact">Impact</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+
+          <div class="nav-right">
+            <button
+              class="nav-icon-btn"
+              id="cartButton"
+              title="Shopping Cart"
+              aria-label="Shopping Cart"
+              aria-expanded="false"
+            >
+              <i class="fas fa-shopping-bag"></i>
+              <span class="cart-badge" id="cartCount">0</span>
+            </button>
+            <button
+              class="cta-btn cta-primary"
+              data-action="open-love-gift"
+              title="Support a Missionary"
+            >
+              <i class="fas fa-heart"></i>
+              <span class="support-text">Support a Missionary</span>
+            </button>
+          </div>
+
           <button
-            class="nav-icon-btn"
-            id="cartButton"
-            title="Shopping Cart"
-            aria-label="Shopping Cart"
+            class="hamburger"
+            aria-label="Toggle menu"
+            aria-controls="mainNav"
+            aria-expanded="false"
+            type="button"
           >
-            <i class="fas fa-shopping-bag"></i>
-            <span class="cart-badge" id="cartCount">0</span>
-          </button>
-          <button
-            class="cta-btn cta-primary"
-            data-action="open-love-gift"
-            title="Support a Missionary"
-          >
-            <i class="fas fa-heart"></i>
-            <span class="support-text">Support a Missionary</span>
+            <span></span>
+            <span></span>
+            <span></span>
           </button>
         </div>
+      </nav>
 
-        <button class="hamburger" aria-label="Toggle menu" type="button">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
-    </nav>
-
-    <!-- Cart Sidebar & Overlay -->
-    <div id="cartOverlay" class="cart-overlay"></div>
-    <aside id="cartSidebar" class="cart-sidebar" aria-hidden="true">
-      <div class="cart-header">
-        <h3>Your Cart</h3>
-        <button id="closeCart" class="cart-close" aria-label="Close cart">
-          &times;
-        </button>
-      </div>
-      <div class="cart-body" id="cartItems">
-        <p class="cart-empty">Your cart is empty.</p>
-      </div>
-      <div class="cart-footer">
-        <div class="cart-total-row">
-          <span class="cart-total-label">Total</span>
-          <span class="cart-total-val" id="cartTotal">PHP 0.00</span>
-        </div>
-        <div class="cart-actions">
-          <button id="clearCart" class="cta-btn cta-outline">Clear</button>
-          <button id="checkoutBtn" class="cta-btn cta-primary">Checkout</button>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="hero-overlay"></div>
-      <div class="hero-content container">
-        <p class="eyebrow">A Christian missionary fundraising initiative</p>
-        <h1 class="hero-headline">
-          <span class="hero-who">Who</span>
-          <span class="hero-will">WILL</span>
-          <span class="hero-go">GO?</span>
-        </h1>
-        <p class="hero-subheading">
-          Supporting foreign missionaries. Advancing the Gospel to the nations.
-        </p>
-
-        <div class="hero-actions">
-          <a href="#shop" class="cta-btn cta-primary">Shop with Purpose</a>
-          <button class="cta-btn cta-secondary" data-action="open-love-gift">
-            Give a Love Gift
+      <!-- Cart Sidebar & Overlay -->
+      <div id="cartOverlay" class="cart-overlay"></div>
+      <aside id="cartSidebar" class="cart-sidebar" aria-hidden="true">
+        <div class="cart-header">
+          <h3>Your Cart</h3>
+          <button id="closeCart" class="cart-close" aria-label="Close cart">
+            &times;
           </button>
         </div>
+        <div class="cart-body" id="cartItems">
+          <p class="cart-empty">Your cart is empty.</p>
+        </div>
+        <div class="cart-footer">
+          <div class="cart-total-row">
+            <span class="cart-total-label">Total</span>
+            <span class="cart-total-val" id="cartTotal">PHP 0.00</span>
+          </div>
+          <div class="cart-actions">
+            <button id="clearCart" class="cta-btn cta-outline">Clear</button>
+            <button id="checkoutBtn" class="cta-btn cta-primary">
+              Checkout
+            </button>
+          </div>
+        </div>
+      </aside>
 
-        <div class="scripture-card">
-          <p class="scripture-ref">ISAIAH 6:8</p>
-          <p class="scripture-text">
-            "Then I heard the voice of the Lord saying, Whom shall I send? And
-            who will go for us?"<br />
-            <span>Here am I. Send me!</span>
+      <!-- Hero Section -->
+      <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content container">
+          <p class="eyebrow">A Christian missionary fundraising initiative</p>
+          <h1 class="hero-headline">
+            <span class="hero-who">Who</span>
+            <span class="hero-will">WILL</span>
+            <span class="hero-go">GO?</span>
+          </h1>
+          <p class="hero-subheading">
+            Supporting foreign missionaries. Advancing the Gospel to the
+            nations.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#shop" class="cta-btn cta-primary">Shop with Purpose</a>
+            <button class="cta-btn cta-secondary" data-action="open-love-gift">
+              Give a Love Gift
+            </button>
+          </div>
+
+          <div class="scripture-card">
+            <p class="scripture-ref">ISAIAH 6:8</p>
+            <p class="scripture-text">
+              "Then I heard the voice of the Lord saying, Whom shall I send? And
+              who will go for us?"<br />
+              <span>Here am I. Send me!</span>
+            </p>
+          </div>
+
+          <p class="hero-tagline">
+            <strong>Answer the call.</strong> 🙏
+            <strong>Change a nation.</strong> ❤️
+            <strong>Send the Gospel.</strong>
           </p>
         </div>
+      </section>
 
-        <p class="hero-tagline">
-          <strong>Answer the call.</strong> 🙏
-          <strong>Change a nation.</strong> ❤️ <strong>Send the Gospel.</strong>
-        </p>
-      </div>
-    </section>
-
-    <!-- Mission Statement -->
-    <section class="mission-statement" id="missions">
-      <div class="container mission-grid">
-        <div class="mission-image">
-          <img
-            src="https://v3b.fal.media/files/b/0a9b7c4b/qvyZ3j0TEbi-bTl2ow9_D_4e26648e36bc45e8ae9a89600eedf566.webp?ar=landscape"
-            alt="Missionaries going to the world"
-          />
+      <!-- Mission Statement -->
+      <section class="mission-statement" id="missions">
+        <div class="container mission-grid">
+          <div class="mission-image">
+            <img
+              loading="lazy"
+              src="https://v3b.fal.media/files/b/0a9b7c4b/qvyZ3j0TEbi-bTl2ow9_D_4e26648e36bc45e8ae9a89600eedf566.webp?ar=landscape"
+              alt="Missionaries going to the world"
+            />
+          </div>
+          <div class="mission-content">
+            <button class="section-badge">Our Calling</button>
+            <h2>
+              From every purchase, a
+              <span class="accent">missionary goes.</span>
+            </h2>
+            <p>
+              WHO WILL GO? began with a question from Isaiah 6:8. Our answer is
+              simple: we will go — and we will help others go too. Every product
+              is more than a purchase; it is a passport for the Gospel.
+            </p>
+            <p>
+              100% of proceeds support missionaries serving in spiritually dark
+              regions. Your tee, mug, or wall art becomes a real tool for the
+              harvest.
+            </p>
+            <div class="mission-buttons">
+              <a href="#impact" class="cta-btn cta-dark"
+                >See Active Missions <i class="fas fa-arrow-right"></i
+              ></a>
+              <a href="#contact" class="cta-btn cta-outline">Learn Our Story</a>
+            </div>
+          </div>
         </div>
-        <div class="mission-content">
-          <button class="section-badge">Our Calling</button>
-          <h2>
-            From every purchase, a <span class="accent">missionary goes.</span>
+      </section>
+
+      <!-- How It Works -->
+      <section class="how-it-works">
+        <div class="container">
+          <button class="section-badge">How It Works</button>
+          <h2 class="section-title">
+            Shop. Send. <span class="accent">Transform Lives.</span>
           </h2>
-          <p>
-            WHO WILL GO? began with a question from Isaiah 6:8. Our answer is
-            simple: we will go — and we will help others go too. Every product
-            is more than a purchase; it is a passport for the Gospel.
+          <p class="section-subtitle">
+            Three simple steps turn everyday purchases into eternal impact.
           </p>
-          <p>
-            100% of proceeds support missionaries serving in spiritually dark
-            regions. Your tee, mug, or wall art becomes a real tool for the
-            harvest.
-          </p>
-          <div class="mission-buttons">
-            <a href="#impact" class="cta-btn cta-dark"
-              >See Active Missions <i class="fas fa-arrow-right"></i
-            ></a>
-            <a href="#contact" class="cta-btn cta-outline">Learn Our Story</a>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- How It Works -->
-    <section class="how-it-works">
-      <div class="container">
-        <button class="section-badge">How It Works</button>
-        <h2 class="section-title">
-          Shop. Send. <span class="accent">Transform Lives.</span>
-        </h2>
-        <p class="section-subtitle">
-          Three simple steps turn everyday purchases into eternal impact.
-        </p>
-
-        <div class="steps-grid">
-          <article class="step-card">
-            <div class="step-number">1</div>
-            <h3>Shop with Purpose</h3>
-            <p>
-              Browse apparel, home goods, accessories, and more — each item
-              carries a message and a mission.
-            </p>
-          </article>
-          <article class="step-card">
-            <div class="step-number">2</div>
-            <h3>100% Funds the Mission</h3>
-            <p>
-              Every cent of profit directly supports missionaries in the field
-              with Bibles, transport, housing, and ministry resources.
-            </p>
-          </article>
-          <article class="step-card">
-            <div class="step-number">3</div>
-            <h3>Lives Are Transformed</h3>
-            <p>
-              Communities encounter Christ, churches are planted, and the Gospel
-              spreads — all because you chose to give.
-            </p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- Products -->
-    <section class="products" id="shop">
-      <div class="container">
-        <h2 class="section-title">
-          Every purchase has a <span class="accent">purpose.</span>
-        </h2>
-        <p class="section-subtitle">
-          Products that carry the message and fund the mission — 100% of profits
-          go to the field.
-        </p>
-
-        <!-- Products filter controls -->
-        <div class="products-controls">
-          <div class="filter-left">
-            <label for="productFilter" class="visually-hidden"
-              >Filter products</label
-            >
-            <select
-              id="productFilter"
-              class="product-filter-select"
-              aria-label="Filter products"
-            >
-              <option value="all">All Items</option>
-              <option value="made">Made to Order</option>
-              <option value="onsite">Onsite Name</option>
-            </select>
-          </div>
-
-          <div class="filter-right">
-            <nav
-              class="product-tabs"
-              role="tablist"
-              aria-label="Product categories"
-            >
-              <button role="tab" data-category="all" class="tab active">
-                All
-              </button>
-              <button role="tab" data-category="caps" class="tab">Caps</button>
-              <button role="tab" data-category="t-shirts" class="tab">
-                T-SHIRTS
-              </button>
-              <button role="tab" data-category="crochet" class="tab">
-                CROCHET
-              </button>
-              <button role="tab" data-category="mug" class="tab">Mug</button>
-              <button role="tab" data-category="tote-bag" class="tab">
-                Tote Bag
-              </button>
-              <button role="tab" data-category="accessories" class="tab">
-                Accessories
-              </button>
-            </nav>
-          </div>
-        </div>
-
-        <div class="products-grid">
-          <article
-            class="product-card"
-            data-product-id="1"
-            data-category="mug"
-            data-tags="onsite"
-          >
-            <div class="product-image">
-              <img
-                src="Who Will Go Products/Mugs/Mugs.png"
-                alt="Who Will Go Mug"
-              />
-            </div>
-            <div class="product-info">
-              <p class="product-category">MUG</p>
-              <h3>Who Will Go Mug</h3>
-              <p class="product-description">
-                Ceramic mug with a statement design — perfect for morning coffee
-                and mission-minded conversations.
-              </p>
-              <div class="product-footer">
-                <span class="product-price">PHP 115</span>
-                <div class="product-actions">
-                  <button
-                    class="view-product"
-                    type="button"
-                    data-id="1"
-                    aria-label="View product"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button
-                    class="cta-btn cta-primary cta-small add-to-cart"
-                    type="button"
-                    data-id="1"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article
-            class="product-card"
-            data-product-id="2"
-            data-category="tote-bag"
-            data-tags="made"
-          >
-            <div class="product-image">
-              <img
-                src="Who Will Go Products/Tote Bag/Tote Bag - Faith Can Move Mountains.png"
-                alt="Who Will Go Tote Bag - Faith Can Move Mountains"
-              />
-            </div>
-            <div class="product-info">
-              <p class="product-category">TOTE BAG</p>
-              <h3>Faith Can Move Mountains Tote</h3>
-              <p class="product-description">
-                Heavy-duty canvas tote with bold script artwork for everyday
-                use.
-              </p>
-              <div class="product-footer">
-                <span class="product-price">PHP 130</span>
-                <div class="product-actions">
-                  <button
-                    class="view-product"
-                    type="button"
-                    data-id="2"
-                    aria-label="View product"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button
-                    class="cta-btn cta-primary cta-small add-to-cart"
-                    type="button"
-                    data-id="2"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article
-            class="product-card"
-            data-product-id="3"
-            data-category="tote-bag"
-            data-tags="made"
-          >
-            <div class="product-image">
-              <img
-                src="Who Will Go Products/Tote Bag/Tote Bag - Faith Over Fear.png"
-                alt="Who Will Go Tote Bag - Faith Over Fear"
-              />
-            </div>
-            <div class="product-info">
-              <p class="product-category">TOTE BAG</p>
-              <h3>Faith Over Fear Tote</h3>
-              <p class="product-description">
-                Stylish canvas carryall with an inspiring mission message.
-              </p>
-              <div class="product-footer">
-                <span class="product-price">PHP 130</span>
-                <div class="product-actions">
-                  <button
-                    class="view-product"
-                    type="button"
-                    data-id="3"
-                    aria-label="View product"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button
-                    class="cta-btn cta-primary cta-small add-to-cart"
-                    type="button"
-                    data-id="3"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article
-            class="product-card"
-            data-product-id="4"
-            data-category="tote-bag"
-            data-tags="made"
-          >
-            <div class="product-image">
-              <img
-                src="Who Will Go Products/Tote Bag/Tote Bag - Reach The Nations, Make Jesus Known.png"
-                alt="Who Will Go Tote Bag - Reach The Nations, Make Jesus Known"
-              />
-            </div>
-            <div class="product-info">
-              <p class="product-category">TOTE BAG</p>
-              <h3>Reach The Nations Tote</h3>
-              <p class="product-description">
-                Mission-driven tote for your daily essentials with a bold
-                statement.
-              </p>
-              <div class="product-footer">
-                <span class="product-price">PHP 130</span>
-                <div class="product-actions">
-                  <button
-                    class="view-product"
-                    type="button"
-                    data-id="4"
-                    aria-label="View product"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button
-                    class="cta-btn cta-primary cta-small add-to-cart"
-                    type="button"
-                    data-id="4"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article
-            class="product-card"
-            data-product-id="5"
-            data-category="tote-bag"
-            data-tags="made"
-          >
-            <div class="product-image">
-              <img
-                src="Who Will Go Products/Tote Bag/Tote Bag - Trust In the Lord.png"
-                alt="Who Will Go Tote Bag - Trust In the Lord"
-              />
-            </div>
-            <div class="product-info">
-              <p class="product-category">TOTE BAG</p>
-              <h3>Trust In the Lord Tote</h3>
-              <p class="product-description">
-                Faith-inspired tote with elegant lettering and durable canvas.
-              </p>
-              <div class="product-footer">
-                <span class="product-price">PHP 130</span>
-                <div class="product-actions">
-                  <button
-                    class="view-product"
-                    type="button"
-                    data-id="5"
-                    aria-label="View product"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button
-                    class="cta-btn cta-primary cta-small add-to-cart"
-                    type="button"
-                    data-id="5"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article
-            class="product-card"
-            data-product-id="10"
-            data-category="accessories"
-            data-tags="made"
-          >
-            <div class="product-image">
-              <img
-                src="Who Will Go Products/Accessories/Pins.png"
-                alt="Who Will Go Pins"
-              />
-            </div>
-            <div class="product-info">
-              <p class="product-category">ACCESSORIES</p>
-              <h3>Who Will Go Pins</h3>
-              <p class="product-description">
-                Premium enamel pins with mission-inspired designs—great for
-                jackets, bags, and gifting.
-              </p>
-              <div class="product-footer">
-                <span class="product-price">PHP 25</span>
-                <div class="product-actions">
-                  <button
-                    class="view-product"
-                    type="button"
-                    data-id="10"
-                    aria-label="View product"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button
-                    class="cta-btn cta-primary cta-small add-to-cart"
-                    type="button"
-                    data-id="10"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article
-            class="product-card"
-            data-product-id="11"
-            data-category="accessories"
-            data-tags="made"
-          >
-            <div class="product-image">
-              <img
-                src="Who Will Go Products/Accessories/Bamboo Notebook.png"
-                alt="Who Will Go Bamboo Notebook"
-              />
-            </div>
-            <div class="product-info">
-              <p class="product-category">ACCESSORIES</p>
-              <h3>Who Will Go Bamboo Notebook</h3>
-              <p class="product-description">
-                Eco-friendly bamboo journal with soft-touch cover, perfect for
-                notes, prayers, and planning your next steps.
-              </p>
-              <div class="product-footer">
-                <span class="product-price">PHP 120</span>
-                <div class="product-actions">
-                  <button
-                    class="view-product"
-                    type="button"
-                    data-id="11"
-                    aria-label="View product"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button
-                    class="cta-btn cta-primary cta-small add-to-cart"
-                    type="button"
-                    data-id="11"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article
-            class="product-card"
-            data-product-id="12"
-            data-category="accessories"
-            data-tags="made"
-          >
-            <div class="product-image">
-              <img
-                src="Who Will Go Products/Accessories/Magnetic Bookmark.png"
-                alt="Who Will Go Magnetic Bookmark"
-              />
-            </div>
-            <div class="product-info">
-              <p class="product-category">ACCESSORIES</p>
-              <h3>Who Will Go Magnetic Bookmark</h3>
-              <p class="product-description">
-                Stylish magnetic bookmark that keeps your place securely and
-                highlights your mission-inspired reading.
-              </p>
-              <div class="product-footer">
-                <span class="product-price">PHP 30</span>
-                <div class="product-actions">
-                  <button
-                    class="view-product"
-                    type="button"
-                    data-id="12"
-                    aria-label="View product"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button
-                    class="cta-btn cta-primary cta-small add-to-cart"
-                    type="button"
-                    data-id="12"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <!-- CAPS: imported from Who Will Go Products/Caps -->
-          <article
-            class="product-card"
-            data-product-id="6"
-            data-category="caps"
-            data-tags="onsite"
-          >
-            <div class="product-image">
-              <img
-                src="Who Will Go Products/Caps/caps-black.png"
-                alt="Who Will Go Cap - Black"
-              />
-            </div>
-            <div class="product-info">
-              <p class="product-category">CAPS</p>
-              <h3>Who Will Go Cap — Black</h3>
-              <p class="product-description">
-                Structured cap with embroidered logo — classic fit and durable.
-              </p>
-              <div class="product-footer">
-                <span class="product-price">PHP 100</span>
-                <div class="product-actions">
-                  <button
-                    class="view-product"
-                    type="button"
-                    data-id="6"
-                    aria-label="View product"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button
-                    class="cta-btn cta-primary cta-small add-to-cart"
-                    type="button"
-                    data-id="6"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article
-            class="product-card"
-            data-product-id="7"
-            data-category="caps"
-            data-tags="onsite"
-          >
-            <div class="product-image">
-              <img
-                src="Who Will Go Products/Caps/caps-blue.png"
-                alt="Who Will Go Cap - Blue"
-              />
-            </div>
-            <div class="product-info">
-              <p class="product-category">CAPS</p>
-              <h3>Who Will Go Cap — Blue</h3>
-              <p class="product-description">
-                Structured cap with embroidered logo — classic fit and durable.
-              </p>
-              <div class="product-footer">
-                <span class="product-price">PHP 100</span>
-                <div class="product-actions">
-                  <button
-                    class="view-product"
-                    type="button"
-                    data-id="7"
-                    aria-label="View product"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button
-                    class="cta-btn cta-primary cta-small add-to-cart"
-                    type="button"
-                    data-id="7"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article
-            class="product-card"
-            data-product-id="8"
-            data-category="caps"
-            data-tags="onsite"
-          >
-            <div class="product-image">
-              <img
-                src="Who Will Go Products/Caps/caps-gray.png"
-                alt="Who Will Go Cap - Gray"
-              />
-            </div>
-            <div class="product-info">
-              <p class="product-category">CAPS</p>
-              <h3>Who Will Go Cap — Gray</h3>
-              <p class="product-description">
-                Structured cap with embroidered logo — classic fit and durable.
-              </p>
-              <div class="product-footer">
-                <span class="product-price">PHP 100</span>
-                <div class="product-actions">
-                  <button
-                    class="view-product"
-                    type="button"
-                    data-id="8"
-                    aria-label="View product"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button
-                    class="cta-btn cta-primary cta-small add-to-cart"
-                    type="button"
-                    data-id="8"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article
-            class="product-card"
-            data-product-id="9"
-            data-category="caps"
-            data-tags="onsite"
-          >
-            <div class="product-image">
-              <img
-                src="Who Will Go Products/Caps/caps-green.png"
-                alt="Who Will Go Cap - Green"
-              />
-            </div>
-            <div class="product-info">
-              <p class="product-category">CAPS</p>
-              <h3>Who Will Go Cap — Green</h3>
-              <p class="product-description">
-                Structured cap with embroidered logo — classic fit and durable.
-              </p>
-              <div class="product-footer">
-                <span class="product-price">PHP 100</span>
-                <div class="product-actions">
-                  <button
-                    class="view-product"
-                    type="button"
-                    data-id="9"
-                    aria-label="View product"
-                  >
-                    <i class="fas fa-search-plus"></i>
-                  </button>
-                  <button
-                    class="cta-btn cta-primary cta-small add-to-cart"
-                    type="button"
-                    data-id="9"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <!-- Browse All Products button removed per request -->
-      </div>
-    </section>
-
-    <!-- Impact Statistics -->
-    <section class="impact-stats" id="impact">
-      <div class="stats-overlay">
-        <div class="stat-item">
-          <p class="stat-number">47+</p>
-          <p class="stat-label">Active missionaries supported</p>
-        </div>
-        <div class="stat-item">
-          <p class="stat-number">18</p>
-          <p class="stat-label">Countries reached</p>
-        </div>
-        <div class="stat-item">
-          <p class="stat-number">$127K+</p>
-          <p class="stat-label">Deployed to the field</p>
-        </div>
-      </div>
-
-      <div class="scripture-overlay">
-        <p class="large-quote">
-          Also I heard the voice of the Lord, saying, Whom shall I send, and who
-          will go for us? Then said I, Here am I; send me.
-        </p>
-        <p class="quote-source">ISAIAH 6:8 (KJV)</p>
-      </div>
-    </section>
-
-    <!-- Impact Stories -->
-    <section class="impact-stories">
-      <div class="container">
-        <button class="section-badge">Real Impact</button>
-        <h2 class="section-title">
-          Stories of <span class="accent">Transformation</span>
-        </h2>
-        <p class="section-subtitle">
-          See how generosity is changing lives and advancing the Gospel across
-          the globe.
-        </p>
-
-        <div class="stories-grid">
-          <article class="story-card">
-            <div class="story-icon"><i class="fas fa-heart"></i></div>
-            <h3>A church planted in remote Kenya</h3>
-            <p>
-              Pastor David used funds from WHO WILL GO? to establish a church in
-              an unreached region of Kenya. Within one year, 150 souls have come
-              to Christ.
-            </p>
-            <p class="story-stat">
-              <strong>$8,400 deployed</strong> •
-              <strong>150 believers</strong> • <strong>1 church planted</strong>
-            </p>
-          </article>
-
-          <article class="story-card">
-            <div class="story-icon"><i class="fas fa-globe"></i></div>
-            <h3>Bibles reach a persecuted underground church</h3>
-            <p>
-              In a hostile nation where Christianity is illegal, donations
-              provided 500 Bibles and training materials to an underground
-              network. Their faith is growing despite persecution.
-            </p>
-            <p class="story-stat">
-              <strong>500 Bibles distributed</strong> •
-              <strong>47 small groups</strong> • <strong>Growing safely</strong>
-            </p>
-          </article>
-
-          <article class="story-card">
-            <div class="story-icon"><i class="fas fa-users"></i></div>
-            <h3>Leadership training in Southeast Asia</h3>
-            <p>
-              Missionary Maria established a discipleship center to train local
-              leaders. With your support, 300+ young church planters are now
-              equipped and sent out to unreached villages.
-            </p>
-            <p class="story-stat">
-              <strong>300+ trained leaders</strong> •
-              <strong>45 new churches</strong> •
-              <strong>Spiritual multiplication</strong>
-            </p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- Contact -->
-    <section class="contact" id="contact">
-      <div class="container">
-        <button class="section-badge">Get in Touch</button>
-        <h2 class="section-title">
-          Ready to answer <span class="accent">the call?</span>
-        </h2>
-        <p class="section-subtitle">
-          Have questions about our mission, products, or how to get involved?
-          We'd love to hear from you.
-        </p>
-
-        <div class="contact-grid">
-          <div class="contact-info">
-            <h3>Contact Info</h3>
-            <div class="info-item">
-              <i class="fas fa-envelope"></i>
-              <div>
-                <p class="info-label">Email</p>
-                <p class="info-value">paulallendiaz934@gmail.com</p>
-              </div>
-            </div>
-            <div class="info-item">
-              <i class="fas fa-phone"></i>
-              <div>
-                <p class="info-label">Phone</p>
-                <p class="info-value">(123) 456-7890</p>
-              </div>
-            </div>
-            <div class="info-item">
-              <i class="fas fa-map-marker-alt"></i>
-              <div>
-                <p class="info-label">Based in</p>
-                <p class="info-value">Serving missions worldwide</p>
-              </div>
-            </div>
-            <div class="info-highlight">
+          <div class="steps-grid">
+            <article class="step-card">
+              <div class="step-number">1</div>
+              <h3>Shop with Purpose</h3>
               <p>
-                <strong>100% of proceeds</strong> from every purchase go
-                directly to supporting active missionaries in the field.
+                Browse apparel, home goods, accessories, and more — each item
+                carries a message and a mission.
               </p>
+            </article>
+            <article class="step-card">
+              <div class="step-number">2</div>
+              <h3>100% Funds the Mission</h3>
+              <p>
+                Every cent of profit directly supports missionaries in the field
+                with Bibles, transport, housing, and ministry resources.
+              </p>
+            </article>
+            <article class="step-card">
+              <div class="step-number">3</div>
+              <h3>Lives Are Transformed</h3>
+              <p>
+                Communities encounter Christ, churches are planted, and the
+                Gospel spreads — all because you chose to give.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Products -->
+      <section class="products" id="shop">
+        <div class="container">
+          <h2 class="section-title">
+            Every purchase has a <span class="accent">purpose.</span>
+          </h2>
+          <p class="section-subtitle">
+            Products that carry the message and fund the mission — 100% of
+            profits go to the field.
+          </p>
+
+          <div class="mobile-preview-note">
+            <strong>Mobile ready:</strong> This shop is optimized for Android
+            and iOS screens. Open the page on your phone or use browser device
+            emulation to confirm the layout, cart experience, and product view.
+            <span class="preview-tip"
+              >Tip: In Chrome DevTools, press
+              <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd> to preview Android
+              devices.</span
+            >
+          </div>
+
+          <!-- Products filter controls -->
+          <div class="products-controls">
+            <div class="filter-left">
+              <label for="productFilter" class="visually-hidden"
+                >Filter products</label
+              >
+              <select
+                id="productFilter"
+                class="product-filter-select"
+                aria-label="Filter products"
+              >
+                <option value="all">All Items</option>
+                <option value="made">Made to Order</option>
+                <option value="onsite">Onsite Name</option>
+              </select>
+            </div>
+
+            <div class="filter-right">
+              <nav
+                class="product-tabs"
+                role="tablist"
+                aria-label="Product categories"
+              >
+                <button
+                  role="tab"
+                  data-category="all"
+                  class="tab active"
+                  aria-selected="true"
+                >
+                  All
+                </button>
+                <button
+                  role="tab"
+                  data-category="caps"
+                  class="tab"
+                  aria-selected="false"
+                >
+                  Caps
+                </button>
+                <button
+                  role="tab"
+                  data-category="t-shirts"
+                  class="tab"
+                  aria-selected="false"
+                >
+                  T-SHIRTS
+                </button>
+                <button
+                  role="tab"
+                  data-category="crochet"
+                  class="tab"
+                  aria-selected="false"
+                >
+                  CROCHET
+                </button>
+                <button
+                  role="tab"
+                  data-category="mug"
+                  class="tab"
+                  aria-selected="false"
+                >
+                  Mug
+                </button>
+                <button
+                  role="tab"
+                  data-category="tote-bag"
+                  class="tab"
+                  aria-selected="false"
+                >
+                  Tote Bag
+                </button>
+                <button
+                  role="tab"
+                  data-category="accessories"
+                  class="tab"
+                  aria-selected="false"
+                >
+                  Accessories
+                </button>
+              </nav>
             </div>
           </div>
 
-          <div class="contact-form-wrapper">
-            <form class="contact-form" id="contactForm">
-              <div class="form-group">
-                <label for="fullName">Full Name *</label
-                ><input
-                  type="text"
-                  id="fullName"
-                  name="fullName"
-                  placeholder="Your full name"
-                  required
+          <div class="products-grid">
+            <article
+              class="product-card"
+              data-product-id="1"
+              data-category="mug"
+              data-tags="onsite"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Mugs/Mugs.png"
+                  alt="Who Will Go Mug"
                 />
               </div>
-              <div class="form-group">
-                <label for="email">Email Address *</label
-                ><input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="you@example.com"
-                  required
+              <div class="product-info">
+                <p class="product-category">MUG</p>
+                <h3>Who Will Go Mug</h3>
+                <p class="product-description">
+                  Ceramic mug with a statement design — perfect for morning
+                  coffee and mission-minded conversations.
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 115</span>
+                  <div class="product-actions">
+                    <button
+                      class="view-product"
+                      type="button"
+                      data-id="1"
+                      aria-label="View product"
+                    >
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                      class="cta-btn cta-primary cta-small add-to-cart"
+                      type="button"
+                      data-id="1"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article
+              class="product-card"
+              data-product-id="2"
+              data-category="tote-bag"
+              data-tags="made"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Tote Bag/Tote Bag - Faith Can Move Mountains.png"
+                  alt="Who Will Go Tote Bag - Faith Can Move Mountains"
                 />
               </div>
-              <div class="form-group">
-                <label for="phone">Phone Number</label
-                ><input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  placeholder="(555) 000-0000"
+              <div class="product-info">
+                <p class="product-category">TOTE BAG</p>
+                <h3>Faith Can Move Mountains Tote</h3>
+                <p class="product-description">
+                  Heavy-duty canvas tote with bold script artwork for everyday
+                  use.
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 130</span>
+                  <div class="product-actions">
+                    <button
+                      class="view-product"
+                      type="button"
+                      data-id="2"
+                      aria-label="View product"
+                    >
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                      class="cta-btn cta-primary cta-small add-to-cart"
+                      type="button"
+                      data-id="2"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article
+              class="product-card"
+              data-product-id="3"
+              data-category="tote-bag"
+              data-tags="made"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Tote Bag/Tote Bag - Faith Over Fear.png"
+                  alt="Who Will Go Tote Bag - Faith Over Fear"
                 />
               </div>
-              <div class="form-group">
-                <label for="message">Your Message *</label
-                ><textarea
-                  id="message"
-                  name="message"
-                  placeholder="Tell us how you'd like to get involved or ask a question..."
-                  required
-                ></textarea>
+              <div class="product-info">
+                <p class="product-category">TOTE BAG</p>
+                <h3>Faith Over Fear Tote</h3>
+                <p class="product-description">
+                  Stylish canvas carryall with an inspiring mission message.
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 130</span>
+                  <div class="product-actions">
+                    <button
+                      class="view-product"
+                      type="button"
+                      data-id="3"
+                      aria-label="View product"
+                    >
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                      class="cta-btn cta-primary cta-small add-to-cart"
+                      type="button"
+                      data-id="3"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div class="form-status" id="formStatus"></div>
-              <button type="submit" class="cta-btn cta-primary cta-full">
-                <i class="fas fa-paper-plane"></i> Send Message
-              </button>
-            </form>
+            </article>
+
+            <article
+              class="product-card"
+              data-product-id="4"
+              data-category="tote-bag"
+              data-tags="made"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Tote Bag/Tote Bag - Reach The Nations, Make Jesus Known.png"
+                  alt="Who Will Go Tote Bag - Reach The Nations, Make Jesus Known"
+                />
+              </div>
+              <div class="product-info">
+                <p class="product-category">TOTE BAG</p>
+                <h3>Reach The Nations Tote</h3>
+                <p class="product-description">
+                  Mission-driven tote for your daily essentials with a bold
+                  statement.
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 130</span>
+                  <div class="product-actions">
+                    <button
+                      class="view-product"
+                      type="button"
+                      data-id="4"
+                      aria-label="View product"
+                    >
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                      class="cta-btn cta-primary cta-small add-to-cart"
+                      type="button"
+                      data-id="4"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article
+              class="product-card"
+              data-product-id="5"
+              data-category="tote-bag"
+              data-tags="made"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Tote Bag/Tote Bag - Trust In the Lord.png"
+                  alt="Who Will Go Tote Bag - Trust In the Lord"
+                />
+              </div>
+              <div class="product-info">
+                <p class="product-category">TOTE BAG</p>
+                <h3>Trust In the Lord Tote</h3>
+                <p class="product-description">
+                  Faith-inspired tote with elegant lettering and durable canvas.
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 130</span>
+                  <div class="product-actions">
+                    <button
+                      class="view-product"
+                      type="button"
+                      data-id="5"
+                      aria-label="View product"
+                    >
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                      class="cta-btn cta-primary cta-small add-to-cart"
+                      type="button"
+                      data-id="5"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article
+              class="product-card"
+              data-product-id="10"
+              data-category="accessories"
+              data-tags="made"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Accessories/Pins.png"
+                  alt="Who Will Go Pins"
+                />
+              </div>
+              <div class="product-info">
+                <p class="product-category">ACCESSORIES</p>
+                <h3>Who Will Go Pins</h3>
+                <p class="product-description">
+                  Premium enamel pins with mission-inspired designs—great for
+                  jackets, bags, and gifting.
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 25</span>
+                  <div class="product-actions">
+                    <button
+                      class="view-product"
+                      type="button"
+                      data-id="10"
+                      aria-label="View product"
+                    >
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                      class="cta-btn cta-primary cta-small add-to-cart"
+                      type="button"
+                      data-id="10"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article
+              class="product-card"
+              data-product-id="11"
+              data-category="accessories"
+              data-tags="made"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Accessories/Bamboo Notebook.png"
+                  alt="Who Will Go Bamboo Notebook"
+                />
+              </div>
+              <div class="product-info">
+                <p class="product-category">ACCESSORIES</p>
+                <h3>Who Will Go Bamboo Notebook</h3>
+                <p class="product-description">
+                  Eco-friendly bamboo journal with soft-touch cover, perfect for
+                  notes, prayers, and planning your next steps.
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 120</span>
+                  <div class="product-actions">
+                    <button
+                      class="view-product"
+                      type="button"
+                      data-id="11"
+                      aria-label="View product"
+                    >
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                      class="cta-btn cta-primary cta-small add-to-cart"
+                      type="button"
+                      data-id="11"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article
+              class="product-card"
+              data-product-id="12"
+              data-category="accessories"
+              data-tags="made"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Accessories/Magnetic Bookmark.png"
+                  alt="Who Will Go Magnetic Bookmark"
+                />
+              </div>
+              <div class="product-info">
+                <p class="product-category">ACCESSORIES</p>
+                <h3>Who Will Go Magnetic Bookmark</h3>
+                <p class="product-description">
+                  Stylish magnetic bookmark that keeps your place securely and
+                  highlights your mission-inspired reading.
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 30</span>
+                  <div class="product-actions">
+                    <button
+                      class="view-product"
+                      type="button"
+                      data-id="12"
+                      aria-label="View product"
+                    >
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                      class="cta-btn cta-primary cta-small add-to-cart"
+                      type="button"
+                      data-id="12"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <!-- CAPS: imported from Who Will Go Products/Caps -->
+            <article
+              class="product-card"
+              data-product-id="6"
+              data-category="caps"
+              data-tags="onsite"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Caps/caps-black.png"
+                  alt="Who Will Go Cap - Black"
+                />
+              </div>
+              <div class="product-info">
+                <p class="product-category">CAPS</p>
+                <h3>Who Will Go Cap — Black</h3>
+                <p class="product-description">
+                  Structured cap with embroidered logo — classic fit and
+                  durable.
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 100</span>
+                  <div class="product-actions">
+                    <button
+                      class="view-product"
+                      type="button"
+                      data-id="6"
+                      aria-label="View product"
+                    >
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                      class="cta-btn cta-primary cta-small add-to-cart"
+                      type="button"
+                      data-id="6"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article
+              class="product-card"
+              data-product-id="7"
+              data-category="caps"
+              data-tags="onsite"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Caps/caps-blue.png"
+                  alt="Who Will Go Cap - Blue"
+                />
+              </div>
+              <div class="product-info">
+                <p class="product-category">CAPS</p>
+                <h3>Who Will Go Cap — Blue</h3>
+                <p class="product-description">
+                  Structured cap with embroidered logo — classic fit and
+                  durable.
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 100</span>
+                  <div class="product-actions">
+                    <button
+                      class="view-product"
+                      type="button"
+                      data-id="7"
+                      aria-label="View product"
+                    >
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                      class="cta-btn cta-primary cta-small add-to-cart"
+                      type="button"
+                      data-id="7"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article
+              class="product-card"
+              data-product-id="8"
+              data-category="caps"
+              data-tags="onsite"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Caps/caps-gray.png"
+                  alt="Who Will Go Cap - Gray"
+                />
+              </div>
+              <div class="product-info">
+                <p class="product-category">CAPS</p>
+                <h3>Who Will Go Cap — Gray</h3>
+                <p class="product-description">
+                  Structured cap with embroidered logo — classic fit and
+                  durable.
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 100</span>
+                  <div class="product-actions">
+                    <button
+                      class="view-product"
+                      type="button"
+                      data-id="8"
+                      aria-label="View product"
+                    >
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                      class="cta-btn cta-primary cta-small add-to-cart"
+                      type="button"
+                      data-id="8"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article
+              class="product-card"
+              data-product-id="9"
+              data-category="caps"
+              data-tags="onsite"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Caps/caps-green.png"
+                  alt="Who Will Go Cap - Green"
+                />
+              </div>
+              <div class="product-info">
+                <p class="product-category">CAPS</p>
+                <h3>Who Will Go Cap — Green</h3>
+                <p class="product-description">
+                  Structured cap with embroidered logo — classic fit and
+                  durable.
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 100</span>
+                  <div class="product-actions">
+                    <button
+                      class="view-product"
+                      type="button"
+                      data-id="9"
+                      aria-label="View product"
+                    >
+                      <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button
+                      class="cta-btn cta-primary cta-small add-to-cart"
+                      type="button"
+                      data-id="9"
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- Browse All Products button removed per request -->
+        </div>
+      </section>
+
+      <!-- Impact Statistics -->
+      <section class="impact-stats" id="impact">
+        <div class="stats-overlay">
+          <div class="stat-item">
+            <p class="stat-number">47+</p>
+            <p class="stat-label">Active missionaries supported</p>
+          </div>
+          <div class="stat-item">
+            <p class="stat-number">18</p>
+            <p class="stat-label">Countries reached</p>
+          </div>
+          <div class="stat-item">
+            <p class="stat-number">$127K+</p>
+            <p class="stat-label">Deployed to the field</p>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- CTA Banner -->
-    <section class="cta-banner">
-      <div class="container banner-content">
-        <h2>Ready to answer the call?</h2>
-        <p>
-          Your purchase today sends a missionary tomorrow. Join believers
-          funding the Great Commission, one purchase at a time.
-        </p>
-        <div class="banner-buttons">
-          <a href="#shop" class="cta-btn cta-white"
-            >Shop Now &amp; Send Missionaries <i class="fas fa-arrow-right"></i
-          ></a>
-          <button class="cta-btn cta-secondary" data-action="open-love-gift">
-            <i class="fas fa-heart"></i> Make a Love Gift
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="container footer-container">
-        <div class="footer-section footer-brand">
-          <div class="footer-logo">
-            <i class="fas fa-cross"></i
-            ><span>WHO WILL <strong>GO?</strong></span>
-          </div>
-          <p>
-            Answering Isaiah 6:8 — every purchase sends a missionary and every
-            gift spreads the Gospel. Shop with purpose, give with heart.
+        <div class="scripture-overlay">
+          <p class="large-quote">
+            Also I heard the voice of the Lord, saying, Whom shall I send, and
+            who will go for us? Then said I, Here am I; send me.
           </p>
-          <div class="social-icons">
-            <a href="#" aria-label="Facebook"
-              ><i class="fab fa-facebook-f"></i
-            ></a>
-            <a href="#" aria-label="Instagram"
-              ><i class="fab fa-instagram"></i
-            ></a>
-            <a href="#" aria-label="Twitter"
-              ><i class="fab fa-x-twitter"></i
-            ></a>
-            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+          <p class="quote-source">ISAIAH 6:8 (KJV)</p>
+        </div>
+      </section>
+
+      <!-- Impact Stories -->
+      <section class="impact-stories">
+        <div class="container">
+          <button class="section-badge">Real Impact</button>
+          <h2 class="section-title">
+            Stories of <span class="accent">Transformation</span>
+          </h2>
+          <p class="section-subtitle">
+            See how generosity is changing lives and advancing the Gospel across
+            the globe.
+          </p>
+
+          <div class="stories-grid">
+            <article class="story-card">
+              <div class="story-icon"><i class="fas fa-heart"></i></div>
+              <h3>A church planted in remote Kenya</h3>
+              <p>
+                Pastor David used funds from WHO WILL GO? to establish a church
+                in an unreached region of Kenya. Within one year, 150 souls have
+                come to Christ.
+              </p>
+              <p class="story-stat">
+                <strong>$8,400 deployed</strong> •
+                <strong>150 believers</strong> •
+                <strong>1 church planted</strong>
+              </p>
+            </article>
+
+            <article class="story-card">
+              <div class="story-icon"><i class="fas fa-globe"></i></div>
+              <h3>Bibles reach a persecuted underground church</h3>
+              <p>
+                In a hostile nation where Christianity is illegal, donations
+                provided 500 Bibles and training materials to an underground
+                network. Their faith is growing despite persecution.
+              </p>
+              <p class="story-stat">
+                <strong>500 Bibles distributed</strong> •
+                <strong>47 small groups</strong> •
+                <strong>Growing safely</strong>
+              </p>
+            </article>
+
+            <article class="story-card">
+              <div class="story-icon"><i class="fas fa-users"></i></div>
+              <h3>Leadership training in Southeast Asia</h3>
+              <p>
+                Missionary Maria established a discipleship center to train
+                local leaders. With your support, 300+ young church planters are
+                now equipped and sent out to unreached villages.
+              </p>
+              <p class="story-stat">
+                <strong>300+ trained leaders</strong> •
+                <strong>45 new churches</strong> •
+                <strong>Spiritual multiplication</strong>
+              </p>
+            </article>
           </div>
         </div>
-        <div class="footer-section">
-          <h4>Shop &amp; Give</h4>
-          <ul>
-            <li><a href="#shop">Shop All Products</a></li>
-            <li><a href="#contact">Love Gift</a></li>
-            <li><a href="#impact">Our Impact</a></li>
-            <li><a href="#missions">Active Missions</a></li>
-            <li><a href="#">FAQ</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h4>Learn</h4>
-          <ul>
-            <li><a href="#missions">About Us</a></li>
-            <li><a href="#impact">Our Impact</a></li>
-            <li><a href="#contact">Get Involved</a></li>
-            <li><a href="#">Stories</a></li>
-            <li><a href="#">Blog</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h4>Contact</h4>
-          <ul class="contact-footer">
-            <li>
-              <i class="fas fa-envelope"></i
-              ><a href="mailto:paulallendiaz934@gmail.com"
-                >paulallendiaz934@gmail.com</a
-              >
-            </li>
-            <li>
-              <i class="fas fa-phone"></i
-              ><a href="tel:+1234567890">(123) 456-7890</a>
-            </li>
-            <li>
-              <i class="fas fa-map-marker-alt"></i
-              ><span>Serving Missions Worldwide</span>
-            </li>
-            <li>
-              <a href="#contact" class="footer-contact-link">Contact Form</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>
-          &copy; 2026 WHO WILL GO?. All rights reserved. |
-          <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
-        </p>
-      </div>
-    </footer>
+      </section>
 
-    <!-- Love Gift Modal -->
-    <div
-      class="modal"
-      id="loveGiftModal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="loveGiftTitle"
-    >
-      <div class="modal-content">
-        <button class="modal-close" aria-label="Close modal">&times;</button>
-        <h2 id="loveGiftTitle">Love Gift — Give Generously</h2>
-        <p class="modal-subtitle">
-          Every gift funds active missions worldwide. No purchase necessary —
-          just pure generosity for the Great Commission.
-        </p>
+      <!-- Contact -->
+      <section class="contact" id="contact">
+        <div class="container">
+          <button class="section-badge">Get in Touch</button>
+          <h2 class="section-title">
+            Ready to answer <span class="accent">the call?</span>
+          </h2>
+          <p class="section-subtitle">
+            Have questions about our mission, products, or how to get involved?
+            We'd love to hear from you.
+          </p>
 
-        <form class="love-gift-form" id="loveGiftForm">
-          <div class="gift-amounts">
-            <button type="button" class="amount-btn" data-amount="25">
-              $25
-            </button>
-            <button type="button" class="amount-btn" data-amount="50">
-              $50
-            </button>
-            <button type="button" class="amount-btn" data-amount="100">
-              $100
-            </button>
-            <button type="button" class="amount-btn" data-amount="250">
-              $250
+          <div class="contact-grid">
+            <div class="contact-info">
+              <h3>Contact Info</h3>
+              <div class="info-item">
+                <i class="fas fa-envelope"></i>
+                <div>
+                  <p class="info-label">Email</p>
+                  <p class="info-value">paulallendiaz934@gmail.com</p>
+                </div>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-phone"></i>
+                <div>
+                  <p class="info-label">Phone</p>
+                  <p class="info-value">(123) 456-7890</p>
+                </div>
+              </div>
+              <div class="info-item">
+                <i class="fas fa-map-marker-alt"></i>
+                <div>
+                  <p class="info-label">Based in</p>
+                  <p class="info-value">Serving missions worldwide</p>
+                </div>
+              </div>
+              <div class="info-highlight">
+                <p>
+                  <strong>100% of proceeds</strong> from every purchase go
+                  directly to supporting active missionaries in the field.
+                </p>
+              </div>
+            </div>
+
+            <div class="contact-form-wrapper">
+              <form class="contact-form" id="contactForm">
+                <div class="form-group">
+                  <label for="fullName">Full Name *</label
+                  ><input
+                    type="text"
+                    id="fullName"
+                    name="fullName"
+                    placeholder="Your full name"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="email">Email Address *</label
+                  ><input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="you@example.com"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="phone">Phone Number</label
+                  ><input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    placeholder="(555) 000-0000"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="message">Your Message *</label
+                  ><textarea
+                    id="message"
+                    name="message"
+                    placeholder="Tell us how you'd like to get involved or ask a question..."
+                    required
+                  ></textarea>
+                </div>
+                <div class="form-status" id="formStatus"></div>
+                <button type="submit" class="cta-btn cta-primary cta-full">
+                  <i class="fas fa-paper-plane"></i> Send Message
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA Banner -->
+      <section class="cta-banner">
+        <div class="container banner-content">
+          <h2>Ready to answer the call?</h2>
+          <p>
+            Your purchase today sends a missionary tomorrow. Join believers
+            funding the Great Commission, one purchase at a time.
+          </p>
+          <div class="banner-buttons">
+            <a href="#shop" class="cta-btn cta-white"
+              >Shop Now &amp; Send Missionaries
+              <i class="fas fa-arrow-right"></i
+            ></a>
+            <button class="cta-btn cta-secondary" data-action="open-love-gift">
+              <i class="fas fa-heart"></i> Make a Love Gift
             </button>
           </div>
+        </div>
+      </section>
 
-          <div class="form-group">
-            <label for="customAmount">Or enter a custom amount</label>
-            <div class="input-group">
-              <span>$</span
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="container footer-container">
+          <div class="footer-section footer-brand">
+            <div class="footer-logo">
+              <i class="fas fa-cross"></i
+              ><span>WHO WILL <strong>GO?</strong></span>
+            </div>
+            <p>
+              Answering Isaiah 6:8 — every purchase sends a missionary and every
+              gift spreads the Gospel. Shop with purpose, give with heart.
+            </p>
+            <div class="social-icons">
+              <a href="#" aria-label="Facebook"
+                ><i class="fab fa-facebook-f"></i
+              ></a>
+              <a href="#" aria-label="Instagram"
+                ><i class="fab fa-instagram"></i
+              ></a>
+              <a href="#" aria-label="Twitter"
+                ><i class="fab fa-x-twitter"></i
+              ></a>
+              <a href="#" aria-label="YouTube"
+                ><i class="fab fa-youtube"></i
+              ></a>
+            </div>
+          </div>
+          <div class="footer-section">
+            <h4>Shop &amp; Give</h4>
+            <ul>
+              <li><a href="#shop">Shop All Products</a></li>
+              <li><a href="#contact">Love Gift</a></li>
+              <li><a href="#impact">Our Impact</a></li>
+              <li><a href="#missions">Active Missions</a></li>
+              <li><a href="#">FAQ</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>Learn</h4>
+            <ul>
+              <li><a href="#missions">About Us</a></li>
+              <li><a href="#impact">Our Impact</a></li>
+              <li><a href="#contact">Get Involved</a></li>
+              <li><a href="#">Stories</a></li>
+              <li><a href="#">Blog</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>Contact</h4>
+            <ul class="contact-footer">
+              <li>
+                <i class="fas fa-envelope"></i
+                ><a href="mailto:paulallendiaz934@gmail.com"
+                  >paulallendiaz934@gmail.com</a
+                >
+              </li>
+              <li>
+                <i class="fas fa-phone"></i
+                ><a href="tel:+1234567890">(123) 456-7890</a>
+              </li>
+              <li>
+                <i class="fas fa-map-marker-alt"></i
+                ><span>Serving Missions Worldwide</span>
+              </li>
+              <li>
+                <a href="#contact" class="footer-contact-link">Contact Form</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>
+            &copy; 2026 WHO WILL GO?. All rights reserved. |
+            <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+          </p>
+        </div>
+      </footer>
+
+      <!-- Love Gift Modal -->
+      <div
+        class="modal"
+        id="loveGiftModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="loveGiftTitle"
+      >
+        <div class="modal-content">
+          <button class="modal-close" aria-label="Close modal">&times;</button>
+          <h2 id="loveGiftTitle">Love Gift — Give Generously</h2>
+          <p class="modal-subtitle">
+            Every gift funds active missions worldwide. No purchase necessary —
+            just pure generosity for the Great Commission.
+          </p>
+
+          <form class="love-gift-form" id="loveGiftForm">
+            <div class="gift-amounts">
+              <button type="button" class="amount-btn" data-amount="25">
+                $25
+              </button>
+              <button type="button" class="amount-btn" data-amount="50">
+                $50
+              </button>
+              <button type="button" class="amount-btn" data-amount="100">
+                $100
+              </button>
+              <button type="button" class="amount-btn" data-amount="250">
+                $250
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label for="customAmount">Or enter a custom amount</label>
+              <div class="input-group">
+                <span>$</span
+                ><input
+                  type="number"
+                  id="customAmount"
+                  name="customAmount"
+                  placeholder="0.00"
+                  min="1"
+                  step="0.01"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="giftName">Your Name *</label
               ><input
-                type="number"
-                id="customAmount"
-                name="customAmount"
-                placeholder="0.00"
-                min="1"
-                step="0.01"
+                type="text"
+                id="giftName"
+                name="giftName"
+                placeholder="Your name"
+                required
               />
             </div>
-          </div>
-
-          <div class="form-group">
-            <label for="giftName">Your Name *</label
-            ><input
-              type="text"
-              id="giftName"
-              name="giftName"
-              placeholder="Your name"
-              required
-            />
-          </div>
-          <div class="form-group">
-            <label for="giftEmail">Email Address *</label
-            ><input
-              type="email"
-              id="giftEmail"
-              name="giftEmail"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-          <div class="form-group">
-            <label for="giftMessage">Message (Optional)</label
-            ><textarea
-              id="giftMessage"
-              name="giftMessage"
-              placeholder="Share why you're giving..."
-            ></textarea>
-          </div>
-          <button type="submit" class="cta-btn cta-primary cta-full">
-            <i class="fas fa-heart"></i> Give Love Gift
-          </button>
-        </form>
+            <div class="form-group">
+              <label for="giftEmail">Email Address *</label
+              ><input
+                type="email"
+                id="giftEmail"
+                name="giftEmail"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="giftMessage">Message (Optional)</label
+              ><textarea
+                id="giftMessage"
+                name="giftMessage"
+                placeholder="Share why you're giving..."
+              ></textarea>
+            </div>
+            <button type="submit" class="cta-btn cta-primary cta-full">
+              <i class="fas fa-heart"></i> Give Love Gift
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
 
-    <!-- Toast -->
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <!-- Toast -->
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <!-- Product Quick View Modal -->
-    <div
-      class="modal product-modal"
-      id="productModal"
-      role="dialog"
-      aria-modal="true"
-      aria-hidden="true"
-    >
-      <div class="product-modal-content">
-        <button class="product-modal-close" aria-label="Close product view">
-          &times;
-        </button>
-        <div class="product-modal-body">
-          <div class="product-modal-image" id="productModalImage"></div>
-          <div class="product-modal-info">
-            <p class="product-category" id="productModalCategory">CAPS</p>
-            <h2 id="productModalTitle">Product Title</h2>
-            <p class="product-modal-subtitle" id="productModalSubtitle"></p>
-            <p id="productModalDescription">Product description goes here.</p>
-            <div class="product-modal-footer">
-              <span class="product-price" id="productModalPrice">PHP 0</span>
-              <div class="product-modal-actions">
-                <button
-                  class="cta-btn cta-primary"
-                  id="productModalAddToCart"
-                  data-id=""
-                >
-                  Add to Cart
-                </button>
+      <!-- Product Quick View Modal -->
+      <div
+        class="modal product-modal"
+        id="productModal"
+        role="dialog"
+        aria-modal="true"
+        aria-hidden="true"
+      >
+        <div class="product-modal-content">
+          <button class="product-modal-close" aria-label="Close product view">
+            &times;
+          </button>
+          <div class="product-modal-body">
+            <div class="product-modal-image" id="productModalImage"></div>
+            <div class="product-modal-info">
+              <p class="product-category" id="productModalCategory">CAPS</p>
+              <h2 id="productModalTitle">Product Title</h2>
+              <p class="product-modal-subtitle" id="productModalSubtitle"></p>
+              <p id="productModalDescription">Product description goes here.</p>
+              <div class="product-modal-footer">
+                <span class="product-price" id="productModalPrice">PHP 0</span>
+                <div class="product-modal-actions">
+                  <button
+                    class="cta-btn cta-primary"
+                    id="productModalAddToCart"
+                    data-id=""
+                  >
+                    Add to Cart
+                  </button>
+                </div>
               </div>
             </div>
           </div>
