@@ -87,7 +87,7 @@
       <div class="cart-footer">
         <div class="cart-total-row">
           <span class="cart-total-label">Total</span>
-          <span class="cart-total-val" id="cartTotal">$0.00</span>
+          <span class="cart-total-val" id="cartTotal">PHP 0.00</span>
         </div>
         <div class="cart-actions">
           <button id="clearCart" class="cta-btn cta-outline">Clear</button>
@@ -218,95 +218,552 @@
           go to the field.
         </p>
 
+        <!-- Products filter controls -->
+        <div class="products-controls">
+          <div class="filter-left">
+            <label for="productFilter" class="visually-hidden"
+              >Filter products</label
+            >
+            <select
+              id="productFilter"
+              class="product-filter-select"
+              aria-label="Filter products"
+            >
+              <option value="all">All Items</option>
+              <option value="made">Made to Order</option>
+              <option value="onsite">Onsite Name</option>
+            </select>
+          </div>
+
+          <div class="filter-right">
+            <nav
+              class="product-tabs"
+              role="tablist"
+              aria-label="Product categories"
+            >
+              <button role="tab" data-category="all" class="tab active">
+                All
+              </button>
+              <button role="tab" data-category="caps" class="tab">Caps</button>
+              <button role="tab" data-category="t-shirts" class="tab">
+                T-SHIRTS
+              </button>
+              <button role="tab" data-category="crochet" class="tab">
+                CROCHET
+              </button>
+              <button role="tab" data-category="mug" class="tab">Mug</button>
+              <button role="tab" data-category="tote-bag" class="tab">
+                Tote Bag
+              </button>
+              <button role="tab" data-category="accessories" class="tab">
+                Accessories
+              </button>
+            </nav>
+          </div>
+        </div>
+
         <div class="products-grid">
-          <article class="product-card" data-product-id="1">
+          <article
+            class="product-card"
+            data-product-id="1"
+            data-category="mug"
+            data-tags="onsite"
+          >
             <div class="product-image">
               <img
-                src="https://via.placeholder.com/600x400?text=Premium+T-Shirt"
-                alt="Here Am I, Send Me Tee"
+                src="Who Will Go Products/Mugs/Mugs.png"
+                alt="Who Will Go Mug"
               />
-              <span class="product-badge product-new">New</span>
             </div>
             <div class="product-info">
-              <p class="product-category">APPAREL</p>
-              <h3>Here Am I, Send Me Tee</h3>
+              <p class="product-category">MUG</p>
+              <h3>Who Will Go Mug</h3>
               <p class="product-description">
-                Premium cotton tee featuring Isaiah 6:8. Wear the calling.
+                Ceramic mug with a statement design — perfect for morning coffee
+                and mission-minded conversations.
               </p>
               <div class="product-footer">
-                <span class="product-price">$28</span>
-                <button
-                  class="cta-btn cta-primary cta-small add-to-cart"
-                  type="button"
-                  data-id="1"
-                >
-                  Add to Cart
-                </button>
+                <span class="product-price">PHP 115</span>
+                <div class="product-actions">
+                  <button
+                    class="view-product"
+                    type="button"
+                    data-id="1"
+                    aria-label="View product"
+                  >
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button
+                    class="cta-btn cta-primary cta-small add-to-cart"
+                    type="button"
+                    data-id="1"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
               </div>
             </div>
           </article>
 
-          <article class="product-card" data-product-id="2">
+          <article
+            class="product-card"
+            data-product-id="2"
+            data-category="tote-bag"
+            data-tags="made"
+          >
             <div class="product-image">
               <img
-                src="https://via.placeholder.com/600x400?text=Wall+Art"
-                alt="Great Commission Wall Art"
+                src="Who Will Go Products/Tote Bag/Tote Bag - Faith Can Move Mountains.png"
+                alt="Who Will Go Tote Bag - Faith Can Move Mountains"
               />
             </div>
             <div class="product-info">
-              <p class="product-category">HOME &amp; DECOR</p>
-              <h3>Great Commission Wall Art</h3>
+              <p class="product-category">TOTE BAG</p>
+              <h3>Faith Can Move Mountains Tote</h3>
               <p class="product-description">
-                Beautiful scripture print for your home — a daily reminder to
-                pray for the nations.
+                Heavy-duty canvas tote with bold script artwork for everyday
+                use.
               </p>
               <div class="product-footer">
-                <span class="product-price">$34</span>
-                <button
-                  class="cta-btn cta-primary cta-small add-to-cart"
-                  type="button"
-                  data-id="2"
-                >
-                  Add to Cart
-                </button>
+                <span class="product-price">PHP 130</span>
+                <div class="product-actions">
+                  <button
+                    class="view-product"
+                    type="button"
+                    data-id="2"
+                    aria-label="View product"
+                  >
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button
+                    class="cta-btn cta-primary cta-small add-to-cart"
+                    type="button"
+                    data-id="2"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
               </div>
             </div>
           </article>
 
-          <article class="product-card" data-product-id="3">
+          <article
+            class="product-card"
+            data-product-id="3"
+            data-category="tote-bag"
+            data-tags="made"
+          >
             <div class="product-image">
               <img
-                src="https://via.placeholder.com/600x400?text=Wristband"
-                alt="Who Will Go Wristband"
+                src="Who Will Go Products/Tote Bag/Tote Bag - Faith Over Fear.png"
+                alt="Who Will Go Tote Bag - Faith Over Fear"
               />
-              <span class="product-badge product-bestseller">Bestseller</span>
+            </div>
+            <div class="product-info">
+              <p class="product-category">TOTE BAG</p>
+              <h3>Faith Over Fear Tote</h3>
+              <p class="product-description">
+                Stylish canvas carryall with an inspiring mission message.
+              </p>
+              <div class="product-footer">
+                <span class="product-price">PHP 130</span>
+                <div class="product-actions">
+                  <button
+                    class="view-product"
+                    type="button"
+                    data-id="3"
+                    aria-label="View product"
+                  >
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button
+                    class="cta-btn cta-primary cta-small add-to-cart"
+                    type="button"
+                    data-id="3"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="product-card"
+            data-product-id="4"
+            data-category="tote-bag"
+            data-tags="made"
+          >
+            <div class="product-image">
+              <img
+                src="Who Will Go Products/Tote Bag/Tote Bag - Reach The Nations, Make Jesus Known.png"
+                alt="Who Will Go Tote Bag - Reach The Nations, Make Jesus Known"
+              />
+            </div>
+            <div class="product-info">
+              <p class="product-category">TOTE BAG</p>
+              <h3>Reach The Nations Tote</h3>
+              <p class="product-description">
+                Mission-driven tote for your daily essentials with a bold
+                statement.
+              </p>
+              <div class="product-footer">
+                <span class="product-price">PHP 130</span>
+                <div class="product-actions">
+                  <button
+                    class="view-product"
+                    type="button"
+                    data-id="4"
+                    aria-label="View product"
+                  >
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button
+                    class="cta-btn cta-primary cta-small add-to-cart"
+                    type="button"
+                    data-id="4"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="product-card"
+            data-product-id="5"
+            data-category="tote-bag"
+            data-tags="made"
+          >
+            <div class="product-image">
+              <img
+                src="Who Will Go Products/Tote Bag/Tote Bag - Trust In the Lord.png"
+                alt="Who Will Go Tote Bag - Trust In the Lord"
+              />
+            </div>
+            <div class="product-info">
+              <p class="product-category">TOTE BAG</p>
+              <h3>Trust In the Lord Tote</h3>
+              <p class="product-description">
+                Faith-inspired tote with elegant lettering and durable canvas.
+              </p>
+              <div class="product-footer">
+                <span class="product-price">PHP 130</span>
+                <div class="product-actions">
+                  <button
+                    class="view-product"
+                    type="button"
+                    data-id="5"
+                    aria-label="View product"
+                  >
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button
+                    class="cta-btn cta-primary cta-small add-to-cart"
+                    type="button"
+                    data-id="5"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="product-card"
+            data-product-id="10"
+            data-category="accessories"
+            data-tags="made"
+          >
+            <div class="product-image">
+              <img
+                src="Who Will Go Products/Accessories/Pins.png"
+                alt="Who Will Go Pins"
+              />
             </div>
             <div class="product-info">
               <p class="product-category">ACCESSORIES</p>
-              <h3>Who Will Go? Wristband</h3>
+              <h3>Who Will Go Pins</h3>
               <p class="product-description">
-                Silicone wristband — wear it as a daily prayer prompt for
-                missionaries worldwide.
+                Premium enamel pins with mission-inspired designs—great for
+                jackets, bags, and gifting.
               </p>
               <div class="product-footer">
-                <span class="product-price">$12</span>
-                <button
-                  class="cta-btn cta-primary cta-small add-to-cart"
-                  type="button"
-                  data-id="3"
-                >
-                  Add to Cart
-                </button>
+                <span class="product-price">PHP 25</span>
+                <div class="product-actions">
+                  <button
+                    class="view-product"
+                    type="button"
+                    data-id="10"
+                    aria-label="View product"
+                  >
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button
+                    class="cta-btn cta-primary cta-small add-to-cart"
+                    type="button"
+                    data-id="10"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="product-card"
+            data-product-id="11"
+            data-category="accessories"
+            data-tags="made"
+          >
+            <div class="product-image">
+              <img
+                src="Who Will Go Products/Accessories/Bamboo Notebook.png"
+                alt="Who Will Go Bamboo Notebook"
+              />
+            </div>
+            <div class="product-info">
+              <p class="product-category">ACCESSORIES</p>
+              <h3>Who Will Go Bamboo Notebook</h3>
+              <p class="product-description">
+                Eco-friendly bamboo journal with soft-touch cover, perfect for
+                notes, prayers, and planning your next steps.
+              </p>
+              <div class="product-footer">
+                <span class="product-price">PHP 120</span>
+                <div class="product-actions">
+                  <button
+                    class="view-product"
+                    type="button"
+                    data-id="11"
+                    aria-label="View product"
+                  >
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button
+                    class="cta-btn cta-primary cta-small add-to-cart"
+                    type="button"
+                    data-id="11"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="product-card"
+            data-product-id="12"
+            data-category="accessories"
+            data-tags="made"
+          >
+            <div class="product-image">
+              <img
+                src="Who Will Go Products/Accessories/Magnetic Bookmark.png"
+                alt="Who Will Go Magnetic Bookmark"
+              />
+            </div>
+            <div class="product-info">
+              <p class="product-category">ACCESSORIES</p>
+              <h3>Who Will Go Magnetic Bookmark</h3>
+              <p class="product-description">
+                Stylish magnetic bookmark that keeps your place securely and
+                highlights your mission-inspired reading.
+              </p>
+              <div class="product-footer">
+                <span class="product-price">PHP 30</span>
+                <div class="product-actions">
+                  <button
+                    class="view-product"
+                    type="button"
+                    data-id="12"
+                    aria-label="View product"
+                  >
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button
+                    class="cta-btn cta-primary cta-small add-to-cart"
+                    type="button"
+                    data-id="12"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- CAPS: imported from Who Will Go Products/Caps -->
+          <article
+            class="product-card"
+            data-product-id="6"
+            data-category="caps"
+            data-tags="onsite"
+          >
+            <div class="product-image">
+              <img
+                src="Who Will Go Products/Caps/caps-black.png"
+                alt="Who Will Go Cap - Black"
+              />
+            </div>
+            <div class="product-info">
+              <p class="product-category">CAPS</p>
+              <h3>Who Will Go Cap — Black</h3>
+              <p class="product-description">
+                Structured cap with embroidered logo — classic fit and durable.
+              </p>
+              <div class="product-footer">
+                <span class="product-price">PHP 100</span>
+                <div class="product-actions">
+                  <button
+                    class="view-product"
+                    type="button"
+                    data-id="6"
+                    aria-label="View product"
+                  >
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button
+                    class="cta-btn cta-primary cta-small add-to-cart"
+                    type="button"
+                    data-id="6"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="product-card"
+            data-product-id="7"
+            data-category="caps"
+            data-tags="onsite"
+          >
+            <div class="product-image">
+              <img
+                src="Who Will Go Products/Caps/caps-blue.png"
+                alt="Who Will Go Cap - Blue"
+              />
+            </div>
+            <div class="product-info">
+              <p class="product-category">CAPS</p>
+              <h3>Who Will Go Cap — Blue</h3>
+              <p class="product-description">
+                Structured cap with embroidered logo — classic fit and durable.
+              </p>
+              <div class="product-footer">
+                <span class="product-price">PHP 100</span>
+                <div class="product-actions">
+                  <button
+                    class="view-product"
+                    type="button"
+                    data-id="7"
+                    aria-label="View product"
+                  >
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button
+                    class="cta-btn cta-primary cta-small add-to-cart"
+                    type="button"
+                    data-id="7"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="product-card"
+            data-product-id="8"
+            data-category="caps"
+            data-tags="onsite"
+          >
+            <div class="product-image">
+              <img
+                src="Who Will Go Products/Caps/caps-gray.png"
+                alt="Who Will Go Cap - Gray"
+              />
+            </div>
+            <div class="product-info">
+              <p class="product-category">CAPS</p>
+              <h3>Who Will Go Cap — Gray</h3>
+              <p class="product-description">
+                Structured cap with embroidered logo — classic fit and durable.
+              </p>
+              <div class="product-footer">
+                <span class="product-price">PHP 100</span>
+                <div class="product-actions">
+                  <button
+                    class="view-product"
+                    type="button"
+                    data-id="8"
+                    aria-label="View product"
+                  >
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button
+                    class="cta-btn cta-primary cta-small add-to-cart"
+                    type="button"
+                    data-id="8"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article
+            class="product-card"
+            data-product-id="9"
+            data-category="caps"
+            data-tags="onsite"
+          >
+            <div class="product-image">
+              <img
+                src="Who Will Go Products/Caps/caps-green.png"
+                alt="Who Will Go Cap - Green"
+              />
+            </div>
+            <div class="product-info">
+              <p class="product-category">CAPS</p>
+              <h3>Who Will Go Cap — Green</h3>
+              <p class="product-description">
+                Structured cap with embroidered logo — classic fit and durable.
+              </p>
+              <div class="product-footer">
+                <span class="product-price">PHP 100</span>
+                <div class="product-actions">
+                  <button
+                    class="view-product"
+                    type="button"
+                    data-id="9"
+                    aria-label="View product"
+                  >
+                    <i class="fas fa-search-plus"></i>
+                  </button>
+                  <button
+                    class="cta-btn cta-primary cta-small add-to-cart"
+                    type="button"
+                    data-id="9"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
               </div>
             </div>
           </article>
         </div>
 
-        <div class="products-footer">
-          <button class="cta-btn cta-outline cta-large" type="button">
-            Browse All Products <i class="fas fa-arrow-right"></i>
-          </button>
-        </div>
+        <!-- Browse All Products button removed per request -->
       </div>
     </section>
 
@@ -668,6 +1125,42 @@
 
     <!-- Toast -->
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- Product Quick View Modal -->
+    <div
+      class="modal product-modal"
+      id="productModal"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+    >
+      <div class="product-modal-content">
+        <button class="product-modal-close" aria-label="Close product view">
+          &times;
+        </button>
+        <div class="product-modal-body">
+          <div class="product-modal-image" id="productModalImage"></div>
+          <div class="product-modal-info">
+            <p class="product-category" id="productModalCategory">CAPS</p>
+            <h2 id="productModalTitle">Product Title</h2>
+            <p class="product-modal-subtitle" id="productModalSubtitle"></p>
+            <p id="productModalDescription">Product description goes here.</p>
+            <div class="product-modal-footer">
+              <span class="product-price" id="productModalPrice">PHP 0</span>
+              <div class="product-modal-actions">
+                <button
+                  class="cta-btn cta-primary"
+                  id="productModalAddToCart"
+                  data-id=""
+                >
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script src="script.js"></script>
   </body>

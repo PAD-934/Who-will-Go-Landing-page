@@ -4,8 +4,72 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeModals();
   initializeContactForm();
   initializeLoveGiftForm();
+  initializeProductFilters();
   initializeScrollAnimations();
 });
+
+/* ==================== PRODUCT FILTERS / TABS ==================== */
+function initializeProductFilters() {
+  const filterSelect = document.getElementById("productFilter");
+  const tabs = document.querySelectorAll(".product-tabs .tab");
+  const productsGrid = document.querySelector(".products-grid");
+  const productCards = Array.from(document.querySelectorAll(".product-card"));
+  const noResults = document.createElement("div");
+  noResults.className = "products-no-results";
+  noResults.textContent = "No products match your selection.";
+  if (productsGrid && !document.querySelector(".products-no-results")) {
+    productsGrid.parentNode.insertBefore(noResults, productsGrid.nextSibling);
+  }
+
+  function applyFilters() {
+    const activeTab = document.querySelector(".product-tabs .tab.active");
+    const category = activeTab ? activeTab.dataset.category : "all";
+    const tag = filterSelect ? filterSelect.value : "all";
+
+    let visibleCount = 0;
+    productCards.forEach((card) => {
+      const cardCategory = card.dataset.category || "all";
+      const cardTags = (card.dataset.tags || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      const categoryMatch = category === "all" || cardCategory === category;
+      const tagMatch =
+        tag === "all" ||
+        (tag === "made" && cardTags.includes("made")) ||
+        (tag === "onsite" && cardTags.includes("onsite"));
+
+      if (categoryMatch && tagMatch) {
+        card.style.display = "block";
+        visibleCount++;
+      } else {
+        card.style.display = "none";
+      }
+    });
+
+    const nr = document.querySelector(".products-no-results");
+    if (nr) nr.style.display = visibleCount ? "none" : "block";
+  }
+
+  if (filterSelect) {
+    filterSelect.addEventListener("change", function () {
+      // reset tab to 'all' if selecting global filter makes sense
+      applyFilters();
+    });
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", function () {
+      tabs.forEach((t) => t.classList.remove("active"));
+      this.classList.add("active");
+      applyFilters();
+    });
+  });
+
+  // initial filter application
+  applyFilters();
+}
 
 /* ==================== NAVIGATION ==================== */
 function initializeNavigation() {
@@ -280,21 +344,99 @@ function showToast(message, duration = 3500) {
 const PRODUCTS = [
   {
     id: "1",
-    title: "Here Am I, Send Me Tee",
-    price: 28,
-    img: "https://via.placeholder.com/120x80?text=T-Shirt",
+    title: "Who Will Go Mug",
+    price: 115,
+    img: "Who Will Go Products/Mugs/Mugs.png",
+    video: "Who Will Go Products/Mugs/Mugs - MOCKUP.mp4",
+    description:
+      "Ceramic mug with a statement design — perfect for morning coffee and mission-minded conversations.",
   },
   {
     id: "2",
-    title: "Great Commission Wall Art",
-    price: 34,
-    img: "https://via.placeholder.com/120x80?text=Wall+Art",
+    title: "Faith Can Move Mountains Tote",
+    price: 130,
+    img: "Who Will Go Products/Tote Bag/Tote Bag - Faith Can Move Mountains.png",
+    description:
+      "Heavy-duty canvas tote with bold script artwork for everyday use.",
   },
   {
     id: "3",
-    title: "Who Will Go? Wristband",
-    price: 12,
-    img: "https://via.placeholder.com/120x80?text=Wristband",
+    title: "Faith Over Fear Tote",
+    price: 130,
+    img: "Who Will Go Products/Tote Bag/Tote Bag - Faith Over Fear.png",
+    description: "Stylish canvas carryall with an inspiring mission message.",
+  },
+  {
+    id: "4",
+    title: "Reach The Nations Tote",
+    price: 130,
+    img: "Who Will Go Products/Tote Bag/Tote Bag - Reach The Nations, Make Jesus Known.png",
+    description:
+      "Mission-driven tote for your daily essentials with a bold statement.",
+  },
+  {
+    id: "5",
+    title: "Trust In the Lord Tote",
+    price: 130,
+    img: "Who Will Go Products/Tote Bag/Tote Bag - Trust In the Lord.png",
+    description:
+      "Faith-inspired tote with elegant lettering and durable canvas.",
+  },
+  {
+    id: "6",
+    title: "Who Will Go Cap — Black",
+    price: 100,
+    img: "Who Will Go Products/Caps/caps-black.png",
+    description:
+      "Structured cap with embroidered logo — classic fit and durable.",
+  },
+  {
+    id: "7",
+    title: "Who Will Go Cap — Blue",
+    price: 100,
+    img: "Who Will Go Products/Caps/caps-blue.png",
+    description:
+      "Structured cap with embroidered logo — classic fit and durable.",
+  },
+  {
+    id: "8",
+    title: "Who Will Go Cap — Gray",
+    price: 100,
+    img: "Who Will Go Products/Caps/caps-gray.png",
+    description:
+      "Structured cap with embroidered logo — classic fit and durable.",
+  },
+  {
+    id: "9",
+    title: "Who Will Go Cap — Green",
+    price: 100,
+    img: "Who Will Go Products/Caps/caps-green.png",
+    description:
+      "Structured cap with embroidered logo — classic fit and durable.",
+  },
+  {
+    id: "10",
+    title: "Who Will Go Pins",
+    price: 25,
+    img: "Who Will Go Products/Accessories/Pins.png",
+    description:
+      "Premium enamel pins with mission-inspired motifs — perfect for bags, jackets, and gifting.",
+  },
+  {
+    id: "11",
+    title: "Who Will Go Bamboo Notebook",
+    price: 120,
+    img: "Who Will Go Products/Accessories/Bamboo Notebook.png",
+    description:
+      "Eco-friendly bamboo journal with a soft-touch cover for notes, prayers, and planning.",
+  },
+  {
+    id: "12",
+    title: "Who Will Go Magnetic Bookmark",
+    price: 30,
+    img: "Who Will Go Products/Accessories/Magnetic Bookmark.png",
+    description:
+      "Stylish magnetic bookmark that holds your page securely while showcasing mission-driven style.",
   },
 ];
 
@@ -358,7 +500,7 @@ function renderCartItems() {
   container.innerHTML = "";
   if (!cart.length) {
     container.innerHTML = '<p class="cart-empty">Your cart is empty.</p>';
-    document.getElementById("cartTotal").textContent = "$0.00";
+    document.getElementById("cartTotal").textContent = "PHP 0.00";
     return;
   }
   let total = 0;
@@ -376,13 +518,13 @@ function renderCartItems() {
             <span class="qty">${item.qty}</span>
             <button class="qty-btn" data-action="inc" data-id="${item.id}">+</button>
           </div>
-          <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</div>
+          <div class="cart-item-price">PHP ${(item.price * item.qty).toFixed(2)}</div>
         </div>
       </div>
     `;
     container.appendChild(div);
   });
-  document.getElementById("cartTotal").textContent = `$${total.toFixed(2)}`;
+  document.getElementById("cartTotal").textContent = `PHP ${total.toFixed(2)}`;
 }
 
 function toggleCart(open) {
@@ -403,9 +545,110 @@ function toggleCart(open) {
   }
 }
 
+/* ==================== PRODUCT MODAL ==================== */
+function openProductModal(id) {
+  const product = findProduct(id);
+  const modal = document.getElementById("productModal");
+  if (!modal) return;
+  const imageContainer = document.getElementById("productModalImage");
+  const title = document.getElementById("productModalTitle");
+  const desc = document.getElementById("productModalDescription");
+  const price = document.getElementById("productModalPrice");
+  const cat = document.getElementById("productModalCategory");
+  const addBtn = document.getElementById("productModalAddToCart");
+
+  const subtitle = document.getElementById("productModalSubtitle");
+
+  if (product && imageContainer) {
+    if (product.video) {
+      imageContainer.innerHTML = `
+        <video
+          controls
+          muted
+          autoplay
+          loop
+          playsinline
+          poster="${product.img}"
+        >
+          <source src="${product.video}" type="video/mp4" />
+          <img src="${product.img}" alt="${product.title}" />
+        </video>
+      `;
+      subtitle.textContent = "Mockup preview";
+    } else {
+      imageContainer.innerHTML = `
+        <img src="${product.img}" alt="${product.title}" />
+      `;
+      subtitle.textContent = "";
+    }
+
+    title.textContent = product.title;
+    desc.textContent =
+      product.description ||
+      document.querySelector(
+        `.product-card[data-product-id="${id}"] .product-description`,
+      )?.textContent ||
+      "";
+    price.textContent = `PHP ${product.price}`;
+    cat.textContent =
+      document.querySelector(
+        `.product-card[data-product-id="${id}"] .product-category`,
+      )?.textContent || "";
+    addBtn.dataset.id = product.id;
+  }
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeProductModal() {
+  const modal = document.getElementById("productModal");
+  if (!modal) return;
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "auto";
+}
+
+/* product modal events */
+document.addEventListener("click", function (e) {
+  const t = e.target;
+  if (t.id === "productModal" || t.closest("#productModal")) {
+    // clicking inside should not close; click overlay only
+    if (t.id === "productModal") closeProductModal();
+  }
+  if (t.matches(".product-modal-close") || t.closest(".product-modal-close")) {
+    closeProductModal();
+    return;
+  }
+  if (t.id === "productModalAddToCart" || t.closest("#productModalAddToCart")) {
+    const btn =
+      t.id === "productModalAddToCart"
+        ? t
+        : t.closest("#productModalAddToCart");
+    const id = btn.dataset.id;
+    addToCart(id);
+    closeProductModal();
+    return;
+  }
+});
+
+document.addEventListener("keydown", function (ev) {
+  if (ev.key === "Escape") {
+    closeProductModal();
+  }
+});
+
 /* wire cart events */
 document.addEventListener("click", function (e) {
   const t = e.target;
+  // Quick view button
+  if (t.matches(".view-product") || t.closest(".view-product")) {
+    const btn = t.matches(".view-product") ? t : t.closest(".view-product");
+    const id = btn.dataset.id;
+    openProductModal(id);
+    return;
+  }
   if (t.matches(".add-to-cart") || t.closest(".add-to-cart")) {
     const btn = t.matches(".add-to-cart") ? t : t.closest(".add-to-cart");
     const id = btn.dataset.id;
@@ -414,7 +657,7 @@ document.addEventListener("click", function (e) {
   }
 
   if (t.id === "cartButton" || t.closest("#cartButton")) {
-    toggleCart(true);
+    toggleCart();
     return;
   }
 
