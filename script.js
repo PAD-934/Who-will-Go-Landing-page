@@ -547,13 +547,31 @@ function clearCart() {
 
 function renderCartItems() {
   const container = document.getElementById("cartItems");
+  const cartFooter = document.querySelector(".cart-footer");
   if (!container) return;
   container.innerHTML = "";
   if (!cart.length) {
-    container.innerHTML = '<p class="cart-empty">Your cart is empty.</p>';
+    container.innerHTML = `
+      <div class="cart-empty-card">
+        <div class="cart-empty-icon"><i class="fas fa-shopping-basket"></i></div>
+        <div>
+          <p class="cart-empty-title">Your cart is empty</p>
+          <p class="cart-empty-text">
+            Add a product to build your order and support missionaries in the field.
+          </p>
+        </div>
+        <a href="#shop" class="cta-btn cta-primary cart-empty-cta">Shop Now</a>
+      </div>
+    `;
     document.getElementById("cartTotal").textContent = "PHP 0.00";
+    if (cartFooter) cartFooter.classList.add("empty");
+    const emptyCta = container.querySelector(".cart-empty-cta");
+    if (emptyCta) {
+      emptyCta.addEventListener("click", () => toggleCart(false));
+    }
     return;
   }
+  if (cartFooter) cartFooter.classList.remove("empty");
   let total = 0;
   cart.forEach((item) => {
     total += item.price * item.qty;

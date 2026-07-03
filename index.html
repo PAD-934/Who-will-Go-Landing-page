@@ -29,17 +29,6 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <button
-      id="mobilePreviewToggle"
-      class="mobile-preview-toggle"
-      type="button"
-      aria-label="Toggle mobile preview"
-      aria-pressed="false"
-    >
-      <i class="fas fa-mobile-alt"></i>
-      <span>Mobile Preview</span>
-    </button>
-
     <div id="appShell" class="app-shell">
       <div
         id="mobilePreviewBanner"
@@ -76,6 +65,16 @@
             >
               <i class="fas fa-shopping-bag"></i>
               <span class="cart-badge" id="cartCount">0</span>
+            </button>
+            <button
+              id="mobilePreviewToggle"
+              class="mobile-preview-toggle"
+              type="button"
+              aria-label="Toggle mobile preview"
+              aria-pressed="false"
+            >
+              <i class="fas fa-mobile-alt"></i>
+              <span>Preview</span>
             </button>
             <button
               class="cta-btn cta-primary"
@@ -252,17 +251,6 @@
             Products that carry the message and fund the mission — 100% of
             profits go to the field.
           </p>
-
-          <div class="mobile-preview-note">
-            <strong>Mobile ready:</strong> This shop is optimized for Android
-            and iOS screens. Open the page on your phone or use browser device
-            emulation to confirm the layout, cart experience, and product view.
-            <span class="preview-tip"
-              >Tip: In Chrome DevTools, press
-              <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd> to preview Android
-              devices.</span
-            >
-          </div>
 
           <!-- Products filter controls -->
           <div class="products-controls">
