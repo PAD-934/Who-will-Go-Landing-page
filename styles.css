@@ -79,6 +79,19 @@ img {
   margin: 0 auto;
 }
 
+/* Accessibility helper: visually hidden but available to screen readers */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
+}
+
 body::before {
   content: "";
   position: fixed;
@@ -197,6 +210,68 @@ body::before {
   position: relative;
   background: transparent;
   border: none;
+}
+
+.messenger-float-btn {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2200;
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0084ff 0%, #0b6cff 100%);
+  color: #ffffff;
+  box-shadow: 0 16px 34px rgba(0, 132, 255, 0.28);
+  font-weight: 700;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.messenger-float-btn:hover,
+.messenger-float-btn:focus-visible {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 20px 38px rgba(0, 132, 255, 0.34);
+}
+
+.messenger-float-btn i {
+  font-size: 1.2rem;
+}
+
+/* Hidden state used by JS to keep the FAB out of view for specific sections (e.g., hero) */
+.messenger-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(8px) scale(0.96) !important;
+}
+
+/* hide any inner text for icon-only presentation while keeping it accessible */
+.messenger-float-btn .visually-hidden {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+  border: 0;
+  padding: 0;
+  margin: -1px;
+}
+
+@media (min-width: 960px) {
+  /* Slightly larger on wide screens for better touch targets */
+  .messenger-float-btn {
+    width: 64px;
+    height: 64px;
+  }
+  .messenger-float-btn i {
+    font-size: 1.25rem;
+  }
 }
 
 .cart-badge {

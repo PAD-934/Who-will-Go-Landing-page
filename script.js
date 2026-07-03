@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeMobilePreviewMode();
   applyLazyImageLoading();
   initializeScrollAnimations();
+  initializeMessengerVisibilityForHero();
 });
 
 function applyLazyImageLoading() {
@@ -17,6 +18,29 @@ function applyLazyImageLoading() {
     }
     img.decoding = "async";
   });
+}
+
+/* ==================== MESSENGER VISIBILITY (HIDE ON HERO) ==================== */
+function initializeMessengerVisibilityForHero() {
+  const fab = document.querySelector(".messenger-float-btn");
+  const hero = document.querySelector(".hero");
+  if (!fab || !hero || !("IntersectionObserver" in window)) return;
+
+  // Start hidden when hero is in view
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          fab.classList.add("messenger-hidden");
+        } else {
+          fab.classList.remove("messenger-hidden");
+        }
+      });
+    },
+    { threshold: 0.05 },
+  );
+
+  observer.observe(hero);
 }
 
 /* ==================== PRODUCT FILTERS / TABS ==================== */
