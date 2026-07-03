@@ -49,8 +49,8 @@ function initializeProductFilters() {
       const categoryMatch = category === "all" || cardCategory === category;
       const tagMatch =
         tag === "all" ||
-        (tag === "made" && cardTags.includes("made")) ||
-        (tag === "onsite" && cardTags.includes("onsite"));
+        (tag === "limited" &&
+          (cardTags.includes("made") || cardTags.includes("onsite")));
 
       if (categoryMatch && tagMatch) {
         card.style.display = "block";
@@ -601,19 +601,93 @@ const PRODUCTS = [
   },
   {
     id: "15",
-    title: "Bouquet Keychain (with pouch)",
+    title: "Flower Keychain in a pouch",
     price: 155,
     img: "Who Will Go Products/Crochet/Flower Keychain in a pouch.jpg",
     description:
-      "A beautiful crochet bouquet keychain with a fabric pouch — perfect for gifting or keeping keys stylish.",
+      "A beautiful crochet flower keychain with a fabric pouch — perfect for gifting or keeping keys stylish.",
+    options: [
+      {
+        id: "banana-yellow",
+        label: "Banana Yellow",
+        img: "Who Will Go Products/Crochet/Flower Keychain in a pouch different color/BANANA YELLOW.png",
+      },
+      {
+        id: "blush-pink",
+        label: "Blush Pink",
+        img: "Who Will Go Products/Crochet/Flower Keychain in a pouch different color/BLUSH PINK.png",
+      },
+      {
+        id: "lavender",
+        label: "Lavender",
+        img: "Who Will Go Products/Crochet/Flower Keychain in a pouch different color/LAVENDER.png",
+      },
+      {
+        id: "light-brown",
+        label: "Light Brown",
+        img: "Who Will Go Products/Crochet/Flower Keychain in a pouch different color/LIGHT BROWN.png",
+      },
+      {
+        id: "light-orange",
+        label: "Light Orange",
+        img: "Who Will Go Products/Crochet/Flower Keychain in a pouch different color/LIGHT ORANGE.png",
+      },
+      {
+        id: "mint-green",
+        label: "Mint Green",
+        img: "Who Will Go Products/Crochet/Flower Keychain in a pouch different color/MINT GREEN.png",
+      },
+      {
+        id: "sky-blue",
+        label: "Sky Blue",
+        img: "Who Will Go Products/Crochet/Flower Keychain in a pouch different color/SKY BLUE.png",
+      },
+      {
+        id: "watermelon-red",
+        label: "Watermelon Red",
+        img: "Who Will Go Products/Crochet/Flower Keychain in a pouch different color/WATERMELON RED.png",
+      },
+    ],
   },
   {
     id: "16",
-    title: "Bouquet Keychain",
+    title: "Flower Bouquet Keychain",
     price: 130,
     img: "Who Will Go Products/Crochet/Flower Bouquet Keychain.jpg",
     description:
       "Handmade crochet bouquet keychain with delicate detailing for everyday inspiration.",
+    options: [
+      {
+        id: "blue",
+        label: "Blue",
+        img: "Who Will Go Products/Crochet/Flower Bouquet Keychain different color/BLUE.png",
+      },
+      {
+        id: "green",
+        label: "Green",
+        img: "Who Will Go Products/Crochet/Flower Bouquet Keychain different color/GREEN.png",
+      },
+      {
+        id: "pink",
+        label: "Pink",
+        img: "Who Will Go Products/Crochet/Flower Bouquet Keychain different color/PINK.png",
+      },
+      {
+        id: "purple",
+        label: "Purple",
+        img: "Who Will Go Products/Crochet/Flower Bouquet Keychain different color/PURPLE.png",
+      },
+      {
+        id: "red",
+        label: "Red",
+        img: "Who Will Go Products/Crochet/Flower Bouquet Keychain different color/RED.png",
+      },
+      {
+        id: "yellow",
+        label: "Yellow",
+        img: "Who Will Go Products/Crochet/Flower Bouquet Keychain different color/YELLOW.png",
+      },
+    ],
   },
   {
     id: "17",
