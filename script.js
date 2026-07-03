@@ -1102,12 +1102,29 @@ function setProductModalPreview(product, variantId = null) {
   const imageContainer = document.getElementById("productModalImage");
   const selectedVariant = variantId ? getVariant(product, variantId) : null;
   const previewImg = selectedVariant?.img || product.img;
+  const previewVideo = selectedVariant ? null : product.video;
   const altText = `${product.title}${selectedVariant ? ` — ${selectedVariant.label}` : ""}`;
 
   if (imageContainer) {
-    imageContainer.innerHTML = `
-      <img src="${previewImg}" alt="${altText}" />
-    `;
+    if (previewVideo) {
+      imageContainer.innerHTML = `
+        <video
+          autoplay
+          muted
+          loop
+          playsinline
+          poster="${previewImg}"
+          aria-label="${altText} preview"
+        >
+          <source src="${previewVideo}" type="video/mp4" />
+          <img src="${previewImg}" alt="${altText}" />
+        </video>
+      `;
+    } else {
+      imageContainer.innerHTML = `
+        <img src="${previewImg}" alt="${altText}" />
+      `;
+    }
   }
 }
 
