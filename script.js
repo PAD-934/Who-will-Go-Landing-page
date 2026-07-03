@@ -25,6 +25,7 @@ function initializeProductFilters() {
   const tabs = document.querySelectorAll(".product-tabs .tab");
   const productsGrid = document.querySelector(".products-grid");
   const productCards = Array.from(document.querySelectorAll(".product-card"));
+  const shopSection = document.getElementById("shop");
   const noResults = document.createElement("div");
   noResults.className = "products-no-results";
   noResults.textContent = "No products match your selection.";
@@ -63,10 +64,16 @@ function initializeProductFilters() {
     if (nr) nr.style.display = visibleCount ? "none" : "block";
   }
 
+  function scrollToShopTop() {
+    if (!shopSection) return;
+    shopSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   if (filterSelect) {
     filterSelect.addEventListener("change", function () {
       // reset tab to 'all' if selecting global filter makes sense
       applyFilters();
+      scrollToShopTop();
     });
   }
 
@@ -75,6 +82,7 @@ function initializeProductFilters() {
       tabs.forEach((t) => t.classList.remove("active"));
       this.classList.add("active");
       applyFilters();
+      scrollToShopTop();
     });
   });
 
@@ -484,6 +492,46 @@ const PRODUCTS = [
     img: "Who Will Go Products/Accessories/Magnetic Bookmark.png",
     description:
       "Stylish magnetic bookmark that holds your page securely while showcasing mission-driven style.",
+  },
+  {
+    id: "13",
+    title: "Crochet Desk Mat",
+    price: 155,
+    img: "Who Will Go Products/Crochet/Desk-Mat.jpg",
+    description:
+      "A premium crochet desk mat with a soft, textured surface that protects your workspace and adds a handmade touch.",
+  },
+  {
+    id: "14",
+    title: "Crochet Coaster",
+    price: 60,
+    img: "Who Will Go Products/Crochet/Coaster.jpg",
+    description:
+      "Handcrafted crochet coaster designed to keep tables dry while adding mission-inspired charm.",
+  },
+  {
+    id: "15",
+    title: "Bouquet Keychain (with pouch)",
+    price: 155,
+    img: "Who Will Go Products/Crochet/Flower Keychain in a pouch.jpg",
+    description:
+      "A beautiful crochet bouquet keychain with a fabric pouch — perfect for gifting or keeping keys stylish.",
+  },
+  {
+    id: "16",
+    title: "Bouquet Keychain",
+    price: 130,
+    img: "Who Will Go Products/Crochet/Flower Bouquet Keychain.jpg",
+    description:
+      "Handmade crochet bouquet keychain with delicate detailing for everyday inspiration.",
+  },
+  {
+    id: "17",
+    title: "Cake Keychain",
+    price: 45,
+    img: "Who Will Go Products/Crochet/Cake Keychain.jpg",
+    description:
+      "A charming crochet cake keychain that adds a playful, handcrafted accent to any set of keys.",
   },
 ];
 
