@@ -110,11 +110,7 @@ function initializeNavigation() {
   });
 
   window.addEventListener("scroll", function () {
-    if (window.scrollY > 10) {
-      navbar.style.boxShadow = "0 12px 30px rgba(0, 0, 0, 0.08)";
-    } else {
-      navbar.style.boxShadow = "none";
-    }
+    navbar.classList.toggle("scrolled", window.scrollY > 10);
   });
 }
 
@@ -538,6 +534,46 @@ function changeQty(id, delta) {
   renderCartItems();
 }
 
+function setQty(id, value) {
+  const item = cart.find((i) => i.id === id);
+  if (!item) return;
+  if (value <= 0 || Number.isNaN(value)) {
+    return removeCartItem(id);
+  }
+  item.qty = value;
+  saveCart();
+  updateCartBadge();
+  renderCartItems();
+}
+
+function updateCartTotalsForInput(id, value) {
+  const item = cart.find((i) => i.id === id);
+  if (!item || value <= 0 || Number.isNaN(value)) return;
+  const cartItem = document.querySelector(`.qty-input[data-id="${id}"]`);
+  if (!cartItem) return;
+  const cartRow = cartItem.closest(".cart-item");
+  if (!cartRow) return;
+  const linePrice = cartRow.querySelector(".cart-item-price");
+  if (linePrice) {
+    linePrice.textContent = `PHP ${(item.price * value).toFixed(2)}`;
+  }
+  const total = cart.reduce((sum, current) => {
+    return (
+      sum +
+      (current.id === id ? current.price * value : current.price * current.qty)
+    );
+  }, 0);
+  const totalEl = document.getElementById("cartTotal");
+  if (totalEl) totalEl.textContent = `PHP ${total.toFixed(2)}`;
+}
+
+function removeCartItem(id) {
+  cart = cart.filter((i) => i.id !== id);
+  saveCart();
+  updateCartBadge();
+  renderCartItems();
+}
+
 function clearCart() {
   cart = [];
   saveCart();
@@ -584,10 +620,31 @@ function renderCartItems() {
         <div class="cart-item-meta">
           <div class="qty-controls">
             <button class="qty-btn" data-action="dec" data-id="${item.id}">-</button>
-            <span class="qty">${item.qty}</span>
+            <input
+              type="number"
+              class="qty-input"
+              min="1"
+              step="1"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              value="${item.qty}"
+              data-id="${item.id}"
+              aria-label="Quantity for ${item.title}"
+            />
             <button class="qty-btn" data-action="inc" data-id="${item.id}">+</button>
           </div>
           <div class="cart-item-price">PHP ${(item.price * item.qty).toFixed(2)}</div>
+        </div>
+        <div class="cart-item-actions">
+          <button
+            class="remove-item-btn"
+            type="button"
+            data-action="remove"
+            data-id="${item.id}"
+            aria-label="Remove ${item.title} from cart"
+          >
+            Remove
+          </button>
         </div>
       </div>
     `;
@@ -775,6 +832,15 @@ document.addEventListener("click", function (e) {
     return;
   }
 
+  if (t.matches(".remove-item-btn") || t.closest(".remove-item-btn")) {
+    const btn = t.matches(".remove-item-btn")
+      ? t
+      : t.closest(".remove-item-btn");
+    const id = btn.dataset.id;
+    removeCartItem(id);
+    return;
+  }
+
   if (t.matches(".qty-btn") || t.closest(".qty-btn")) {
     const btn = t.matches(".qty-btn") ? t : t.closest(".qty-btn");
     const action = btn.dataset.action;
@@ -787,6 +853,30 @@ document.addEventListener("click", function (e) {
   if (t.id === "cartOverlay" || t.closest("#cartOverlay")) {
     toggleCart(false);
     return;
+  }
+});
+
+document.addEventListener("input", function (e) {
+  const target = e.target;
+  if (!(target instanceof HTMLInputElement)) return;
+  if (!target.classList.contains("qty-input")) return;
+  const id = target.dataset.id;
+  const quantity = parseInt(target.value, 10);
+  if (Number.isFinite(quantity) && quantity > 0) {
+    updateCartTotalsForInput(id, quantity);
+  }
+});
+
+document.addEventListener("change", function (e) {
+  const target = e.target;
+  if (!(target instanceof HTMLInputElement)) return;
+  if (!target.classList.contains("qty-input")) return;
+  const id = target.dataset.id;
+  const quantity = parseInt(target.value, 10);
+  if (Number.isFinite(quantity) && quantity > 0) {
+    setQty(id, quantity);
+  } else {
+    removeCartItem(id);
   }
 });
 
