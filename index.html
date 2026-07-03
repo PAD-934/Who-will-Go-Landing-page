@@ -1430,6 +1430,39 @@
       <!-- Toast -->
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+      <!-- Confirm Action Modal -->
+      <div
+        class="modal"
+        id="confirmModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirmModalTitle"
+        aria-describedby="confirmModalDescription"
+        aria-hidden="true"
+      >
+        <div class="modal-content confirm-modal-content">
+          <button class="modal-close" aria-label="Close confirmation dialog">
+            &times;
+          </button>
+          <h2 id="confirmModalTitle">Confirm action</h2>
+          <p class="modal-subtitle" id="confirmModalDescription">
+            Are you sure you want to remove this item?
+          </p>
+          <div class="confirm-actions">
+            <button
+              class="cta-btn cta-outline"
+              id="confirmCancel"
+              type="button"
+            >
+              No, cancel
+            </button>
+            <button class="cta-btn cta-primary" id="confirmYes" type="button">
+              Yes, remove
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Product Quick View Modal -->
       <div
         class="modal product-modal"
@@ -1449,6 +1482,7 @@
               <h2 id="productModalTitle">Product Title</h2>
               <p class="product-modal-subtitle" id="productModalSubtitle"></p>
               <p id="productModalDescription">Product description goes here.</p>
+              <div id="productModalOptions"></div>
               <div class="product-modal-footer">
                 <span class="product-price" id="productModalPrice">PHP 0</span>
                 <div class="product-modal-actions">

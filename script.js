@@ -511,6 +511,48 @@ const PRODUCTS = [
     img: "Who Will Go Products/Crochet/Desk-Mat.jpg",
     description:
       "A premium crochet desk mat with a soft, textured surface that protects your workspace and adds a handmade touch.",
+    options: [
+      {
+        id: "black",
+        label: "Black",
+        img: "Who Will Go Products/Crochet/Desk-Mat different color/Black.png",
+      },
+      {
+        id: "blue",
+        label: "Blue",
+        img: "Who Will Go Products/Crochet/Desk-Mat different color/Blue.png",
+      },
+      {
+        id: "brown",
+        label: "Brown",
+        img: "Who Will Go Products/Crochet/Desk-Mat different color/Brown.png",
+      },
+      {
+        id: "green",
+        label: "Green",
+        img: "Who Will Go Products/Crochet/Desk-Mat different color/Green.png",
+      },
+      {
+        id: "pink",
+        label: "Pink",
+        img: "Who Will Go Products/Crochet/Desk-Mat different color/Pink.png",
+      },
+      {
+        id: "purple",
+        label: "Purple",
+        img: "Who Will Go Products/Crochet/Desk-Mat different color/Purple.png",
+      },
+      {
+        id: "red",
+        label: "Red",
+        img: "Who Will Go Products/Crochet/Desk-Mat different color/Red.png",
+      },
+      {
+        id: "yellow",
+        label: "Yellow",
+        img: "Who Will Go Products/Crochet/Desk-Mat different color/Yellow.png",
+      },
+    ],
   },
   {
     id: "14",
@@ -519,6 +561,43 @@ const PRODUCTS = [
     img: "Who Will Go Products/Crochet/Coaster.jpg",
     description:
       "Handcrafted crochet coaster designed to keep tables dry while adding mission-inspired charm.",
+    options: [
+      {
+        id: "blue",
+        label: "Blue",
+        img: "Who Will Go Products/Crochet/Coaster different color/Blue.png",
+      },
+      {
+        id: "bud-green",
+        label: "Bud Green",
+        img: "Who Will Go Products/Crochet/Coaster different color/Bud Green.png",
+      },
+      {
+        id: "deep-purple",
+        label: "Deep Purple",
+        img: "Who Will Go Products/Crochet/Coaster different color/Deep Purple.png",
+      },
+      {
+        id: "honey-yellow",
+        label: "Honey Yellow",
+        img: "Who Will Go Products/Crochet/Coaster different color/Honey Yellow.png",
+      },
+      {
+        id: "light-brown",
+        label: "Light Brown",
+        img: "Who Will Go Products/Crochet/Coaster different color/Light Brown.png",
+      },
+      {
+        id: "light-pink",
+        label: "Light Pink",
+        img: "Who Will Go Products/Crochet/Coaster different color/Light Pink.png",
+      },
+      {
+        id: "red",
+        label: "Red",
+        img: "Who Will Go Products/Crochet/Coaster different color/Red.png",
+      },
+    ],
   },
   {
     id: "15",
@@ -543,6 +622,43 @@ const PRODUCTS = [
     img: "Who Will Go Products/Crochet/Cake Keychain.jpg",
     description:
       "A charming crochet cake keychain that adds a playful, handcrafted accent to any set of keys.",
+    options: [
+      {
+        id: "blueberry",
+        label: "Blueberry",
+        img: "Who Will Go Products/Crochet/Cake Keychain different color/Blueberry.png",
+      },
+      {
+        id: "chocolate",
+        label: "Chocolate",
+        img: "Who Will Go Products/Crochet/Cake Keychain different color/Chocolate.png",
+      },
+      {
+        id: "mango",
+        label: "Mango",
+        img: "Who Will Go Products/Crochet/Cake Keychain different color/Mango.png",
+      },
+      {
+        id: "matcha",
+        label: "Matcha",
+        img: "Who Will Go Products/Crochet/Cake Keychain different color/Matcha.png",
+      },
+      {
+        id: "red-velvet",
+        label: "Red Velvet",
+        img: "Who Will Go Products/Crochet/Cake Keychain different color/Red Velvet.png",
+      },
+      {
+        id: "strawberry",
+        label: "Strawberry",
+        img: "Who Will Go Products/Crochet/Cake Keychain different color/Strawberry.png",
+      },
+      {
+        id: "ube",
+        label: "Ube",
+        img: "Who Will Go Products/Crochet/Cake Keychain different color/Ube.png",
+      },
+    ],
   },
 ];
 
@@ -562,42 +678,76 @@ function findProduct(id) {
   return PRODUCTS.find((p) => p.id === String(id));
 }
 
-function addToCart(id) {
+function formatCartKey(productId, variantId) {
+  return variantId ? `${productId}::${variantId}` : String(productId);
+}
+
+function getCartItemKey(item) {
+  return item.key || formatCartKey(item.id, item.variantId);
+}
+
+function getCartItemId(item) {
+  return getCartItemKey(item).replace(/[^a-zA-Z0-9-_]/g, "-");
+}
+
+function getVariant(product, variantId) {
+  if (!product?.options) return null;
+  return product.options.find((option) => option.id === variantId) || null;
+}
+
+function addToCart(id, variantId = null) {
   const product = findProduct(id);
   if (!product) return showToast("Product not found");
-  const existing = cart.find((i) => i.id === product.id);
-  if (existing) existing.qty += 1;
-  else
+
+  if (product.options?.length && !variantId) {
+    openProductModal(id);
+    return;
+  }
+
+  const selectedVariant = variantId ? getVariant(product, variantId) : null;
+  const cartKey = formatCartKey(product.id, selectedVariant?.id);
+  const existing = cart.find((item) => getCartItemKey(item) === cartKey);
+
+  if (existing) {
+    existing.qty += 1;
+  } else {
     cart.push({
+      key: cartKey,
       id: product.id,
       title: product.title,
       price: product.price,
-      img: product.img,
+      img: selectedVariant?.img || product.img,
       qty: 1,
+      variantId: selectedVariant?.id || null,
+      variantLabel: selectedVariant?.label || null,
     });
+  }
+
   saveCart();
   updateCartBadge();
   renderCartItems();
-  showToast(`${product.title} added to cart`);
+  showToast(
+    `${product.title}${selectedVariant ? ` — ${selectedVariant.label}` : ""} added to cart`,
+  );
 }
 
-function changeQty(id, delta) {
-  const item = cart.find((i) => i.id === id);
+function changeQty(key, delta) {
+  const item = cart.find((item) => getCartItemKey(item) === key);
   if (!item) return;
   item.qty += delta;
   if (item.qty <= 0) {
-    cart = cart.filter((i) => i.id !== id);
+    cart = cart.filter((item) => getCartItemKey(item) !== key);
   }
   saveCart();
   updateCartBadge();
   renderCartItems();
 }
 
-function setQty(id, value) {
-  const item = cart.find((i) => i.id === id);
+function setQty(key, value) {
+  const item = cart.find((item) => getCartItemKey(item) === key);
   if (!item) return;
   if (value <= 0 || Number.isNaN(value)) {
-    return removeCartItem(id);
+    return removeCartItem(key);
   }
   item.qty = value;
   saveCart();
@@ -605,10 +755,10 @@ function setQty(id, value) {
   renderCartItems();
 }
 
-function updateCartTotalsForInput(id, value) {
-  const item = cart.find((i) => i.id === id);
+function updateCartTotalsForInput(key, value) {
+  const item = cart.find((item) => getCartItemKey(item) === key);
   if (!item || value <= 0 || Number.isNaN(value)) return;
-  const cartItem = document.querySelector(`.qty-input[data-id="${id}"]`);
+  const cartItem = document.querySelector(`.qty-input[data-key="${key}"]`);
   if (!cartItem) return;
   const cartRow = cartItem.closest(".cart-item");
   if (!cartRow) return;
@@ -619,15 +769,17 @@ function updateCartTotalsForInput(id, value) {
   const total = cart.reduce((sum, current) => {
     return (
       sum +
-      (current.id === id ? current.price * value : current.price * current.qty)
+      (current.key === key
+        ? current.price * value
+        : current.price * current.qty)
     );
   }, 0);
   const totalEl = document.getElementById("cartTotal");
   if (totalEl) totalEl.textContent = `PHP ${total.toFixed(2)}`;
 }
 
-function removeCartItem(id) {
-  cart = cart.filter((i) => i.id !== id);
+function removeCartItem(key) {
+  cart = cart.filter((item) => getCartItemKey(item) !== key);
   saveCart();
   updateCartBadge();
   renderCartItems();
@@ -635,6 +787,103 @@ function removeCartItem(id) {
 
 function clearCart() {
   cart = [];
+  saveCart();
+  updateCartBadge();
+  renderCartItems();
+}
+
+function openConfirmDialog(options) {
+  const modal = document.getElementById("confirmModal");
+  const description = document.getElementById("confirmModalDescription");
+  const yesButton = document.getElementById("confirmYes");
+  const cancelButton = document.getElementById("confirmCancel");
+  const closeButton = modal?.querySelector(".modal-close");
+
+  if (!modal || !description || !yesButton || !cancelButton) return;
+
+  description.textContent = options.message;
+  yesButton.textContent = options.confirmText || "Yes";
+  cancelButton.textContent = options.cancelText || "No";
+
+  // Apply button styling based on action type
+  yesButton.className = options.yesButtonClass || "cta-btn cta-primary";
+  cancelButton.className = options.cancelButtonClass || "cta-btn cta-outline";
+
+  const cleanup = () => {
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+    yesButton.onclick = null;
+    cancelButton.onclick = null;
+    if (closeButton) closeButton.onclick = null;
+  };
+
+  yesButton.onclick = () => {
+    cleanup();
+    options.onConfirm?.();
+  };
+
+  cancelButton.onclick = () => {
+    cleanup();
+    options.onCancel?.();
+  };
+
+  if (closeButton) {
+    closeButton.onclick = () => {
+      cleanup();
+      options.onCancel?.();
+    };
+  }
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function promptRemoveItem(key, title) {
+  openConfirmDialog({
+    message: `Are you sure you want to remove "${title}" from your cart?`,
+    confirmText: "Yes, remove",
+    cancelText: "No, keep it",
+    onConfirm: () => removeCartItem(key),
+  });
+}
+
+function promptClearCart() {
+  openConfirmDialog({
+    message: "Are you sure you want to clear all items from your cart?",
+    confirmText: "Yes, clear cart",
+    cancelText: "No, keep items",
+    yesButtonClass: "cta-btn cta-outline",
+    cancelButtonClass: "cta-btn cta-primary",
+    onConfirm: () => {
+      clearCart();
+      showToast("Cart cleared successfully.");
+    },
+  });
+}
+
+function updateCartVariant(key, variantId) {
+  const item = cart.find((item) => getCartItemKey(item) === key);
+  if (!item) return;
+  const product = findProduct(item.id);
+  if (!product?.options?.length) return;
+  const variant = getVariant(product, variantId);
+  if (!variant) return;
+
+  const targetKey = formatCartKey(item.id, variant.id);
+  const existingVariantItem = cart.find(
+    (cartItem) => getCartItemKey(cartItem) === targetKey,
+  );
+
+  if (existingVariantItem && existingVariantItem !== item) {
+    existingVariantItem.qty += item.qty;
+    cart = cart.filter((cartItem) => cartItem !== item);
+  } else {
+    item.variantId = variant.id;
+    item.variantLabel = variant.label;
+    item.img = variant.img;
+    item.key = targetKey;
+  }
+
   saveCart();
   updateCartBadge();
   renderCartItems();
@@ -669,6 +918,30 @@ function renderCartItems() {
   if (cartFooter) cartFooter.classList.remove("empty");
   let total = 0;
   cart.forEach((item) => {
+    const itemKey = getCartItemKey(item);
+    const itemId = getCartItemId(item);
+    const product = findProduct(item.id);
+    const variantOptions = product?.options || [];
+    const variantSelect = variantOptions.length
+      ? `
+          <div class="cart-item-options">
+            <div class="cart-item-option-label">Color</div>
+            <select class="cart-variant-select" id="variant-${itemId}" data-key="${itemKey}" aria-label="Choose a color for ${item.title}">
+              ${variantOptions
+                .map(
+                  (option) => `
+                <option value="${option.id}" ${option.id === item.variantId ? "selected" : ""}>
+                  ${option.label}
+                </option>
+              `,
+                )
+                .join("")}
+            </select>
+            <div class="cart-item-option-helper">Choose color variations</div>
+          </div>
+        `
+      : "";
+
     total += item.price * item.qty;
     const div = document.createElement("div");
     div.className = "cart-item";
@@ -676,9 +949,10 @@ function renderCartItems() {
       <img src="${item.img}" alt="${item.title}">
       <div class="cart-item-info">
         <div class="cart-item-title">${item.title}</div>
+        ${variantSelect}
         <div class="cart-item-meta">
           <div class="qty-controls">
-            <button class="qty-btn" data-action="dec" data-id="${item.id}">-</button>
+            <button class="qty-btn" data-action="dec" data-key="${itemKey}">-</button>
             <input
               type="number"
               class="qty-input"
@@ -687,10 +961,10 @@ function renderCartItems() {
               inputmode="numeric"
               pattern="[0-9]*"
               value="${item.qty}"
-              data-id="${item.id}"
+              data-key="${itemKey}"
               aria-label="Quantity for ${item.title}"
             />
-            <button class="qty-btn" data-action="inc" data-id="${item.id}">+</button>
+            <button class="qty-btn" data-action="inc" data-key="${itemKey}">+</button>
           </div>
           <div class="cart-item-price">PHP ${(item.price * item.qty).toFixed(2)}</div>
         </div>
@@ -699,7 +973,7 @@ function renderCartItems() {
             class="remove-item-btn"
             type="button"
             data-action="remove"
-            data-id="${item.id}"
+            data-key="${itemKey}"
             aria-label="Remove ${item.title} from cart"
           >
             Remove
@@ -750,42 +1024,64 @@ function toggleCart(open) {
 }
 
 /* ==================== PRODUCT MODAL ==================== */
-function openProductModal(id) {
+function setProductModalPreview(product, variantId = null) {
+  const imageContainer = document.getElementById("productModalImage");
+  const selectedVariant = variantId ? getVariant(product, variantId) : null;
+  const previewImg = selectedVariant?.img || product.img;
+  const altText = `${product.title}${selectedVariant ? ` — ${selectedVariant.label}` : ""}`;
+
+  if (imageContainer) {
+    imageContainer.innerHTML = `
+      <img src="${previewImg}" alt="${altText}" />
+    `;
+  }
+}
+
+function renderProductModalOptions(product, selectedVariantId = null) {
+  const optionsContainer = document.getElementById("productModalOptions");
+  if (!optionsContainer) return;
+  if (!product?.options?.length) {
+    optionsContainer.innerHTML = "";
+    return;
+  }
+
+  const defaultVariant =
+    getVariant(product, selectedVariantId) || product.options[0];
+  const optionsHtml = product.options
+    .map(
+      (option) => `
+      <option value="${option.id}" ${option.id === defaultVariant.id ? "selected" : ""}>
+        ${option.label}
+      </option>
+    `,
+    )
+    .join("");
+
+  optionsContainer.innerHTML = `
+    <div class="product-option-group">
+      <label for="productModalVariantSelect">Choose a color</label>
+      <select id="productModalVariantSelect" class="variant-select" aria-label="Choose a color for ${product.title}">
+        ${optionsHtml}
+      </select>
+    </div>
+  `;
+
+  setProductModalPreview(product, defaultVariant.id);
+}
+
+function openProductModal(id, selectedVariantId = null) {
   const product = findProduct(id);
   const modal = document.getElementById("productModal");
   if (!modal) return;
-  const imageContainer = document.getElementById("productModalImage");
   const title = document.getElementById("productModalTitle");
   const desc = document.getElementById("productModalDescription");
   const price = document.getElementById("productModalPrice");
   const cat = document.getElementById("productModalCategory");
   const addBtn = document.getElementById("productModalAddToCart");
-
   const subtitle = document.getElementById("productModalSubtitle");
 
-  if (product && imageContainer) {
-    if (product.video) {
-      imageContainer.innerHTML = `
-        <video
-          controls
-          muted
-          autoplay
-          loop
-          playsinline
-          poster="${product.img}"
-        >
-          <source src="${product.video}" type="video/mp4" />
-          <img src="${product.img}" alt="${product.title}" />
-        </video>
-      `;
-      subtitle.textContent = "Mockup preview";
-    } else {
-      imageContainer.innerHTML = `
-        <img src="${product.img}" alt="${product.title}" />
-      `;
-      subtitle.textContent = "";
-    }
-
+  if (product) {
+    setProductModalPreview(product, selectedVariantId);
     title.textContent = product.title;
     desc.textContent =
       product.description ||
@@ -799,6 +1095,11 @@ function openProductModal(id) {
         `.product-card[data-product-id="${id}"] .product-category`,
       )?.textContent || "";
     addBtn.dataset.id = product.id;
+    addBtn.dataset.variant = selectedVariantId || "";
+    renderProductModalOptions(product, selectedVariantId);
+    subtitle.textContent = product.options?.length
+      ? "Select your color before checkout"
+      : "";
   }
 
   modal.classList.add("active");
@@ -831,7 +1132,9 @@ document.addEventListener("click", function (e) {
         ? t
         : t.closest("#productModalAddToCart");
     const id = btn.dataset.id;
-    addToCart(id);
+    const variantSelect = document.getElementById("productModalVariantSelect");
+    const selectedVariant = variantSelect?.value || btn.dataset.variant || null;
+    addToCart(id, selectedVariant);
     closeProductModal();
     return;
   }
@@ -856,6 +1159,11 @@ document.addEventListener("click", function (e) {
   if (t.matches(".add-to-cart") || t.closest(".add-to-cart")) {
     const btn = t.matches(".add-to-cart") ? t : t.closest(".add-to-cart");
     const id = btn.dataset.id;
+    const product = findProduct(id);
+    if (product?.options?.length) {
+      openProductModal(id);
+      return;
+    }
     addToCart(id);
     return;
   }
@@ -882,7 +1190,7 @@ document.addEventListener("click", function (e) {
   }
 
   if (t.id === "clearCart" || t.closest("#clearCart")) {
-    clearCart();
+    promptClearCart();
     return;
   }
 
@@ -895,17 +1203,19 @@ document.addEventListener("click", function (e) {
     const btn = t.matches(".remove-item-btn")
       ? t
       : t.closest(".remove-item-btn");
-    const id = btn.dataset.id;
-    removeCartItem(id);
+    const key = btn.dataset.key;
+    const item = cart.find((i) => getCartItemKey(i) === key);
+    if (!item) return;
+    promptRemoveItem(key, item.title);
     return;
   }
 
   if (t.matches(".qty-btn") || t.closest(".qty-btn")) {
     const btn = t.matches(".qty-btn") ? t : t.closest(".qty-btn");
     const action = btn.dataset.action;
-    const id = btn.dataset.id;
-    if (action === "inc") changeQty(id, 1);
-    if (action === "dec") changeQty(id, -1);
+    const key = btn.dataset.key;
+    if (action === "inc") changeQty(key, 1);
+    if (action === "dec") changeQty(key, -1);
     return;
   }
 
@@ -919,23 +1229,46 @@ document.addEventListener("input", function (e) {
   const target = e.target;
   if (!(target instanceof HTMLInputElement)) return;
   if (!target.classList.contains("qty-input")) return;
-  const id = target.dataset.id;
+  const key = target.dataset.key;
   const quantity = parseInt(target.value, 10);
   if (Number.isFinite(quantity) && quantity > 0) {
-    updateCartTotalsForInput(id, quantity);
+    updateCartTotalsForInput(key, quantity);
   }
 });
 
 document.addEventListener("change", function (e) {
   const target = e.target;
+  if (
+    target instanceof HTMLSelectElement &&
+    target.id === "productModalVariantSelect"
+  ) {
+    const addBtn = document.getElementById("productModalAddToCart");
+    const product = findProduct(addBtn?.dataset.id);
+    if (product) {
+      setProductModalPreview(product, target.value);
+      if (addBtn) addBtn.dataset.variant = target.value;
+    }
+    return;
+  }
+
+  if (
+    target instanceof HTMLSelectElement &&
+    target.classList.contains("cart-variant-select")
+  ) {
+    const key = target.dataset.key;
+    const newValue = target.value;
+    updateCartVariant(key, newValue);
+    return;
+  }
+
   if (!(target instanceof HTMLInputElement)) return;
   if (!target.classList.contains("qty-input")) return;
-  const id = target.dataset.id;
+  const key = target.dataset.key;
   const quantity = parseInt(target.value, 10);
   if (Number.isFinite(quantity) && quantity > 0) {
-    setQty(id, quantity);
+    setQty(key, quantity);
   } else {
-    removeCartItem(id);
+    removeCartItem(key);
   }
 });
 
