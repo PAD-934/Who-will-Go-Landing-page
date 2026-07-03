@@ -153,6 +153,17 @@ function initializeMobilePreviewMode() {
       }
     }
   });
+
+  // Exit button inside the mobile preview banner (for convenience)
+  const exitBtn = document.getElementById("mobilePreviewExit");
+  if (exitBtn) {
+    exitBtn.addEventListener("click", function () {
+      // If preview is active, trigger the same toggle handler to exit gracefully
+      if (body.classList.contains("mobile-preview-mode")) {
+        toggle.click();
+      }
+    });
+  }
 }
 
 /* ==================== MODALS ==================== */

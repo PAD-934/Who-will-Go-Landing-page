@@ -2228,6 +2228,35 @@ body {
   text-align: center;
 }
 
+.mobile-preview-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.mobile-preview-exit {
+  margin-left: 6px;
+  background: transparent;
+  border: 1px solid rgba(26, 15, 8, 0.08);
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--color-dark-brown);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.mobile-preview-exit:hover,
+.mobile-preview-exit:focus-visible {
+  background: var(--color-primary-orange);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
 body.mobile-preview-mode {
   background: #dfeaf2;
   display: flex;
