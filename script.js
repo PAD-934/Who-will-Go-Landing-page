@@ -5,7 +5,8 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeContactForm();
   initializeLoveGiftForm();
   initializeProductFilters();
-  initializeMobilePreviewMode();
+  initializeProductHoverPreview();
+  initializeBottomNav();
   applyLazyImageLoading();
   initializeScrollAnimations();
   initializeMessengerVisibilityForHero();
@@ -21,6 +22,100 @@ function applyLazyImageLoading() {
 }
 
 /* ==================== MESSENGER VISIBILITY (HIDE ON HERO) ==================== */
+function initializeProductHoverPreview() {
+  const preview = document.createElement("div");
+  preview.className = "image-preview-overlay";
+  preview.setAttribute("role", "dialog");
+  preview.setAttribute("aria-modal", "true");
+  preview.setAttribute("aria-hidden", "true");
+  preview.innerHTML = `
+    <div class="image-preview-overlay-backdrop" aria-hidden="true"></div>
+    <div class="image-preview-overlay-content">
+      <img src="" alt="" />
+    </div>
+  `;
+  document.body.appendChild(preview);
+
+  const previewImage = preview.querySelector("img");
+  const backdrop = preview.querySelector(".image-preview-overlay-backdrop");
+
+  function showPreview(target) {
+    previewImage.src = target.currentSrc || target.src;
+    previewImage.alt = target.alt || "Product preview";
+    preview.setAttribute("aria-hidden", "false");
+    preview.classList.add("visible");
+  }
+
+  function hidePreview() {
+    preview.setAttribute("aria-hidden", "true");
+    preview.classList.remove("visible");
+  }
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    const image = target.closest(".product-image img");
+    if (image) {
+      event.preventDefault();
+      showPreview(image);
+      return;
+    }
+
+    if (target === backdrop || target === preview) {
+      hidePreview();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      hidePreview();
+    }
+  });
+}
+
+function initializeBottomNav() {
+  const nav = document.querySelector(".bottom-nav");
+  if (!nav) return;
+
+  nav.addEventListener("click", (event) => {
+    const item = event.target.closest(".bottom-nav-item");
+    if (!item) return;
+    const action = item.dataset.action;
+    event.preventDefault();
+
+    document.querySelectorAll(".bottom-nav-item").forEach((btn) => {
+      btn.classList.toggle("active", btn === item);
+    });
+
+    switch (action) {
+      case "home":
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        break;
+      case "shop":
+        document.getElementById("shop")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+        break;
+      case "missions":
+        document.getElementById("missions")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+        break;
+      case "token":
+      case "contact":
+        document.getElementById("contact")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+        break;
+      case "cart":
+        toggleCart();
+        break;
+    }
+  });
+}
+
 function initializeMessengerVisibilityForHero() {
   const fab = document.querySelector(".messenger-float-btn");
   const hero = document.querySelector(".hero");
@@ -144,50 +239,6 @@ function initializeNavigation() {
   window.addEventListener("scroll", function () {
     navbar.classList.toggle("scrolled", window.scrollY > 10);
   });
-}
-
-function initializeMobilePreviewMode() {
-  const toggle = document.getElementById("mobilePreviewToggle");
-  const body = document.body;
-  const appShell = document.getElementById("appShell");
-
-  if (!toggle || !appShell) return;
-
-  toggle.addEventListener("click", function () {
-    const active = body.classList.toggle("mobile-preview-mode");
-    this.classList.toggle("active", active);
-    this.setAttribute("aria-pressed", active ? "true" : "false");
-    this.setAttribute(
-      "aria-label",
-      active ? "Exit mobile preview" : "Toggle mobile preview",
-    );
-    const label = this.querySelector("span");
-    if (label) label.textContent = active ? "Exit Preview" : "Mobile Preview";
-    document.documentElement.style.overflow = "auto";
-    document.body.style.overflow = "auto";
-    if (!active) {
-      toggleCart(false);
-      document
-        .querySelectorAll(".nav-menu.active")
-        .forEach((menu) => menu.classList.remove("active"));
-      const hamburgerBtn = document.querySelector(".hamburger");
-      if (hamburgerBtn) {
-        hamburgerBtn.classList.remove("active");
-        hamburgerBtn.setAttribute("aria-expanded", "false");
-      }
-    }
-  });
-
-  // Exit button inside the mobile preview banner (for convenience)
-  const exitBtn = document.getElementById("mobilePreviewExit");
-  if (exitBtn) {
-    exitBtn.addEventListener("click", function () {
-      // If preview is active, trigger the same toggle handler to exit gracefully
-      if (body.classList.contains("mobile-preview-mode")) {
-        toggle.click();
-      }
-    });
-  }
 }
 
 /* ==================== MODALS ==================== */
@@ -435,90 +486,155 @@ const PRODUCTS = [
   {
     id: "1",
     title: "Who Will Go Mug",
-    price: 115,
-    img: "Who Will Go Products/Mugs/Mugs.png",
-    video: "Who Will Go Products/Mugs/Mugs - MOCKUP.mp4",
+    price: 120,
+    img: "Who Will Go Products/Mugs/Mug.png",
+    video: "Who Will Go Products/Mugs/MOCKUP Mug.mp4",
     description:
       "Ceramic mug with a statement design — perfect for morning coffee and mission-minded conversations.",
   },
   {
     id: "2",
-    title: "Faith Can Move Mountains Tote",
+    title: "Who Will Go Tote Bag",
     price: 130,
-    img: "Who Will Go Products/Tote Bag/Tote Bag - Faith Can Move Mountains.png",
+    img: "Who Will Go Products/Tote Bag/Tote Bag.png",
+    optionLabel: "design",
     description:
-      "Heavy-duty canvas tote with bold script artwork for everyday use.",
-  },
-  {
-    id: "3",
-    title: "Faith Over Fear Tote",
-    price: 130,
-    img: "Who Will Go Products/Tote Bag/Tote Bag - Faith Over Fear.png",
-    description: "Stylish canvas carryall with an inspiring mission message.",
-  },
-  {
-    id: "4",
-    title: "Reach The Nations Tote",
-    price: 130,
-    img: "Who Will Go Products/Tote Bag/Tote Bag - Reach The Nations, Make Jesus Known.png",
-    description:
-      "Mission-driven tote for your daily essentials with a bold statement.",
-  },
-  {
-    id: "5",
-    title: "Trust In the Lord Tote",
-    price: 130,
-    img: "Who Will Go Products/Tote Bag/Tote Bag - Trust In the Lord.png",
-    description:
-      "Faith-inspired tote with elegant lettering and durable canvas.",
+      "A polished tote bag with mission-inspired designs and a premium everyday finish.",
+    options: [
+      {
+        id: "faith-can-move-mountains",
+        label: "Faith Can Move Mountains",
+        img: "Who Will Go Products/Tote Bag/Tote Bag Different Design option/Tote Bag design 2 - Faith Can Move Mountains.png",
+      },
+      {
+        id: "faith-over-fear",
+        label: "Faith Over Fear",
+        img: "Who Will Go Products/Tote Bag/Tote Bag Different Design option/Tote Bag design 1 - Faith Over Fear.png",
+      },
+      {
+        id: "trust-in-the-lord",
+        label: "Trust In The Lord",
+        img: "Who Will Go Products/Tote Bag/Tote Bag Different Design option/Tote Bag design 3 - Trust In The Lord.png",
+      },
+      {
+        id: "reach-the-nations",
+        label: "Reach The Nations",
+        img: "Who Will Go Products/Tote Bag/Tote Bag Different Design option/Tote Bag design 4 - Reach The Nations, Make Jesus Known.png",
+      },
+    ],
   },
   {
     id: "6",
-    title: "Who Will Go Cap — Black",
-    price: 100,
-    img: "Who Will Go Products/Caps/caps-black.png",
+    title: "Who Will Go Cap",
+    price: 150,
+    img: "Who Will Go Products/Caps/Caps.png",
+    optionLabel: "color",
     description:
-      "Structured cap with embroidered logo — classic fit and durable.",
-  },
-  {
-    id: "7",
-    title: "Who Will Go Cap — Blue",
-    price: 100,
-    img: "Who Will Go Products/Caps/caps-blue.png",
-    description:
-      "Structured cap with embroidered logo — classic fit and durable.",
-  },
-  {
-    id: "8",
-    title: "Who Will Go Cap — Gray",
-    price: 100,
-    img: "Who Will Go Products/Caps/caps-gray.png",
-    description:
-      "Structured cap with embroidered logo — classic fit and durable.",
-  },
-  {
-    id: "9",
-    title: "Who Will Go Cap — Green",
-    price: 100,
-    img: "Who Will Go Products/Caps/caps-green.png",
-    description:
-      "Structured cap with embroidered logo — classic fit and durable.",
+      "A refined cap with premium stitching and selectable color options for everyday mission-minded wear.",
+    options: [
+      {
+        id: "black",
+        label: "Black",
+        img: "Who Will Go Products/Caps/Caps Different Color option/Caps - Black.png",
+      },
+      {
+        id: "blue",
+        label: "Blue",
+        img: "Who Will Go Products/Caps/Caps Different Color option/Caps - Blue.png",
+      },
+      {
+        id: "gray",
+        label: "Gray",
+        img: "Who Will Go Products/Caps/Caps Different Color option/Caps - Gray.png",
+      },
+      {
+        id: "green",
+        label: "Green",
+        img: "Who Will Go Products/Caps/Caps Different Color option/Caps - Green.png",
+      },
+    ],
   },
   {
     id: "10",
     title: "Who Will Go Pins",
     price: 25,
     img: "Who Will Go Products/Accessories/Pins.png",
+    optionLabel: "design",
     description:
-      "Premium enamel pins with mission-inspired motifs — perfect for bags, jackets, and gifting.",
+      "Premium enamel pin designs crafted for everyday wear, backpacks, and mission-inspired gifts.",
+    options: [
+      {
+        id: "love-conquers-all",
+        label: "Love Conquers All",
+        img: "Who Will Go Products/Accessories/Pins Different  Design option/Pins design 1 - Love Conquers All.png",
+      },
+      {
+        id: "loved-and-blessed",
+        label: "Loved & Blessed",
+        img: "Who Will Go Products/Accessories/Pins Different  Design option/Pins Design 2 - Loved and Blessed.png",
+      },
+      {
+        id: "faith-over-fear",
+        label: "Faith Over Fear",
+        img: "Who Will Go Products/Accessories/Pins Different  Design option/Pins design 3 - Faith over Fear.png",
+      },
+      {
+        id: "saved-by-grace-alone",
+        label: "Saved by Grace Alone",
+        img: "Who Will Go Products/Accessories/Pins Different  Design option/Pins design 4 - Saved By Grace Alone.png",
+      },
+      {
+        id: "peace-love-joy",
+        label: "Peace Love Joy",
+        img: "Who Will Go Products/Accessories/Pins Different  Design option/Pins design 5 - Peace Love Joy.png",
+      },
+      {
+        id: "its-gonna-be-ok",
+        label: "It’s Gonna Be Ok",
+        img: "Who Will Go Products/Accessories/Pins Different  Design option/Pins design 6 - It's Gonna Be Ok.png",
+      },
+      {
+        id: "let-your-light-shine",
+        label: "Let Your Light Shine",
+        img: "Who Will Go Products/Accessories/Pins Different  Design option/Pins design 7 - Let Your Light Shine.png",
+      },
+      {
+        id: "jesus-brings-purpose",
+        label: "Jesus Brings Purpose",
+        img: "Who Will Go Products/Accessories/Pins Different  Design option/Pins design 8 - Jesus Brings Purpose.png",
+      },
+    ],
   },
   {
     id: "11",
     title: "Who Will Go Bamboo Notebook",
-    price: 120,
+    price: 100,
     img: "Who Will Go Products/Accessories/Bamboo Notebook.png",
+    optionLabel: "design",
     description:
-      "Eco-friendly bamboo journal with a soft-touch cover for notes, prayers, and planning.",
+      "A premium bamboo notebook featuring mission-driven artwork and a refined, eco-friendly finish.",
+    options: [
+      {
+        id: "gods-grace-is-sufficient",
+        label: "God's Grace is Sufficient",
+        img: "Who Will Go Products/Accessories/Bamboo Notebook Different Design option/Bamboo Notebook design 1 - God's Grace is Sufficient.png",
+      },
+      {
+        id: "here-am-i-send-me",
+        label: "HERE AM I Send Me",
+        img: "Who Will Go Products/Accessories/Bamboo Notebook Different Design option/Bamboo Notebook design 2 - HERE AM I Send Me.png",
+      },
+      {
+        id: "faith-can-move-mountains",
+        label: "Faith Can Move Mountains",
+        img: "Who Will Go Products/Accessories/Bamboo Notebook Different Design option/Bamboo Notebook design 3 - Faith Can Move Mountains.png",
+      },
+      {
+        id: "i-can-do-all-things",
+        label: "I Can Do All Things",
+        img: "Who Will Go Products/Accessories/Bamboo Notebook Different Design option/Bamboo Notebook design 4 - I Can Do All Things Through Christ Who Strengtheneth Me.png",
+      },
+    ],
   },
   {
     id: "12",
@@ -526,7 +642,7 @@ const PRODUCTS = [
     price: 30,
     img: "Who Will Go Products/Accessories/Magnetic Bookmark.png",
     description:
-      "Stylish magnetic bookmark that holds your page securely while showcasing mission-driven style.",
+      "Stylish magnetic bookmark that keeps your place securely while showcasing mission-driven reading.",
   },
   {
     id: "13",
@@ -937,19 +1053,29 @@ function openConfirmDialog(options) {
 }
 
 function promptRemoveItem(key, title) {
+  // ensure user can see the Order Summary before confirming
+  scrollCartToSummary();
+
   openConfirmDialog({
     message: `Are you sure you want to remove "${title}" from your cart?`,
     confirmText: "Yes, remove",
     cancelText: "No, keep it",
+    // make the left-cancel button the emphasized primary action (matches design)
+    yesButtonClass: "cta-btn cta-outline",
+    cancelButtonClass: "cta-btn cta-primary",
     onConfirm: () => removeCartItem(key),
   });
 }
 
 function promptClearCart() {
+  // scroll so the user sees the Order Summary while deciding
+  scrollCartToSummary();
+
   openConfirmDialog({
     message: "Are you sure you want to clear all items from your cart?",
     confirmText: "Yes, clear cart",
     cancelText: "No, keep items",
+    // emphasize the cancel (keep items) button on the left as primary
     yesButtonClass: "cta-btn cta-outline",
     cancelButtonClass: "cta-btn cta-primary",
     onConfirm: () => {
@@ -957,6 +1083,26 @@ function promptClearCart() {
       showToast("Cart cleared successfully.");
     },
   });
+}
+
+// Scroll the cart sidebar so the Order Summary is visible to the user.
+function scrollCartToSummary() {
+  try {
+    const sidebar = document.getElementById("cartSidebar");
+    if (!sidebar) return;
+    const summary = sidebar.querySelector(".order-summary");
+    if (!summary) return;
+
+    // Calculate position of summary relative to the scroll container
+    const sidebarRect = sidebar.getBoundingClientRect();
+    const summaryRect = summary.getBoundingClientRect();
+    const currentScroll = sidebar.scrollTop || 0;
+    const offset = summaryRect.top - sidebarRect.top + currentScroll - 12; // small padding
+
+    sidebar.scrollTo({ top: offset, behavior: "smooth" });
+  } catch (e) {
+    // silent fail
+  }
 }
 
 function updateCartVariant(key, variantId) {
@@ -1045,43 +1191,48 @@ function renderCartItems() {
     div.className = "cart-item";
     div.innerHTML = `
       <img src="${item.img}" alt="${item.title}">
-      <div class="cart-item-info">
+      <div class="cart-item-main">
         <div class="cart-item-title">${item.title}</div>
         ${variantSelect}
-        <div class="cart-item-meta">
-          <div class="qty-controls">
-            <button class="qty-btn" data-action="dec" data-key="${itemKey}">-</button>
-            <input
-              type="number"
-              class="qty-input"
-              min="1"
-              step="1"
-              inputmode="numeric"
-              pattern="[0-9]*"
-              value="${item.qty}"
-              data-key="${itemKey}"
-              aria-label="Quantity for ${item.title}"
-            />
-            <button class="qty-btn" data-action="inc" data-key="${itemKey}">+</button>
-          </div>
-          <div class="cart-item-price">PHP ${(item.price * item.qty).toFixed(2)}</div>
-        </div>
-        <div class="cart-item-actions">
-          <button
-            class="remove-item-btn"
-            type="button"
-            data-action="remove"
+        <div class="qty-label">Quantity</div>
+        <div class="qty-controls">
+          <button class="qty-btn" data-action="dec" data-key="${itemKey}">-</button>
+          <input
+            type="number"
+            class="qty-input"
+            min="1"
+            step="1"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            value="${item.qty}"
             data-key="${itemKey}"
-            aria-label="Remove ${item.title} from cart"
-          >
-            Remove
-          </button>
+            aria-label="Quantity for ${item.title}"
+          />
+          <button class="qty-btn" data-action="inc" data-key="${itemKey}">+</button>
         </div>
+      </div>
+      <div class="cart-item-right">
+        <div class="cart-item-price">PHP ${(item.price * item.qty).toFixed(2)}</div>
+        <button
+          class="remove-item-btn"
+          type="button"
+          data-action="remove"
+          data-key="${itemKey}"
+          aria-label="Remove ${item.title} from cart"
+        >
+          Remove
+        </button>
       </div>
     `;
     container.appendChild(div);
   });
-  document.getElementById("cartTotal").textContent = `PHP ${total.toFixed(2)}`;
+  const count = cart.reduce((s, i) => s + (i.qty || 0), 0);
+  const countEl = document.getElementById("cartItemCount");
+  if (countEl) countEl.textContent = `(${count} item${count === 1 ? "" : "s"})`;
+  const subtotalEl = document.getElementById("cartSubtotal");
+  if (subtotalEl) subtotalEl.textContent = `PHP ${total.toFixed(2)}`;
+  const totalEl = document.getElementById("cartTotal");
+  if (totalEl) totalEl.textContent = `PHP ${total.toFixed(2)}`;
 }
 
 function toggleCart(open) {
@@ -1097,27 +1248,36 @@ function toggleCart(open) {
     sb.setAttribute("aria-hidden", "false");
     if (cartButton) cartButton.setAttribute("aria-expanded", "true");
     renderCartItems();
-    if (document.body.classList.contains("mobile-preview-mode")) {
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
-      document
-        .querySelectorAll(".nav-menu.active")
-        .forEach((menu) => menu.classList.remove("active"));
-      const hamburgerBtn = document.querySelector(".hamburger");
-      if (hamburgerBtn) hamburgerBtn.classList.remove("active");
+    // freeze background scroll in a mobile-friendly way
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+    document.documentElement.dataset.scrollY = scrollY;
+    document.documentElement.style.top = `-${scrollY}px`;
+    document.documentElement.style.position = "fixed";
+    document.querySelectorAll(".nav-menu.active").forEach((menu) => {
+      menu.classList.remove("active");
+    });
+    const hamburgerBtn = document.querySelector(".hamburger");
+    if (hamburgerBtn) {
+      hamburgerBtn.classList.remove("active");
     }
+    // mark document as having open cart so we can hide mobile bottom nav
+    document.documentElement.classList.add("cart-open");
+    document.body.classList.add("cart-open");
   } else {
     sb.classList.remove("open");
     ov.classList.remove("open");
     sb.setAttribute("aria-hidden", "true");
     if (cartButton) cartButton.setAttribute("aria-expanded", "false");
-    if (document.body.classList.contains("mobile-preview-mode")) {
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
-    } else {
-      document.documentElement.style.overflow = "auto";
-      document.body.style.overflow = "auto";
+    // restore background scroll
+    const prev = document.documentElement.dataset.scrollY;
+    document.documentElement.style.position = "";
+    document.documentElement.style.top = "";
+    if (prev) {
+      window.scrollTo(0, parseInt(prev, 10));
+      delete document.documentElement.dataset.scrollY;
     }
+    document.documentElement.classList.remove("cart-open");
+    document.body.classList.remove("cart-open");
   }
 }
 
@@ -1162,6 +1322,8 @@ function renderProductModalOptions(product, selectedVariantId = null) {
 
   const defaultVariant =
     getVariant(product, selectedVariantId) || product.options[0];
+  const optionLabel = product.optionLabel || "option";
+  const labelText = `Choose a ${optionLabel}`;
   const optionsHtml = product.options
     .map(
       (option) => `
@@ -1174,8 +1336,8 @@ function renderProductModalOptions(product, selectedVariantId = null) {
 
   optionsContainer.innerHTML = `
     <div class="product-option-group">
-      <label for="productModalVariantSelect">Choose a color</label>
-      <select id="productModalVariantSelect" class="variant-select" aria-label="Choose a color for ${product.title}">
+      <label for="productModalVariantSelect">${labelText}</label>
+      <select id="productModalVariantSelect" class="variant-select" aria-label="${labelText} for ${product.title}">
         ${optionsHtml}
       </select>
     </div>
@@ -1213,7 +1375,7 @@ function openProductModal(id, selectedVariantId = null) {
     addBtn.dataset.variant = selectedVariantId || "";
     renderProductModalOptions(product, selectedVariantId);
     subtitle.textContent = product.options?.length
-      ? "Select your color before checkout"
+      ? `Select your ${product.optionLabel || "option"} before checkout`
       : "";
   }
 
@@ -1271,6 +1433,17 @@ document.addEventListener("click", function (e) {
     openProductModal(id);
     return;
   }
+
+  const imageArea = t.closest(".product-image");
+  if (imageArea) {
+    const card = imageArea.closest(".product-card");
+    const id = card?.dataset?.productId;
+    if (id) {
+      openProductModal(id);
+      return;
+    }
+  }
+
   if (t.matches(".add-to-cart") || t.closest(".add-to-cart")) {
     const btn = t.matches(".add-to-cart") ? t : t.closest(".add-to-cart");
     const id = btn.dataset.id;
@@ -1283,7 +1456,11 @@ document.addEventListener("click", function (e) {
     return;
   }
 
-  if (t.id === "cartButton" || t.closest("#cartButton")) {
+  if (
+    t.id === "cartButton" ||
+    t.closest("#cartButton") ||
+    t.closest(".bottom-nav-cart")
+  ) {
     toggleCart();
     const cartButton = document.getElementById("cartButton");
     if (cartButton) {
@@ -1291,10 +1468,6 @@ document.addEventListener("click", function (e) {
         .getElementById("cartSidebar")
         .classList.contains("open");
       cartButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
-    }
-    if (document.body.classList.contains("mobile-preview-mode")) {
-      document.documentElement.style.overflow = "hidden";
-      document.body.style.overflow = "hidden";
     }
     return;
   }

@@ -30,28 +30,6 @@
   </head>
   <body>
     <div id="appShell" class="app-shell">
-      <div
-        id="mobilePreviewBanner"
-        class="mobile-preview-banner"
-        role="status"
-        aria-live="polite"
-      >
-        <div class="mobile-preview-banner-content">
-          <span
-            >Mobile preview mode is active. Click the button again to return to
-            desktop view.</span
-          >
-          <button
-            id="mobilePreviewExit"
-            class="mobile-preview-exit"
-            type="button"
-            aria-label="Exit mobile preview"
-          >
-            Exit
-          </button>
-        </div>
-      </div>
-
       <!-- Navigation -->
       <nav class="navbar" role="navigation" aria-label="Primary navigation">
         <div class="nav-container">
@@ -69,6 +47,17 @@
 
           <div class="nav-right">
             <button
+              class="hamburger"
+              aria-label="Toggle menu"
+              aria-controls="mainNav"
+              aria-expanded="false"
+              type="button"
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+            <button
               class="nav-icon-btn"
               id="cartButton"
               title="Shopping Cart"
@@ -77,16 +66,6 @@
             >
               <i class="fas fa-shopping-bag"></i>
               <span class="cart-badge" id="cartCount">0</span>
-            </button>
-            <button
-              id="mobilePreviewToggle"
-              class="mobile-preview-toggle"
-              type="button"
-              aria-label="Toggle mobile preview"
-              aria-pressed="false"
-            >
-              <i class="fas fa-mobile-alt"></i>
-              <span>Preview</span>
             </button>
             <a
               href="https://m.me/paulAD934"
@@ -100,18 +79,6 @@
               <span class="support-text">Token Of Love</span>
             </a>
           </div>
-
-          <button
-            class="hamburger"
-            aria-label="Toggle menu"
-            aria-controls="mainNav"
-            aria-expanded="false"
-            type="button"
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
         </div>
       </nav>
 
@@ -128,18 +95,62 @@
           <p class="cart-empty">Your cart is empty.</p>
         </div>
         <div class="cart-footer">
-          <div class="cart-total-row">
-            <span class="cart-total-label">Total</span>
-            <span class="cart-total-val" id="cartTotal">PHP 0.00</span>
+          <div class="order-summary">
+            <h4>Order Summary</h4>
+            <div class="summary-row total-row">
+              <div class="summary-label total-label">
+                Total <span id="cartItemCount">(0 items)</span>
+              </div>
+              <div class="summary-value total-amount" id="cartTotal">
+                PHP 0.00
+              </div>
+            </div>
           </div>
-          <div class="cart-actions">
-            <button id="clearCart" class="cta-btn cta-outline">Clear</button>
-            <button id="checkoutBtn" class="cta-btn cta-primary">
-              Checkout
+
+          <div class="cart-actions-row">
+            <button id="clearCart" class="cta-outline action-btn">
+              <i class="fas fa-trash"></i> Clear Cart
             </button>
+            <button id="saveForLater" class="cta-outline action-btn">
+              <i class="fas fa-bookmark"></i> Save for Later
+            </button>
+          </div>
+
+          <div class="checkout-row">
+            <button id="checkoutBtn" class="cta-btn primary checkout-btn">
+              Proceed to Checkout <i class="fas fa-arrow-right"></i>
+            </button>
+            <div class="checkout-note">
+              <i class="fas fa-shield-alt"></i> Secure checkout • Your data is
+              protected
+            </div>
           </div>
         </div>
       </aside>
+
+      <nav class="bottom-nav" aria-label="Mobile bottom navigation">
+        <a href="#" class="bottom-nav-item active" data-action="home">
+          <span class="bottom-nav-icon">🏠</span>
+          <span class="bottom-nav-label">Home</span>
+        </a>
+        <a href="#shop" class="bottom-nav-item" data-action="shop">
+          <span class="bottom-nav-icon">🛍</span>
+          <span class="bottom-nav-label">Shop</span>
+        </a>
+        <a href="#donation" class="bottom-nav-item" data-action="token">
+          <span class="bottom-nav-icon">💝</span>
+          <span class="bottom-nav-label">Token Of Love</span>
+        </a>
+        <button
+          type="button"
+          class="bottom-nav-item bottom-nav-cart"
+          data-action="cart"
+          aria-label="Open cart"
+        >
+          <span class="bottom-nav-icon">🛒</span>
+          <span class="bottom-nav-label">Cart</span>
+        </button>
+      </nav>
 
       <a
         href="https://m.me/paulAD934"
@@ -370,7 +381,7 @@
             >
               <div class="product-image">
                 <img
-                  src="Who Will Go Products/Mugs/Mugs.png"
+                  src="Who Will Go Products/Mugs/Mug.png"
                   alt="Who Will Go Mug"
                 />
               </div>
@@ -382,7 +393,7 @@
                   coffee and mission-minded conversations.
                 </p>
                 <div class="product-footer">
-                  <span class="product-price">PHP 115</span>
+                  <span class="product-price">PHP 120</span>
                   <div class="product-actions">
                     <button
                       class="view-product"
@@ -412,16 +423,16 @@
             >
               <div class="product-image">
                 <img
-                  src="Who Will Go Products/Tote Bag/Tote Bag - Faith Can Move Mountains.png"
-                  alt="Who Will Go Tote Bag - Faith Can Move Mountains"
+                  src="Who Will Go Products/Tote Bag/Tote Bag.png"
+                  alt="Who Will Go Tote Bag"
                 />
               </div>
               <div class="product-info">
                 <p class="product-category">TOTE BAG</p>
-                <h3>Faith Can Move Mountains Tote</h3>
+                <h3>Who Will Go Tote Bag</h3>
                 <p class="product-description">
-                  Heavy-duty canvas tote with bold script artwork for everyday
-                  use.
+                  A polished tote bag collection with multiple mission-inspired
+                  designs for daily use and gifting.
                 </p>
                 <div class="product-footer">
                   <span class="product-price">PHP 130</span>
@@ -438,130 +449,6 @@
                       class="cta-btn cta-primary cta-small add-to-cart"
                       type="button"
                       data-id="2"
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            <article
-              class="product-card"
-              data-product-id="3"
-              data-category="tote-bag"
-              data-tags="made"
-            >
-              <div class="product-image">
-                <img
-                  src="Who Will Go Products/Tote Bag/Tote Bag - Faith Over Fear.png"
-                  alt="Who Will Go Tote Bag - Faith Over Fear"
-                />
-              </div>
-              <div class="product-info">
-                <p class="product-category">TOTE BAG</p>
-                <h3>Faith Over Fear Tote</h3>
-                <p class="product-description">
-                  Stylish canvas carryall with an inspiring mission message.
-                </p>
-                <div class="product-footer">
-                  <span class="product-price">PHP 130</span>
-                  <div class="product-actions">
-                    <button
-                      class="view-product"
-                      type="button"
-                      data-id="3"
-                      aria-label="View product"
-                    >
-                      <i class="fas fa-search-plus"></i>
-                    </button>
-                    <button
-                      class="cta-btn cta-primary cta-small add-to-cart"
-                      type="button"
-                      data-id="3"
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            <article
-              class="product-card"
-              data-product-id="4"
-              data-category="tote-bag"
-              data-tags="made"
-            >
-              <div class="product-image">
-                <img
-                  src="Who Will Go Products/Tote Bag/Tote Bag - Reach The Nations, Make Jesus Known.png"
-                  alt="Who Will Go Tote Bag - Reach The Nations, Make Jesus Known"
-                />
-              </div>
-              <div class="product-info">
-                <p class="product-category">TOTE BAG</p>
-                <h3>Reach The Nations Tote</h3>
-                <p class="product-description">
-                  Mission-driven tote for your daily essentials with a bold
-                  statement.
-                </p>
-                <div class="product-footer">
-                  <span class="product-price">PHP 130</span>
-                  <div class="product-actions">
-                    <button
-                      class="view-product"
-                      type="button"
-                      data-id="4"
-                      aria-label="View product"
-                    >
-                      <i class="fas fa-search-plus"></i>
-                    </button>
-                    <button
-                      class="cta-btn cta-primary cta-small add-to-cart"
-                      type="button"
-                      data-id="4"
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            <article
-              class="product-card"
-              data-product-id="5"
-              data-category="tote-bag"
-              data-tags="made"
-            >
-              <div class="product-image">
-                <img
-                  src="Who Will Go Products/Tote Bag/Tote Bag - Trust In the Lord.png"
-                  alt="Who Will Go Tote Bag - Trust In the Lord"
-                />
-              </div>
-              <div class="product-info">
-                <p class="product-category">TOTE BAG</p>
-                <h3>Trust In the Lord Tote</h3>
-                <p class="product-description">
-                  Faith-inspired tote with elegant lettering and durable canvas.
-                </p>
-                <div class="product-footer">
-                  <span class="product-price">PHP 130</span>
-                  <div class="product-actions">
-                    <button
-                      class="view-product"
-                      type="button"
-                      data-id="5"
-                      aria-label="View product"
-                    >
-                      <i class="fas fa-search-plus"></i>
-                    </button>
-                    <button
-                      class="cta-btn cta-primary cta-small add-to-cart"
-                      type="button"
-                      data-id="5"
                     >
                       Add to Cart
                     </button>
@@ -632,7 +519,7 @@
                   notes, prayers, and planning your next steps.
                 </p>
                 <div class="product-footer">
-                  <span class="product-price">PHP 120</span>
+                  <span class="product-price">PHP 100</span>
                   <div class="product-actions">
                     <button
                       class="view-product"
@@ -906,7 +793,6 @@
               </div>
             </article>
 
-            <!-- CAPS: imported from Who Will Go Products/Caps -->
             <article
               class="product-card"
               data-product-id="6"
@@ -915,19 +801,19 @@
             >
               <div class="product-image">
                 <img
-                  src="Who Will Go Products/Caps/caps-black.png"
-                  alt="Who Will Go Cap - Black"
+                  src="Who Will Go Products/Caps/Caps.png"
+                  alt="Who Will Go Cap"
                 />
               </div>
               <div class="product-info">
                 <p class="product-category">CAPS</p>
-                <h3>Who Will Go Cap — Black</h3>
+                <h3>Who Will Go Cap</h3>
                 <p class="product-description">
-                  Structured cap with embroidered logo — classic fit and
-                  durable.
+                  A refined cap with a premium finish and selectable color
+                  options for everyday mission-minded wear.
                 </p>
                 <div class="product-footer">
-                  <span class="product-price">PHP 100</span>
+                  <span class="product-price">PHP 150</span>
                   <div class="product-actions">
                     <button
                       class="view-product"
@@ -941,132 +827,6 @@
                       class="cta-btn cta-primary cta-small add-to-cart"
                       type="button"
                       data-id="6"
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            <article
-              class="product-card"
-              data-product-id="7"
-              data-category="caps"
-              data-tags="onsite"
-            >
-              <div class="product-image">
-                <img
-                  src="Who Will Go Products/Caps/caps-blue.png"
-                  alt="Who Will Go Cap - Blue"
-                />
-              </div>
-              <div class="product-info">
-                <p class="product-category">CAPS</p>
-                <h3>Who Will Go Cap — Blue</h3>
-                <p class="product-description">
-                  Structured cap with embroidered logo — classic fit and
-                  durable.
-                </p>
-                <div class="product-footer">
-                  <span class="product-price">PHP 100</span>
-                  <div class="product-actions">
-                    <button
-                      class="view-product"
-                      type="button"
-                      data-id="7"
-                      aria-label="View product"
-                    >
-                      <i class="fas fa-search-plus"></i>
-                    </button>
-                    <button
-                      class="cta-btn cta-primary cta-small add-to-cart"
-                      type="button"
-                      data-id="7"
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            <article
-              class="product-card"
-              data-product-id="8"
-              data-category="caps"
-              data-tags="onsite"
-            >
-              <div class="product-image">
-                <img
-                  src="Who Will Go Products/Caps/caps-gray.png"
-                  alt="Who Will Go Cap - Gray"
-                />
-              </div>
-              <div class="product-info">
-                <p class="product-category">CAPS</p>
-                <h3>Who Will Go Cap — Gray</h3>
-                <p class="product-description">
-                  Structured cap with embroidered logo — classic fit and
-                  durable.
-                </p>
-                <div class="product-footer">
-                  <span class="product-price">PHP 100</span>
-                  <div class="product-actions">
-                    <button
-                      class="view-product"
-                      type="button"
-                      data-id="8"
-                      aria-label="View product"
-                    >
-                      <i class="fas fa-search-plus"></i>
-                    </button>
-                    <button
-                      class="cta-btn cta-primary cta-small add-to-cart"
-                      type="button"
-                      data-id="8"
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            <article
-              class="product-card"
-              data-product-id="9"
-              data-category="caps"
-              data-tags="onsite"
-            >
-              <div class="product-image">
-                <img
-                  src="Who Will Go Products/Caps/caps-green.png"
-                  alt="Who Will Go Cap - Green"
-                />
-              </div>
-              <div class="product-info">
-                <p class="product-category">CAPS</p>
-                <h3>Who Will Go Cap — Green</h3>
-                <p class="product-description">
-                  Structured cap with embroidered logo — classic fit and
-                  durable.
-                </p>
-                <div class="product-footer">
-                  <span class="product-price">PHP 100</span>
-                  <div class="product-actions">
-                    <button
-                      class="view-product"
-                      type="button"
-                      data-id="9"
-                      aria-label="View product"
-                    >
-                      <i class="fas fa-search-plus"></i>
-                    </button>
-                    <button
-                      class="cta-btn cta-primary cta-small add-to-cart"
-                      type="button"
-                      data-id="9"
                     >
                       Add to Cart
                     </button>
@@ -1262,7 +1022,7 @@
       </section>
 
       <!-- CTA Banner -->
-      <section class="cta-banner">
+      <section class="cta-banner" id="donation">
         <div class="container banner-content">
           <h2>Ready to answer the call?</h2>
           <p>
