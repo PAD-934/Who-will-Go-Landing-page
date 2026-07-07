@@ -1593,16 +1593,17 @@ function toggleCart(open) {
 }
 
 /* ==================== PRODUCT MODAL ==================== */
-function setProductModalPreview(product, variantId = null) {
-  const imageContainer = document.getElementById("productModalImage");
+function setProductModalPreview(product, variantId = null, variantIndex = 0) {
+  const imageContainer = document.getElementById("productModalImagePreview");
+  const imageCount = document.getElementById("productModalImageCount");
   const selectedVariant = variantId ? getVariant(product, variantId) : null;
   const previewImg = selectedVariant?.img || product.img;
   const previewVideo = selectedVariant ? null : product.video;
   const altText = `${product.title}${selectedVariant ? ` — ${selectedVariant.label}` : ""}`;
 
   if (imageContainer) {
-    if (previewVideo) {
-      imageContainer.innerHTML = `
+    imageContainer.innerHTML = previewVideo
+      ? `
         <video
           autoplay
           muted
@@ -1614,12 +1615,17 @@ function setProductModalPreview(product, variantId = null) {
           <source src="${previewVideo}" type="video/mp4" />
           <img src="${previewImg}" alt="${altText}" />
         </video>
-      `;
-    } else {
-      imageContainer.innerHTML = `
+      `
+      : `
         <img src="${previewImg}" alt="${altText}" />
       `;
-    }
+  }
+
+  if (imageCount) {
+    const total = product.options?.length || 1;
+    const current = variantIndex + 1;
+    imageCount.textContent =
+      total > 1 ? `${current} of ${total} colors` : "1 photo";
   }
 }
 
@@ -1628,6 +1634,7 @@ function renderProductModalOptions(
   selectedVariantId = null,
   selectedSizeId = null,
   qty = 1,
+  selectedVariantIndex = 0,
 ) {
   const optionsContainer = document.getElementById("productModalOptions");
   if (!optionsContainer) return;
@@ -1712,7 +1719,14 @@ function renderProductModalOptions(
   const selectedVariant = selectedVariantId
     ? getVariant(product, selectedVariantId)
     : product?.options?.[0];
-  setProductModalPreview(product, selectedVariant?.id);
+  const currentIndex = product?.options?.findIndex(
+    (option) => option.id === selectedVariant?.id,
+  );
+  setProductModalPreview(
+    product,
+    selectedVariant?.id,
+    currentIndex >= 0 ? currentIndex : 0,
+  );
 }
 
 function openProductModal(
@@ -1732,7 +1746,14 @@ function openProductModal(
   const subtitle = document.getElementById("productModalSubtitle");
 
   if (product) {
-    setProductModalPreview(product, selectedVariantId);
+    const selectedIndex = product?.options?.findIndex(
+      (option) => option.id === selectedVariantId,
+    );
+    setProductModalPreview(
+      product,
+      selectedVariantId,
+      selectedIndex >= 0 ? selectedIndex : 0,
+    );
     title.textContent = product.title;
     desc.textContent =
       product.description ||
@@ -1748,7 +1769,22 @@ function openProductModal(
     addBtn.dataset.id = product.id;
     addBtn.dataset.variant = selectedVariantId || "";
     addBtn.dataset.size = selectedSizeId || "";
-    renderProductModalOptions(product, selectedVariantId, selectedSizeId, qty);
+    modal.dataset.productId = product.id;
+    modal.dataset.currentPhotoIndex = selectedIndex >= 0 ? selectedIndex : 0;
+    modal.dataset.photoCount = product.options?.length || 1;
+    renderProductModalOptions(
+      product,
+      selectedVariantId,
+      selectedSizeId,
+      qty,
+      selectedIndex >= 0 ? selectedIndex : 0,
+    );
+    const modalElement = document.getElementById("productModal");
+    if (modalElement) {
+      modalElement.dataset.currentPhotoIndex =
+        selectedIndex >= 0 ? selectedIndex : 0;
+      modalElement.dataset.photoCount = product.options?.length || 1;
+    }
     subtitle.textContent =
       product.options?.length && product.sizes?.length
         ? `Select your ${product.optionLabel || "option"} and size before checkout`
@@ -1783,6 +1819,31 @@ document.addEventListener("click", function (e) {
     closeProductModal();
     return;
   }
+
+  const prevArrow = t.closest("#productModalPrev");
+  const nextArrow = t.closest("#productModalNext");
+  if (prevArrow || nextArrow) {
+    const modalElement = document.getElementById("productModal");
+    const productId = modalElement?.dataset?.productId;
+    const product = findProduct(productId);
+    if (product && product.options?.length > 1) {
+      const total = product.options.length;
+      const currentIndex = Number(modalElement.dataset.currentPhotoIndex) || 0;
+      const step = prevArrow ? -1 : 1;
+      const newIndex = Math.min(Math.max(currentIndex + step, 0), total - 1);
+      const variantId = product.options[newIndex]?.id;
+      const variantSelect = document.getElementById(
+        "productModalVariantSelect",
+      );
+      if (variantSelect && variantId) {
+        variantSelect.value = variantId;
+      }
+      setProductModalPreview(product, variantId, newIndex);
+      modalElement.dataset.currentPhotoIndex = newIndex;
+    }
+    return;
+  }
+
   if (t.matches(".product-qty-btn") || t.closest(".product-qty-btn")) {
     const btn = t.matches(".product-qty-btn")
       ? t
@@ -1931,7 +1992,19 @@ document.addEventListener("change", function (e) {
     const addBtn = document.getElementById("productModalAddToCart");
     const product = findProduct(addBtn?.dataset.id);
     if (product) {
-      setProductModalPreview(product, target.value);
+      const selectedIndex = product.options?.findIndex(
+        (option) => option.id === target.value,
+      );
+      setProductModalPreview(
+        product,
+        target.value,
+        selectedIndex >= 0 ? selectedIndex : 0,
+      );
+      const modalElement = document.getElementById("productModal");
+      if (modalElement) {
+        modalElement.dataset.currentPhotoIndex =
+          selectedIndex >= 0 ? selectedIndex : 0;
+      }
       if (addBtn) {
         addBtn.dataset.variant = target.value;
         addBtn.dataset.size =

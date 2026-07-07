@@ -1464,7 +1464,37 @@
             &times;
           </button>
           <div class="product-modal-body">
-            <div class="product-modal-image" id="productModalImage"></div>
+            <div class="product-modal-image" id="productModalImage">
+              <div class="product-modal-image-inner">
+                <button
+                  type="button"
+                  class="product-modal-arrow product-modal-arrow-left"
+                  id="productModalPrev"
+                  aria-label="Previous photo"
+                  title="Previous photo"
+                >
+                  <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                </button>
+                <div
+                  class="product-modal-image-preview"
+                  id="productModalImagePreview"
+                ></div>
+                <button
+                  type="button"
+                  class="product-modal-arrow product-modal-arrow-right"
+                  id="productModalNext"
+                  aria-label="Next photo"
+                  title="Next photo"
+                >
+                  <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div
+                class="product-modal-image-count"
+                id="productModalImageCount"
+                aria-live="polite"
+              ></div>
+            </div>
             <div class="product-modal-info">
               <p class="product-category" id="productModalCategory">CAPS</p>
               <h2 id="productModalTitle">Product Title</h2>
