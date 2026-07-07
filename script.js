@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeContactForm();
   initializeLoveGiftForm();
   initializeProductFilters();
+  enhanceProductPricing();
   initializeProductHoverPreview();
   initializeBottomNav();
   applyLazyImageLoading();
@@ -31,6 +32,7 @@ function initializeProductHoverPreview() {
   preview.innerHTML = `
     <div class="image-preview-overlay-backdrop" aria-hidden="true"></div>
     <div class="image-preview-overlay-content">
+      <button class="image-preview-overlay-close" aria-label="Close image preview" title="Close">&times;</button>
       <img src="" alt="" />
     </div>
   `;
@@ -44,14 +46,18 @@ function initializeProductHoverPreview() {
     previewImage.alt = target.alt || "Product preview";
     preview.setAttribute("aria-hidden", "false");
     preview.classList.add("visible");
+    preview.style.display = "flex";
   }
 
   function hidePreview() {
     preview.setAttribute("aria-hidden", "true");
     preview.classList.remove("visible");
+    preview.style.display = "none";
   }
 
-  document.addEventListener("click", (event) => {
+  preview.style.display = "none";
+
+  document.addEventListener("pointerup", (event) => {
     const target = event.target;
     const image = target.closest(".product-image img");
     if (image) {
@@ -60,7 +66,8 @@ function initializeProductHoverPreview() {
       return;
     }
 
-    if (target === backdrop || target === preview) {
+    const closeButton = target.closest(".image-preview-overlay-close");
+    if (closeButton || target === backdrop || target === preview) {
       hidePreview();
     }
   });
@@ -103,6 +110,11 @@ function initializeBottomNav() {
         });
         break;
       case "token":
+        document.getElementById("donation")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+        break;
       case "contact":
         document.getElementById("contact")?.scrollIntoView({
           behavior: "smooth",
@@ -209,6 +221,20 @@ function initializeProductFilters() {
   applyFilters();
 }
 
+function enhanceProductPricing() {
+  document.querySelectorAll(".product-price").forEach((priceEl) => {
+    if (priceEl.dataset.currencyEnhanced) return;
+    const text = priceEl.textContent.trim();
+    const match = text.match(/^PHP\s+(.+)$/i);
+    if (!match) return;
+    priceEl.innerHTML =
+      '<span class="price-currency">PHP</span> <span class="price-value">' +
+      match[1] +
+      "</span>";
+    priceEl.dataset.currencyEnhanced = "true";
+  });
+}
+
 /* ==================== NAVIGATION ==================== */
 function initializeNavigation() {
   const hamburger = document.querySelector(".hamburger");
@@ -227,7 +253,16 @@ function initializeNavigation() {
   }
 
   document.querySelectorAll(".nav-menu a").forEach((link) => {
-    link.addEventListener("click", () => {
+    link.addEventListener("click", (event) => {
+      const href = link.getAttribute("href");
+      if (href && href.startsWith("#")) {
+        const target = document.querySelector(href);
+        if (target) {
+          event.preventDefault();
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+
       if (hamburger) {
         hamburger.classList.remove("active");
         hamburger.setAttribute("aria-expanded", "false");
@@ -521,6 +556,211 @@ const PRODUCTS = [
         label: "Reach The Nations",
         img: "Who Will Go Products/Tote Bag/Tote Bag Different Design option/Tote Bag design 4 - Reach The Nations, Make Jesus Known.png",
       },
+    ],
+  },
+  {
+    id: "20",
+    title: "CROSS T-Shirt",
+    category: "t-shirts",
+    price: 250,
+    img: "Who Will Go Products/T-Shirts/CROSS Design Main.png",
+    optionLabel: "color",
+    description:
+      "Signature CROSS tee with premium print quality. Available in adult and kids sizes for mission squads of every age.",
+    options: [
+      {
+        id: "beige",
+        label: "Beige",
+        img: "Who Will Go Products/T-Shirts/CROSS different color options/CROSS - Beige.png",
+      },
+      {
+        id: "black",
+        label: "Black",
+        img: "Who Will Go Products/T-Shirts/CROSS different color options/CROSS - Black.png",
+      },
+      {
+        id: "blue",
+        label: "Blue",
+        img: "Who Will Go Products/T-Shirts/CROSS different color options/CROSS - Blue.png",
+      },
+      {
+        id: "green",
+        label: "Green",
+        img: "Who Will Go Products/T-Shirts/CROSS different color options/CROSS - Green.png",
+      },
+    ],
+    sizes: [
+      { id: "kids-6", label: "Size #6 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-8", label: "Size #8 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-10", label: "Size #10 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-12", label: "Size #12 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-14", label: "Size #14 (Kids)", category: "Kids", price: 150 },
+      { id: "adult-xs", label: "XS", category: "Adult", price: 250 },
+      { id: "adult-s", label: "S", category: "Adult", price: 250 },
+      { id: "adult-m", label: "M", category: "Adult", price: 250 },
+      { id: "adult-l", label: "L", category: "Adult", price: 250 },
+      { id: "adult-xl", label: "XL", category: "Adult", price: 250 },
+      { id: "adult-2xl", label: "2XL", category: "Adult", price: 250 },
+    ],
+  },
+  {
+    id: "21",
+    title: "HERE AM I T-Shirt",
+    category: "t-shirts",
+    price: 250,
+    img: "Who Will Go Products/T-Shirts/HERER AM I design Main.png",
+    optionLabel: "color",
+    description:
+      "Bold HERE AM I statement tee with mission-minded style. Available in adult and kids sizes.",
+    options: [
+      {
+        id: "beige",
+        label: "Beige",
+        img: "Who Will Go Products/T-Shirts/HERE AM I different color options/HERE AM I - Beige.png",
+      },
+      {
+        id: "black",
+        label: "Black",
+        img: "Who Will Go Products/T-Shirts/HERE AM I different color options/HERE AM I - Black.png",
+      },
+      {
+        id: "blue",
+        label: "Blue",
+        img: "Who Will Go Products/T-Shirts/HERE AM I different color options/HERE AM I - Blue.png",
+      },
+      {
+        id: "green",
+        label: "Green",
+        img: "Who Will Go Products/T-Shirts/HERE AM I different color options/HERE AM I - Green.png",
+      },
+    ],
+    sizes: [
+      { id: "kids-6", label: "Size #6 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-8", label: "Size #8 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-10", label: "Size #10 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-12", label: "Size #12 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-14", label: "Size #14 (Kids)", category: "Kids", price: 150 },
+      { id: "adult-xs", label: "XS", category: "Adult", price: 250 },
+      { id: "adult-s", label: "S", category: "Adult", price: 250 },
+      { id: "adult-m", label: "M", category: "Adult", price: 250 },
+      { id: "adult-l", label: "L", category: "Adult", price: 250 },
+      { id: "adult-xl", label: "XL", category: "Adult", price: 250 },
+      { id: "adult-2xl", label: "2XL", category: "Adult", price: 250 },
+    ],
+  },
+  {
+    id: "22",
+    title: "NEVER FAILS T-Shirt",
+    category: "t-shirts",
+    price: 250,
+    img: "Who Will Go Products/T-Shirts/NEVER FAILS Design Main.png",
+    optionLabel: "color",
+    description:
+      "A powerful NEVER FAILS tee with two standout color choices. Available in adult and kids sizes.",
+    options: [
+      {
+        id: "beige",
+        label: "Beige",
+        img: "Who Will Go Products/T-Shirts/NEVER FAILS different color options/NEVER FAILS - Beige.png",
+      },
+      {
+        id: "black",
+        label: "Black",
+        img: "Who Will Go Products/T-Shirts/NEVER FAILS different color options/NEVER FAILS - Black.png",
+      },
+    ],
+    sizes: [
+      { id: "kids-6", label: "Size #6 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-8", label: "Size #8 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-10", label: "Size #10 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-12", label: "Size #12 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-14", label: "Size #14 (Kids)", category: "Kids", price: 150 },
+      { id: "adult-xs", label: "XS", category: "Adult", price: 250 },
+      { id: "adult-s", label: "S", category: "Adult", price: 250 },
+      { id: "adult-m", label: "M", category: "Adult", price: 250 },
+      { id: "adult-l", label: "L", category: "Adult", price: 250 },
+      { id: "adult-xl", label: "XL", category: "Adult", price: 250 },
+      { id: "adult-2xl", label: "2XL", category: "Adult", price: 250 },
+    ],
+  },
+  {
+    id: "23",
+    title: "REDEEMED T-Shirt",
+    category: "t-shirts",
+    price: 250,
+    img: "Who Will Go Products/T-Shirts/REDEEMED Design Main.png",
+    optionLabel: "color",
+    description:
+      "REDEEMED themed tee with bold mission messaging. Available in adult and kids sizes.",
+    options: [
+      {
+        id: "black",
+        label: "Black",
+        img: "Who Will Go Products/T-Shirts/REDEEMED different color options/REDEEMED - Black.png",
+      },
+      {
+        id: "blue",
+        label: "Blue",
+        img: "Who Will Go Products/T-Shirts/REDEEMED different color options/REDEEMED - Blue.png",
+      },
+    ],
+    sizes: [
+      { id: "kids-6", label: "Size #6 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-8", label: "Size #8 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-10", label: "Size #10 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-12", label: "Size #12 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-14", label: "Size #14 (Kids)", category: "Kids", price: 150 },
+      { id: "adult-xs", label: "XS", category: "Adult", price: 250 },
+      { id: "adult-s", label: "S", category: "Adult", price: 250 },
+      { id: "adult-m", label: "M", category: "Adult", price: 250 },
+      { id: "adult-l", label: "L", category: "Adult", price: 250 },
+      { id: "adult-xl", label: "XL", category: "Adult", price: 250 },
+      { id: "adult-2xl", label: "2XL", category: "Adult", price: 250 },
+    ],
+  },
+  {
+    id: "24",
+    title: "SHEEP T-Shirt",
+    category: "t-shirts",
+    price: 250,
+    img: "Who Will Go Products/T-Shirts/SHEEP Design Main.png",
+    optionLabel: "color",
+    description:
+      "Sheep graphic tee with a faithful message and flexible sizing for kids and adults.",
+    options: [
+      {
+        id: "beige",
+        label: "Beige",
+        img: "Who Will Go Products/T-Shirts/SHEEP different color options/SHEEP - Beige.png",
+      },
+      {
+        id: "black",
+        label: "Black",
+        img: "Who Will Go Products/T-Shirts/SHEEP different color options/SHEEP - Black.png",
+      },
+      {
+        id: "blue",
+        label: "Blue",
+        img: "Who Will Go Products/T-Shirts/SHEEP different color options/SHEEP - Blue.png",
+      },
+      {
+        id: "green",
+        label: "Green",
+        img: "Who Will Go Products/T-Shirts/SHEEP different color options/SHEEP - Green.png",
+      },
+    ],
+    sizes: [
+      { id: "kids-6", label: "Size #6 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-8", label: "Size #8 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-10", label: "Size #10 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-12", label: "Size #12 (Kids)", category: "Kids", price: 150 },
+      { id: "kids-14", label: "Size #14 (Kids)", category: "Kids", price: 150 },
+      { id: "adult-xs", label: "XS", category: "Adult", price: 250 },
+      { id: "adult-s", label: "S", category: "Adult", price: 250 },
+      { id: "adult-m", label: "M", category: "Adult", price: 250 },
+      { id: "adult-l", label: "L", category: "Adult", price: 250 },
+      { id: "adult-xl", label: "XL", category: "Adult", price: 250 },
+      { id: "adult-2xl", label: "2XL", category: "Adult", price: 250 },
     ],
   },
   {
@@ -892,12 +1132,15 @@ function findProduct(id) {
   return PRODUCTS.find((p) => p.id === String(id));
 }
 
-function formatCartKey(productId, variantId) {
-  return variantId ? `${productId}::${variantId}` : String(productId);
+function formatCartKey(productId, variantId, sizeId) {
+  if (variantId && sizeId) return `${productId}::${variantId}::${sizeId}`;
+  if (variantId) return `${productId}::${variantId}`;
+  if (sizeId) return `${productId}::${sizeId}`;
+  return String(productId);
 }
 
 function getCartItemKey(item) {
-  return item.key || formatCartKey(item.id, item.variantId);
+  return item.key || formatCartKey(item.id, item.variantId, item.sizeId);
 }
 
 function getCartItemId(item) {
@@ -909,31 +1152,54 @@ function getVariant(product, variantId) {
   return product.options.find((option) => option.id === variantId) || null;
 }
 
-function addToCart(id, variantId = null) {
+function getSize(product, sizeId) {
+  if (!product?.sizes) return null;
+  return product.sizes.find((size) => size.id === sizeId) || null;
+}
+
+function getProductPrice(product, sizeId) {
+  const selectedSize = sizeId ? getSize(product, sizeId) : null;
+  return selectedSize?.price ?? product.price;
+}
+
+function addToCart(id, variantId = null, sizeId = null, qty = 1) {
   const product = findProduct(id);
   if (!product) return showToast("Product not found");
 
   if (product.options?.length && !variantId) {
-    openProductModal(id);
+    openProductModal(id, null, sizeId);
+    return;
+  }
+
+  if (product.sizes?.length && !sizeId) {
+    openProductModal(id, variantId || null, null);
     return;
   }
 
   const selectedVariant = variantId ? getVariant(product, variantId) : null;
-  const cartKey = formatCartKey(product.id, selectedVariant?.id);
+  const selectedSize = sizeId ? getSize(product, sizeId) : null;
+  const productPrice = getProductPrice(product, selectedSize?.id);
+  const cartKey = formatCartKey(
+    product.id,
+    selectedVariant?.id,
+    selectedSize?.id,
+  );
   const existing = cart.find((item) => getCartItemKey(item) === cartKey);
 
   if (existing) {
-    existing.qty += 1;
+    existing.qty += qty;
   } else {
     cart.push({
       key: cartKey,
       id: product.id,
       title: product.title,
-      price: product.price,
+      price: productPrice,
       img: selectedVariant?.img || product.img,
-      qty: 1,
+      qty,
       variantId: selectedVariant?.id || null,
       variantLabel: selectedVariant?.label || null,
+      sizeId: selectedSize?.id || null,
+      sizeLabel: selectedSize?.label || null,
     });
   }
 
@@ -1113,7 +1379,7 @@ function updateCartVariant(key, variantId) {
   const variant = getVariant(product, variantId);
   if (!variant) return;
 
-  const targetKey = formatCartKey(item.id, variant.id);
+  const targetKey = formatCartKey(item.id, variant.id, item.sizeId);
   const existingVariantItem = cart.find(
     (cartItem) => getCartItemKey(cartItem) === targetKey,
   );
@@ -1125,6 +1391,34 @@ function updateCartVariant(key, variantId) {
     item.variantId = variant.id;
     item.variantLabel = variant.label;
     item.img = variant.img;
+    item.key = targetKey;
+  }
+
+  saveCart();
+  updateCartBadge();
+  renderCartItems();
+}
+
+function updateCartSize(key, sizeId) {
+  const item = cart.find((item) => getCartItemKey(item) === key);
+  if (!item) return;
+  const product = findProduct(item.id);
+  if (!product?.sizes?.length) return;
+  const size = getSize(product, sizeId);
+  if (!size) return;
+
+  const targetKey = formatCartKey(item.id, item.variantId, size.id);
+  const existingSizeItem = cart.find(
+    (cartItem) => getCartItemKey(cartItem) === targetKey,
+  );
+
+  if (existingSizeItem && existingSizeItem !== item) {
+    existingSizeItem.qty += item.qty;
+    cart = cart.filter((cartItem) => cartItem !== item);
+  } else {
+    item.sizeId = size.id;
+    item.sizeLabel = size.label;
+    item.price = size.price;
     item.key = targetKey;
   }
 
@@ -1152,6 +1446,8 @@ function renderCartItems() {
       </div>
     `;
     document.getElementById("cartTotal").textContent = "PHP 0.00";
+    const countEl = document.getElementById("cartItemCount");
+    if (countEl) countEl.textContent = "(0 items)";
     if (cartFooter) cartFooter.classList.add("empty");
     const emptyCta = container.querySelector(".cart-empty-cta");
     if (emptyCta) {
@@ -1186,6 +1482,27 @@ function renderCartItems() {
         `
       : "";
 
+    const sizeOptions = product?.sizes || [];
+    const sizeSelect = sizeOptions.length
+      ? `
+          <div class="cart-item-options">
+            <div class="cart-item-option-label">Size</div>
+            <select class="cart-size-select" id="size-${itemId}" data-key="${itemKey}" aria-label="Choose a size for ${item.title}">
+              ${sizeOptions
+                .map(
+                  (size) => `
+                <option value="${size.id}" ${size.id === item.sizeId ? "selected" : ""}>
+                  ${size.label} (${size.category})
+                </option>
+              `,
+                )
+                .join("")}
+            </select>
+            <div class="cart-item-option-helper">Kids sizes PHP 150, adult sizes PHP 250</div>
+          </div>
+        `
+      : "";
+
     total += item.price * item.qty;
     const div = document.createElement("div");
     div.className = "cart-item";
@@ -1194,6 +1511,7 @@ function renderCartItems() {
       <div class="cart-item-main">
         <div class="cart-item-title">${item.title}</div>
         ${variantSelect}
+        ${sizeSelect}
         <div class="qty-label">Quantity</div>
         <div class="qty-controls">
           <button class="qty-btn" data-action="dec" data-key="${itemKey}">-</button>
@@ -1248,11 +1566,10 @@ function toggleCart(open) {
     sb.setAttribute("aria-hidden", "false");
     if (cartButton) cartButton.setAttribute("aria-expanded", "true");
     renderCartItems();
-    // freeze background scroll in a mobile-friendly way
     const scrollY = window.scrollY || document.documentElement.scrollTop;
-    document.documentElement.dataset.scrollY = scrollY;
-    document.documentElement.style.top = `-${scrollY}px`;
-    document.documentElement.style.position = "fixed";
+    document.body.dataset.scrollY = scrollY;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     document.querySelectorAll(".nav-menu.active").forEach((menu) => {
       menu.classList.remove("active");
     });
@@ -1260,7 +1577,6 @@ function toggleCart(open) {
     if (hamburgerBtn) {
       hamburgerBtn.classList.remove("active");
     }
-    // mark document as having open cart so we can hide mobile bottom nav
     document.documentElement.classList.add("cart-open");
     document.body.classList.add("cart-open");
   } else {
@@ -1268,14 +1584,9 @@ function toggleCart(open) {
     ov.classList.remove("open");
     sb.setAttribute("aria-hidden", "true");
     if (cartButton) cartButton.setAttribute("aria-expanded", "false");
-    // restore background scroll
-    const prev = document.documentElement.dataset.scrollY;
-    document.documentElement.style.position = "";
-    document.documentElement.style.top = "";
-    if (prev) {
-      window.scrollTo(0, parseInt(prev, 10));
-      delete document.documentElement.dataset.scrollY;
-    }
+    document.body.style.overflow = "";
+    document.documentElement.style.overflow = "";
+    delete document.body.dataset.scrollY;
     document.documentElement.classList.remove("cart-open");
     document.body.classList.remove("cart-open");
   }
@@ -1312,41 +1623,104 @@ function setProductModalPreview(product, variantId = null) {
   }
 }
 
-function renderProductModalOptions(product, selectedVariantId = null) {
+function renderProductModalOptions(
+  product,
+  selectedVariantId = null,
+  selectedSizeId = null,
+  qty = 1,
+) {
   const optionsContainer = document.getElementById("productModalOptions");
   if (!optionsContainer) return;
-  if (!product?.options?.length) {
-    optionsContainer.innerHTML = "";
-    return;
-  }
 
-  const defaultVariant =
-    getVariant(product, selectedVariantId) || product.options[0];
-  const optionLabel = product.optionLabel || "option";
-  const labelText = `Choose a ${optionLabel}`;
-  const optionsHtml = product.options
-    .map(
-      (option) => `
-      <option value="${option.id}" ${option.id === defaultVariant.id ? "selected" : ""}>
-        ${option.label}
-      </option>
-    `,
-    )
-    .join("");
+  const variantHtml = product?.options?.length
+    ? (() => {
+        const defaultVariant =
+          getVariant(product, selectedVariantId) || product.options[0];
+        const optionLabel = product.optionLabel || "option";
+        const labelText = `Choose a ${optionLabel}`;
+        const optionsHtml = product.options
+          .map(
+            (option) => `
+              <option value="${option.id}" ${option.id === defaultVariant.id ? "selected" : ""}>
+                ${option.label}
+              </option>
+            `,
+          )
+          .join("");
 
-  optionsContainer.innerHTML = `
-    <div class="product-option-group">
-      <label for="productModalVariantSelect">${labelText}</label>
-      <select id="productModalVariantSelect" class="variant-select" aria-label="${labelText} for ${product.title}">
-        ${optionsHtml}
-      </select>
+        return `
+          <div class="product-option-group">
+            <label for="productModalVariantSelect">${labelText}</label>
+            <select id="productModalVariantSelect" class="variant-select" aria-label="${labelText} for ${product.title}">
+              ${optionsHtml}
+            </select>
+          </div>
+        `;
+      })()
+    : "";
+
+  const sizeHtml = product?.sizes?.length
+    ? (() => {
+        const selectedSize =
+          getSize(product, selectedSizeId) || product.sizes[0];
+        const sizeOptionsHtml = product.sizes
+          .map((size) => {
+            const sizeLabel = size.label.includes(`(${size.category})`)
+              ? size.label
+              : `${size.label} (${size.category})`;
+            return `
+                <option value="${size.id}" ${size.id === selectedSize.id ? "selected" : ""}>
+                  ${sizeLabel}
+                </option>
+              `;
+          })
+          .join("");
+
+        return `
+          <div class="product-option-group">
+            <label for="productModalSizeSelect">Select size</label>
+            <select id="productModalSizeSelect" class="variant-select" aria-label="Select size for ${product.title}">
+              ${sizeOptionsHtml}
+            </select>
+          </div>
+        `;
+      })()
+    : "";
+
+  const quantityHtml = `
+    <div class="product-option-group product-modal-quantity">
+      <label for="productModalQty">Quantity</label>
+      <div class="product-modal-qty-control">
+        <button type="button" class="product-qty-btn" data-action="dec" aria-label="Decrease quantity">-</button>
+        <input
+          id="productModalQty"
+          type="number"
+          min="1"
+          step="1"
+          inputmode="numeric"
+          value="${qty || 1}"
+          class="product-modal-qty-input"
+          aria-label="Quantity for ${product.title}"
+        />
+        <button type="button" class="product-qty-btn" data-action="inc" aria-label="Increase quantity">+</button>
+      </div>
     </div>
   `;
 
-  setProductModalPreview(product, defaultVariant.id);
+  optionsContainer.innerHTML = `${variantHtml}${sizeHtml}${quantityHtml}`;
+
+  const selectedVariant = selectedVariantId
+    ? getVariant(product, selectedVariantId)
+    : product?.options?.[0];
+  setProductModalPreview(product, selectedVariant?.id);
 }
 
-function openProductModal(id, selectedVariantId = null) {
+function openProductModal(
+  id,
+  selectedVariantId = null,
+  selectedSizeId = null,
+  qty = 1,
+) {
   const product = findProduct(id);
   const modal = document.getElementById("productModal");
   if (!modal) return;
@@ -1366,17 +1740,23 @@ function openProductModal(id, selectedVariantId = null) {
         `.product-card[data-product-id="${id}"] .product-description`,
       )?.textContent ||
       "";
-    price.textContent = `PHP ${product.price}`;
+    price.textContent = `PHP ${getProductPrice(product, selectedSizeId)}`;
     cat.textContent =
       document.querySelector(
         `.product-card[data-product-id="${id}"] .product-category`,
       )?.textContent || "";
     addBtn.dataset.id = product.id;
     addBtn.dataset.variant = selectedVariantId || "";
-    renderProductModalOptions(product, selectedVariantId);
-    subtitle.textContent = product.options?.length
-      ? `Select your ${product.optionLabel || "option"} before checkout`
-      : "";
+    addBtn.dataset.size = selectedSizeId || "";
+    renderProductModalOptions(product, selectedVariantId, selectedSizeId, qty);
+    subtitle.textContent =
+      product.options?.length && product.sizes?.length
+        ? `Select your ${product.optionLabel || "option"} and size before checkout`
+        : product.options?.length
+          ? `Select your ${product.optionLabel || "option"} before checkout`
+          : product.sizes?.length
+            ? "Select your size before checkout"
+            : "";
   }
 
   modal.classList.add("active");
@@ -1403,6 +1783,20 @@ document.addEventListener("click", function (e) {
     closeProductModal();
     return;
   }
+  if (t.matches(".product-qty-btn") || t.closest(".product-qty-btn")) {
+    const btn = t.matches(".product-qty-btn")
+      ? t
+      : t.closest(".product-qty-btn");
+    const action = btn.dataset.action;
+    const qtyInput = document.getElementById("productModalQty");
+    if (qtyInput) {
+      let qty = parseInt(qtyInput.value, 10);
+      if (!Number.isFinite(qty) || qty < 1) qty = 1;
+      qty = action === "inc" ? qty + 1 : action === "dec" ? qty - 1 : qty;
+      qtyInput.value = qty < 1 ? 1 : qty;
+    }
+    return;
+  }
   if (t.id === "productModalAddToCart" || t.closest("#productModalAddToCart")) {
     const btn =
       t.id === "productModalAddToCart"
@@ -1410,8 +1804,17 @@ document.addEventListener("click", function (e) {
         : t.closest("#productModalAddToCart");
     const id = btn.dataset.id;
     const variantSelect = document.getElementById("productModalVariantSelect");
+    const sizeSelect = document.getElementById("productModalSizeSelect");
+    const qtyInput = document.getElementById("productModalQty");
     const selectedVariant = variantSelect?.value || btn.dataset.variant || null;
-    addToCart(id, selectedVariant);
+    const selectedSize = sizeSelect?.value || btn.dataset.size || null;
+    const qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
+    addToCart(
+      id,
+      selectedVariant,
+      selectedSize,
+      Number.isFinite(qty) && qty > 0 ? qty : 1,
+    );
     closeProductModal();
     return;
   }
@@ -1430,7 +1833,7 @@ document.addEventListener("click", function (e) {
   if (t.matches(".view-product") || t.closest(".view-product")) {
     const btn = t.matches(".view-product") ? t : t.closest(".view-product");
     const id = btn.dataset.id;
-    openProductModal(id);
+    openProductModal(id, null, null, 1);
     return;
   }
 
@@ -1439,7 +1842,7 @@ document.addEventListener("click", function (e) {
     const card = imageArea.closest(".product-card");
     const id = card?.dataset?.productId;
     if (id) {
-      openProductModal(id);
+      openProductModal(id, null, null, 1);
       return;
     }
   }
@@ -1447,12 +1850,7 @@ document.addEventListener("click", function (e) {
   if (t.matches(".add-to-cart") || t.closest(".add-to-cart")) {
     const btn = t.matches(".add-to-cart") ? t : t.closest(".add-to-cart");
     const id = btn.dataset.id;
-    const product = findProduct(id);
-    if (product?.options?.length) {
-      openProductModal(id);
-      return;
-    }
-    addToCart(id);
+    openProductModal(id, null, null, 1);
     return;
   }
 
@@ -1534,7 +1932,26 @@ document.addEventListener("change", function (e) {
     const product = findProduct(addBtn?.dataset.id);
     if (product) {
       setProductModalPreview(product, target.value);
-      if (addBtn) addBtn.dataset.variant = target.value;
+      if (addBtn) {
+        addBtn.dataset.variant = target.value;
+        addBtn.dataset.size =
+          document.getElementById("productModalSizeSelect")?.value || "";
+      }
+    }
+    return;
+  }
+
+  if (
+    target instanceof HTMLSelectElement &&
+    target.id === "productModalSizeSelect"
+  ) {
+    const addBtn = document.getElementById("productModalAddToCart");
+    const product = findProduct(addBtn?.dataset.id);
+    const price = document.getElementById("productModalPrice");
+    if (product && price) {
+      const selectedSize = target.value;
+      price.textContent = `PHP ${getProductPrice(product, selectedSize)}`;
+      if (addBtn) addBtn.dataset.size = selectedSize;
     }
     return;
   }
