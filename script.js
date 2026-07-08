@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeLoveGiftForm();
   initializeProductFilters();
   enhanceProductPricing();
+  initializeProductModal();
   initializeProductHoverPreview();
   initializeBottomNav();
   applyLazyImageLoading();
@@ -49,6 +50,15 @@ function initializeProductHoverPreview() {
     preview.style.display = "flex";
   }
 
+  function showPreviewBySrc(src, alt) {
+    if (!src) return;
+    previewImage.src = src;
+    previewImage.alt = alt || "Size guide preview";
+    preview.setAttribute("aria-hidden", "false");
+    preview.classList.add("visible");
+    preview.style.display = "flex";
+  }
+
   function hidePreview() {
     preview.setAttribute("aria-hidden", "true");
     preview.classList.remove("visible");
@@ -57,20 +67,56 @@ function initializeProductHoverPreview() {
 
   preview.style.display = "none";
 
+  document.querySelectorAll(".product-card").forEach((card) => {
+    const previewButton = card.querySelector(".view-product");
+    const image = card.querySelector(".product-image img");
+    if (previewButton && image) {
+      previewButton.classList.add("product-summary-preview");
+      previewButton.dataset.previewSrc = image.src;
+      previewButton.dataset.previewAlt = image.alt || "Product preview";
+      previewButton.setAttribute("aria-label", "Preview product image");
+    }
+  });
+
   document.addEventListener("pointerup", (event) => {
     const target = event.target;
-    const image = target.closest(".product-image img");
-    if (image) {
+    const summaryButton = target.closest(".product-summary-preview");
+    if (summaryButton) {
       event.preventDefault();
-      showPreview(image);
+      event.stopPropagation();
+      showPreviewBySrc(
+        summaryButton.dataset.previewSrc,
+        summaryButton.dataset.previewAlt,
+      );
       return;
     }
 
     const closeButton = target.closest(".image-preview-overlay-close");
     if (closeButton || target === backdrop || target === preview) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
       hidePreview();
     }
   });
+
+  preview.addEventListener("click", (event) => {
+    const target = event.target;
+    const closeButton = target.closest(".image-preview-overlay-close");
+    if (closeButton || target === backdrop || target === preview) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      hidePreview();
+    }
+  });
+
+  const previewCloseButton = preview.querySelector(
+    ".image-preview-overlay-close",
+  );
+  if (previewCloseButton) {
+    previewCloseButton.addEventListener("pointerdown", (event) => {
+      event.stopPropagation();
+    });
+  }
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
@@ -324,6 +370,44 @@ function closeLoveGiftModal() {
     modal.classList.remove("active");
     document.body.style.overflow = "auto";
   }
+}
+
+function initializeProductModal() {
+  const modal = document.getElementById("productModal");
+  if (!modal) return;
+
+  const closeButtons = modal.querySelectorAll(".product-modal-close");
+  closeButtons.forEach((button) => {
+    const stopCloseEvent = function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+    };
+
+    button.addEventListener("pointerdown", stopCloseEvent);
+    button.addEventListener("pointerup", stopCloseEvent);
+    button.addEventListener("click", function (event) {
+      stopCloseEvent(event);
+      closeProductModal();
+    });
+  });
+
+  modal.addEventListener("pointerdown", function (event) {
+    if (event.target === modal) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+    }
+  });
+
+  modal.addEventListener("click", function (event) {
+    if (event.target === modal) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      closeProductModal();
+    }
+  });
 }
 
 /* ==================== CONTACT FORM ==================== */
@@ -1489,13 +1573,16 @@ function renderCartItems() {
             <div class="cart-item-option-label">Size</div>
             <select class="cart-size-select" id="size-${itemId}" data-key="${itemKey}" aria-label="Choose a size for ${item.title}">
               ${sizeOptions
-                .map(
-                  (size) => `
+                .map((size) => {
+                  const sizeLabel = size.label.includes(`(${size.category})`)
+                    ? size.label
+                    : `${size.label} (${size.category})`;
+                  return `
                 <option value="${size.id}" ${size.id === item.sizeId ? "selected" : ""}>
-                  ${size.label} (${size.category})
+                  ${sizeLabel}
                 </option>
-              `,
-                )
+              `;
+                })
                 .join("")}
             </select>
             <div class="cart-item-option-helper">Kids sizes PHP 150, adult sizes PHP 250</div>
@@ -1734,6 +1821,7 @@ function openProductModal(
   selectedVariantId = null,
   selectedSizeId = null,
   qty = 1,
+  scrollToAdd = false,
 ) {
   const product = findProduct(id);
   const modal = document.getElementById("productModal");
@@ -1793,11 +1881,64 @@ function openProductModal(
           : product.sizes?.length
             ? "Select your size before checkout"
             : "";
+
+    const sizeGuideSection = document.getElementById("productModalSizeGuide");
+    if (sizeGuideSection) {
+      if (product.category === "t-shirts") {
+        sizeGuideSection.hidden = false;
+        sizeGuideSection.innerHTML = `
+          <div class="size-guide-header">
+            <div>
+              <p class="size-guide-tag">T-Shirt Size Guide</p>
+              <h3>Tap the image to view the full size chart.</h3>
+            </div>
+            <p class="size-guide-note">
+              The exact measurement chart opens in a larger preview so you can confirm width and length before checkout.
+            </p>
+          </div>
+          <div class="size-guide-content">
+            <button
+              type="button"
+              class="size-guide-image-wrap product-summary-preview"
+              data-preview-src="Who Will Go Products/T-Shirts/summary.png"
+              data-preview-alt="Full-size T-shirt size guide"
+              aria-label="Open full size guide"
+            >
+              <img
+                src="Who Will Go Products/T-Shirts/summary.png"
+                alt="Exact T-shirt size guide"
+                loading="lazy"
+              />
+              <span class="size-guide-image-action">View full size guide</span>
+            </button>
+          </div>
+        `;
+      } else {
+        sizeGuideSection.hidden = true;
+        sizeGuideSection.innerHTML = "";
+      }
+    }
   }
 
   modal.classList.add("active");
   modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
+
+  // If caller requested, scroll the modal so the Add to Cart button is visible
+  if (scrollToAdd) {
+    setTimeout(() => {
+      const addBtn = document.getElementById("productModalAddToCart");
+      if (addBtn) {
+        try {
+          addBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+          addBtn.focus({ preventScroll: true });
+        } catch (e) {
+          // fallback for older browsers
+          addBtn.focus();
+        }
+      }
+    }, 140);
+  }
 }
 
 function closeProductModal() {
@@ -1813,9 +1954,16 @@ document.addEventListener("click", function (e) {
   const t = e.target;
   if (t.id === "productModal" || t.closest("#productModal")) {
     // clicking inside should not close; click overlay only
-    if (t.id === "productModal") closeProductModal();
+    if (t.id === "productModal") {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      closeProductModal();
+      return;
+    }
   }
   if (t.matches(".product-modal-close") || t.closest(".product-modal-close")) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
     closeProductModal();
     return;
   }
@@ -1890,20 +2038,66 @@ document.addEventListener("keydown", function (ev) {
 /* wire cart events */
 document.addEventListener("click", function (e) {
   const t = e.target;
-  // Quick view button
+  // Quick preview button on product image
   if (t.matches(".view-product") || t.closest(".view-product")) {
     const btn = t.matches(".view-product") ? t : t.closest(".view-product");
+    if (btn.classList.contains("product-summary-preview")) {
+      return;
+    }
     const id = btn.dataset.id;
     openProductModal(id, null, null, 1);
     return;
   }
 
+  // Clicking a product image: on mobile/touch devices open the product
+  // modal so users can choose options and add-to-cart. On desktop keep
+  // the existing quick-image preview behaviour.
   const imageArea = t.closest(".product-image");
   if (imageArea) {
     const card = imageArea.closest(".product-card");
     const id = card?.dataset?.productId;
     if (id) {
-      openProductModal(id, null, null, 1);
+      const isTouch =
+        typeof window !== "undefined" &&
+        ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+      const smallViewport =
+        typeof window !== "undefined" && window.innerWidth <= 768;
+      if (!isTouch && !smallViewport) {
+        // desktop non-touch: let preview overlay handle image clicks
+        return;
+      }
+
+      // mobile or touch device: open full product modal and align the
+      // Add to Cart button to the exact location of the clicked image.
+      const imageEl = imageArea.querySelector("img");
+      openProductModal(id, null, null, 1, false);
+
+      setTimeout(() => {
+        try {
+          // Keep the modal image at the top (don't scroll the content)
+          const modalBody = document.querySelector(
+            ".product-modal .product-modal-body",
+          );
+          if (modalBody) modalBody.scrollTop = 0;
+
+          // Focus the Add to Cart button without scrolling, and briefly
+          // highlight it so the user sees the call-to-action at a glance.
+          const addBtn = document.getElementById("productModalAddToCart");
+          if (!addBtn) return;
+          try {
+            addBtn.focus({ preventScroll: true });
+          } catch (e) {
+            addBtn.focus();
+          }
+          addBtn.classList.add("product-add-highlight");
+          setTimeout(
+            () => addBtn.classList.remove("product-add-highlight"),
+            1200,
+          );
+        } catch (e) {
+          // silent fail — keep modal usable
+        }
+      }, 180);
       return;
     }
   }
@@ -1911,7 +2105,38 @@ document.addEventListener("click", function (e) {
   if (t.matches(".add-to-cart") || t.closest(".add-to-cart")) {
     const btn = t.matches(".add-to-cart") ? t : t.closest(".add-to-cart");
     const id = btn.dataset.id;
-    openProductModal(id, null, null, 1);
+    // For products that benefit from a quick confirmation (mug, bookmark),
+    // open the product modal and highlight the Add-to-Cart CTA instead
+    // of adding immediately. This gives the user a chance to confirm.
+    const idsToConfirm = ["1", "12"]; // Who Will Go Mug (1), Magnetic Bookmark (12)
+    if (idsToConfirm.includes(String(id))) {
+      openProductModal(id, null, null, 1, false);
+      setTimeout(() => {
+        try {
+          const modalBody = document.querySelector(
+            ".product-modal .product-modal-body",
+          );
+          if (modalBody) modalBody.scrollTop = 0;
+          const addBtn = document.getElementById("productModalAddToCart");
+          if (!addBtn) return;
+          try {
+            addBtn.focus({ preventScroll: true });
+          } catch (e) {
+            addBtn.focus();
+          }
+          addBtn.classList.add("product-add-highlight");
+          setTimeout(
+            () => addBtn.classList.remove("product-add-highlight"),
+            1200,
+          );
+        } catch (e) {
+          // silent fail
+        }
+      }, 160);
+      return;
+    }
+
+    addToCart(id, null, null, 1);
     return;
   }
 
@@ -1932,6 +2157,8 @@ document.addEventListener("click", function (e) {
   }
 
   if (t.id === "closeCart" || t.closest("#closeCart")) {
+    e.preventDefault();
+    e.stopPropagation();
     toggleCart(false);
     return;
   }
