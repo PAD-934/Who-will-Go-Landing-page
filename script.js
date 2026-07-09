@@ -1,19 +1,163 @@
 ﻿/* ==================== INITIALIZATION ==================== */
-document.addEventListener("DOMContentLoaded", function () {
-  initializeNavigation();
-  initializeModals();
-  initializeContactForm();
-  initializeCheckoutForm();
-  initializeLoveGiftForm();
-  initializeProductFilters();
-  enhanceProductPricing();
-  initializeProductModal();
-  initializeProductHoverPreview();
-  initializeBottomNav();
-  applyLazyImageLoading();
-  initializeScrollAnimations();
-  initializeMessengerVisibilityForHero();
-});
+let mobileCheckoutGesturesInitialized = false;
+
+function initializeApp() {
+  const initSteps = [
+    ["navigation", initializeNavigation],
+    ["modals", initializeModals],
+    ["contact form", initializeContactForm],
+    ["checkout form", initializeCheckoutForm],
+    ["love gift form", initializeLoveGiftForm],
+    ["product filters", initializeProductFilters],
+    ["product pricing", enhanceProductPricing],
+    ["product modal", initializeProductModal],
+    ["product hover preview", initializeProductHoverPreview],
+    ["bottom nav", initializeBottomNav],
+    ["lazy images", applyLazyImageLoading],
+    ["scroll animations", initializeScrollAnimations],
+    ["messenger visibility", initializeMessengerVisibilityForHero],
+    ["cart bindings", attachCartBindings],
+  ];
+
+  initSteps.forEach(([name, step]) => {
+    try {
+      step();
+    } catch (error) {
+      console.warn(`WWG init failed: ${name}`, error);
+    }
+  });
+
+  try {
+    updateCartBadge();
+    renderCartItems();
+  } catch (e) {
+    console.warn("Cart UI init failed", e);
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeApp);
+} else {
+  initializeApp();
+}
+
+// Capture-phase fallback: catch pointerdown early even if other handlers stop propagation.
+// This is a safe last-resort listener to ensure add-to-cart and cart open actions always fire.
+try {
+  if (!window._wwg_capture_listener_installed) {
+    window.addEventListener(
+      "pointerdown",
+      function (e) {
+        try {
+          const t = e.target;
+          const addBtn = t.closest && t.closest(".add-to-cart");
+          if (addBtn) {
+            const id = addBtn.dataset.id;
+            if (id) {
+              console.log("WWG capture: add-to-cart", id);
+              try {
+                addToCart(id, null, null, 1);
+              } catch (err) {
+                console.warn("WWG capture addToCart error", err);
+              }
+              e.preventDefault && e.preventDefault();
+              return;
+            }
+          }
+
+          const cartBtn =
+            t.closest && t.closest("#cartButton, .bottom-nav-cart");
+          if (cartBtn) {
+            e.preventDefault && e.preventDefault();
+            e.stopPropagation && e.stopPropagation();
+            return;
+          }
+        } catch (ex) {
+          console.warn("WWG capture listener error", ex);
+        }
+      },
+      true,
+    );
+    window._wwg_capture_listener_installed = true;
+  }
+} catch (e) {
+  console.warn("Failed to install WWG capture listener", e);
+}
+
+// Robust fallback: directly bind add-to-cart and cart button listeners.
+// This helps if event delegation is prevented by other scripts or errors.
+function attachCartBindings() {
+  try {
+    // bind add-to-cart buttons (both pointer and click for reliability)
+    function bindAddBtn(btn) {
+      if (!btn || btn.dataset.bound === "true") return;
+      const handler = function (e) {
+        try {
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        } catch (er) {}
+        const id = btn.dataset.id;
+        if (!id) return;
+        try {
+          console.log("Add to cart clicked", id);
+          addToCart(id, null, null, 1);
+        } catch (err) {
+          console.warn("addToCart failed:", err);
+          showToast("Unable to add to cart. Please try again.");
+        }
+      };
+      btn.addEventListener("pointerdown", handler, { passive: false });
+      btn.addEventListener("click", handler, { passive: false });
+      btn.dataset.bound = "true";
+    }
+
+    document.querySelectorAll(".add-to-cart").forEach(bindAddBtn);
+
+    // observe future added buttons (e.g., dynamic product renders)
+    if (!attachCartBindings.observer) {
+      try {
+        const mo = new MutationObserver((mutations) => {
+          for (const m of mutations) {
+            for (const node of m.addedNodes || []) {
+              if (!(node instanceof HTMLElement)) continue;
+              if (node.matches && node.matches(".add-to-cart"))
+                bindAddBtn(node);
+              node.querySelectorAll &&
+                node.querySelectorAll(".add-to-cart").forEach(bindAddBtn);
+            }
+          }
+        });
+        mo.observe(document.body, { childList: true, subtree: true });
+        attachCartBindings.observer = mo;
+      } catch (moErr) {
+        // observer not supported — ignore
+      }
+    }
+
+    // bind top nav cart button (pointer + click)
+    const cartBtn = document.getElementById("cartButton");
+    if (cartBtn && !cartBtn.dataset.bound) {
+      const cb = function (e) {
+        try {
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+          }
+        } catch (er) {}
+        toggleCart();
+      };
+      cartBtn.addEventListener("pointerdown", cb, { passive: false });
+      cartBtn.addEventListener("click", cb, { passive: false });
+      cartBtn.dataset.bound = "true";
+    }
+  } catch (e) {
+    // non-fatal — do not break the rest of the script
+    console.warn("attachCartBindings error", e);
+  }
+}
 
 function applyLazyImageLoading() {
   document.querySelectorAll("img").forEach((img) => {
@@ -480,6 +624,18 @@ function initializeCheckoutForm() {
       updateCheckoutSubmitState();
     });
 
+  const mobileSubmitButton = document.getElementById("mobileSubmitBtn");
+  if (mobileSubmitButton) {
+    mobileSubmitButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      if (form && typeof form.requestSubmit === "function") {
+        form.requestSubmit();
+      } else if (form) {
+        form.dispatchEvent(new Event("submit", { cancelable: true }));
+      }
+    });
+  }
+
   // sanitize contact input: digits only and max 11
   const contactEl = document.getElementById("customerContact");
   if (contactEl) {
@@ -871,8 +1027,12 @@ function updateCheckoutSubmitState() {
   // keep the button clickable at all times, only toggle visual glow
   if (allValid) {
     btn.classList.add("glow");
+    const mobileBtn = document.getElementById("mobileSubmitBtn");
+    if (mobileBtn) mobileBtn.classList.add("glow");
   } else {
     btn.classList.remove("glow");
+    const mobileBtn = document.getElementById("mobileSubmitBtn");
+    if (mobileBtn) mobileBtn.classList.remove("glow");
   }
 }
 
@@ -1164,6 +1324,7 @@ function showToast(message, duration = 3500) {
     toast.classList.remove("show");
   }, duration);
 }
+window.showToast = showToast;
 
 function showOrderFeedback(type, message) {
   const feedback = document.getElementById("orderFeedback");
@@ -1816,6 +1977,7 @@ const GOOGLE_APPS_SCRIPT_URL =
 function saveCart() {
   localStorage.setItem("wwg_cart", JSON.stringify(cart));
 }
+window.saveCart = saveCart;
 
 function updateCartBadge() {
   const el = document.getElementById("cartCount");
@@ -1905,6 +2067,7 @@ function addToCart(id, variantId = null, sizeId = null, qty = 1) {
     `${product.title}${selectedVariant ? ` — ${selectedVariant.label}` : ""} added to cart`,
   );
 }
+window.addToCart = addToCart;
 
 function changeQty(key, delta) {
   const item = cart.find((item) => getCartItemKey(item) === key);
@@ -2290,6 +2453,9 @@ function toggleCart(open) {
   }
 }
 
+window.renderCartItems = renderCartItems;
+window.toggleCart = toggleCart;
+
 function getCheckoutOrderText() {
   return cart
     .map((item) => {
@@ -2343,23 +2509,45 @@ function openCheckoutModal() {
     })
     .join("");
 
-  // Populate compact mobile summary (keeps UX snappy on phones)
+  // Populate new mobile checkout summary/details screens
   try {
-    const mobileTotalItemsEl = document.getElementById("mobileTotalItems");
-    const mobileTotalAmountEl = document.getElementById("mobileTotalAmount");
-    const mobileDetails = document.getElementById("mobileSummaryDetails");
-    const mobileBar = document.getElementById("mobileSummaryBar");
-    if (mobileTotalItemsEl) mobileTotalItemsEl.textContent = itemCount;
-    if (mobileTotalAmountEl)
-      mobileTotalAmountEl.textContent = `PHP ${grandTotal.toFixed(2)}`;
-    if (mobileDetails) {
-      mobileDetails.innerHTML =
-        summaryEl.innerHTML +
-        `<div class="mobile-summary-actions-row" style="padding:12px;display:flex;gap:8px;justify-content:flex-end"><button id=\"mobileEditCart\" class=\"cta-outline\">Edit Cart</button></div>`;
-      mobileDetails.hidden = true;
-      mobileDetails.setAttribute("aria-hidden", "true");
+    // Mobile summary tab
+    const mobileCheckoutSummaryList = document.getElementById(
+      "mobileCheckoutSummaryList",
+    );
+    const mobileSummaryTotalItems = document.getElementById(
+      "mobileSummaryTotalItems",
+    );
+    const mobileSummaryTotalAmount = document.getElementById(
+      "mobileSummaryTotalAmount",
+    );
+
+    if (mobileCheckoutSummaryList) {
+      mobileCheckoutSummaryList.innerHTML = summaryEl.innerHTML;
     }
-    if (mobileBar) mobileBar.setAttribute("aria-expanded", "false");
+    if (mobileSummaryTotalItems)
+      mobileSummaryTotalItems.textContent = itemCount;
+    if (mobileSummaryTotalAmount)
+      mobileSummaryTotalAmount.textContent = `PHP ${grandTotal.toFixed(2)}`;
+    // update fixed footer total if present
+    const mobileFooterTotal = document.getElementById("mobileFooterTotal");
+    if (mobileFooterTotal)
+      mobileFooterTotal.textContent = `PHP ${grandTotal.toFixed(2)}`;
+
+    // Reset mobile panels to summary view
+    const mobileCheckoutScreen = document.getElementById(
+      "mobileCheckoutScreen",
+    );
+    const mobileSummaryTab = document.getElementById("mobileSummaryTab");
+    const mobileDetailsTab = document.getElementById("mobileDetailsTab");
+    const mobileCheckoutSummaryPanel = document.getElementById(
+      "mobileCheckoutSummaryPanel",
+    );
+    const mobileCheckoutDetailsPanel = document.getElementById(
+      "mobileCheckoutDetailsPanel",
+    );
+
+    switchMobileCheckoutTab("summary");
   } catch (err) {
     // non-fatal
   }
@@ -2375,7 +2563,57 @@ function openCheckoutModal() {
     clearAllFieldErrors(checkoutForm);
     clearOrderFeedback();
   }
-  document.getElementById("customerName")?.focus();
+
+  // Ensure form-section is scrolled to show summary panel first
+  const formSection = document.querySelector(".checkout-form-section");
+  if (formSection) {
+    formSection.scrollLeft = 0;
+    formSection.scrollTop = 0;
+  }
+
+  // Don't auto-focus the customer name field on mobile, as it's in the details panel
+  // Users will navigate there via the Continue button or tab click
+
+  // Initialize mobile gesture support
+  initMobileCheckoutGestures();
+}
+
+function switchMobileCheckoutTab(tab) {
+  const screen = document.getElementById("mobileCheckoutScreen");
+  const summaryTab = document.getElementById("mobileSummaryTab");
+  const detailsTab = document.getElementById("mobileDetailsTab");
+  const summaryPanel = document.getElementById("mobileCheckoutSummaryPanel");
+  const detailsPanel = document.getElementById("mobileCheckoutDetailsPanel");
+
+  const mobileFooter = document.querySelector(".checkout-fixed-footer");
+
+  if (tab === "summary") {
+    if (screen) screen.classList.remove("details-active");
+    if (summaryTab) {
+      summaryTab.classList.add("active");
+      summaryTab.setAttribute("aria-selected", "true");
+    }
+    if (detailsTab) {
+      detailsTab.classList.remove("active");
+      detailsTab.setAttribute("aria-selected", "false");
+    }
+    if (summaryPanel) summaryPanel.setAttribute("aria-hidden", "false");
+    if (detailsPanel) detailsPanel.setAttribute("aria-hidden", "true");
+    if (mobileFooter) mobileFooter.setAttribute("aria-hidden", "true");
+  } else if (tab === "details") {
+    if (screen) screen.classList.add("details-active");
+    if (summaryTab) {
+      summaryTab.classList.remove("active");
+      summaryTab.setAttribute("aria-selected", "false");
+    }
+    if (detailsTab) {
+      detailsTab.classList.add("active");
+      detailsTab.setAttribute("aria-selected", "true");
+    }
+    if (summaryPanel) summaryPanel.setAttribute("aria-hidden", "true");
+    if (detailsPanel) detailsPanel.setAttribute("aria-hidden", "false");
+    if (mobileFooter) mobileFooter.setAttribute("aria-hidden", "false");
+  }
 }
 
 function closeCheckoutModal() {
@@ -2385,6 +2623,47 @@ function closeCheckoutModal() {
   modal.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
   document.documentElement.style.overflow = "";
+}
+
+// Mobile checkout touch/swipe gesture support
+function initMobileCheckoutGestures() {
+  const panels = document.getElementById("mobileCheckoutPanels");
+  if (!panels || window.innerWidth > 920 || mobileCheckoutGesturesInitialized)
+    return;
+
+  mobileCheckoutGesturesInitialized = true;
+  let touchStartX = 0;
+  let touchEndX = 0;
+  const minSwipeDistance = 50;
+
+  panels.addEventListener(
+    "touchstart",
+    (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    },
+    false,
+  );
+
+  panels.addEventListener(
+    "touchend",
+    (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    },
+    false,
+  );
+
+  function handleSwipe() {
+    const diff = touchStartX - touchEndX;
+    const screen = document.getElementById("mobileCheckoutScreen");
+    if (!screen) return;
+
+    if (diff > minSwipeDistance) {
+      switchMobileCheckoutTab("details");
+    } else if (diff < -minSwipeDistance) {
+      switchMobileCheckoutTab("summary");
+    }
+  }
 }
 
 /* ==================== PRODUCT MODAL ==================== */
@@ -2903,28 +3182,23 @@ document.addEventListener("click", function (e) {
     return;
   }
 
-  // Mobile summary toggle (bar or chevron)
+  // Mobile checkout tab switching
+  if (t.id === "mobileSummaryTab" || t.closest("#mobileSummaryTab")) {
+    e.preventDefault();
+    switchMobileCheckoutTab("summary");
+    return;
+  }
+  if (t.id === "mobileDetailsTab" || t.closest("#mobileDetailsTab")) {
+    e.preventDefault();
+    switchMobileCheckoutTab("details");
+    return;
+  }
   if (
-    t.id === "mobileSummaryToggle" ||
-    t.closest("#mobileSummaryToggle") ||
-    t.id === "mobileSummaryBar" ||
-    t.closest("#mobileSummaryBar")
+    t.id === "mobileContinueToDetails" ||
+    t.closest("#mobileContinueToDetails")
   ) {
     e.preventDefault();
-    const details = document.getElementById("mobileSummaryDetails");
-    const bar = document.getElementById("mobileSummaryBar");
-    const toggleBtn = document.getElementById("mobileSummaryToggle");
-    if (!details) return;
-    const isOpen = !details.hidden;
-    // flip
-    details.hidden = isOpen;
-    details.setAttribute("aria-hidden", String(isOpen));
-    if (bar) bar.setAttribute("aria-expanded", String(!isOpen));
-    if (toggleBtn) toggleBtn.textContent = isOpen ? "▾" : "▴";
-    if (!isOpen) {
-      // newly opened -> scroll into view
-      details.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    switchMobileCheckoutTab("details");
     return;
   }
 

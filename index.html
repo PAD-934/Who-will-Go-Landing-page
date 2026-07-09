@@ -182,142 +182,219 @@
             </div>
           </div>
           <div class="checkout-form-section">
-            <!-- Mobile summary bar: visible on small viewports for quick order overview -->
-            <div
-              id="mobileSummaryBar"
-              class="mobile-summary-bar"
-              role="button"
-              tabindex="0"
-              aria-expanded="false"
-              aria-controls="mobileSummaryDetails"
-            >
-              <div class="mobile-summary-left">
-                <span id="mobileTotalItems">0</span>
-                <span class="mobile-summary-label"> item</span>
-              </div>
-              <div class="mobile-summary-right">
-                <strong id="mobileTotalAmount">PHP 0.00</strong>
-              </div>
-              <div class="mobile-summary-toggle-wrap">
+            <div class="mobile-checkout-screen" id="mobileCheckoutScreen">
+              <div
+                class="mobile-checkout-tabs"
+                role="tablist"
+                aria-label="Checkout navigation"
+              >
                 <button
-                  id="mobileSummaryToggle"
-                  class="mobile-summary-toggle"
-                  aria-label="View order details"
+                  type="button"
+                  id="mobileSummaryTab"
+                  class="mobile-checkout-tab active"
+                  role="tab"
+                  aria-controls="mobileCheckoutSummaryPanel"
+                  aria-selected="true"
                 >
-                  ▾
+                  Order Summary
+                </button>
+                <button
+                  type="button"
+                  id="mobileDetailsTab"
+                  class="mobile-checkout-tab"
+                  role="tab"
+                  aria-controls="mobileCheckoutDetailsPanel"
+                  aria-selected="false"
+                >
+                  Customer Details
                 </button>
               </div>
-            </div>
-            <div
-              id="mobileSummaryDetails"
-              class="mobile-summary-details"
-              hidden
-              aria-hidden="true"
-            ></div>
-            <div class="checkout-form-header">
-              <h2>Customer Details</h2>
-              <p>Complete the form and submit to confirm your order.</p>
-            </div>
-            <form
-              id="order-form"
-              class="checkout-order-form"
-              autocomplete="on"
-              novalidate
-            >
-              <div class="checkout-fields-grid">
-                <label class="checkout-field">
-                  <span>Full Name</span>
-                  <input
-                    type="text"
-                    id="customerName"
-                    name="customerName"
-                    placeholder="Juan Dela Cruz"
-                    required
-                  />
-                </label>
-                <label class="checkout-field">
-                  <span>Email</span>
-                  <input
-                    type="email"
-                    id="customerEmail"
-                    name="customerEmail"
-                    placeholder="juan@example.com"
-                    required
-                  />
-                </label>
-                <label class="checkout-field">
-                  <span>Contact Number <small>(11 digits only)</small></span>
-                  <input
-                    type="tel"
-                    id="customerContact"
-                    name="customerContact"
-                    placeholder="09171234567"
-                    inputmode="numeric"
-                    autocomplete="tel"
-                    pattern="\d{11}"
-                    maxlength="11"
-                    required
-                  />
-                </label>
-                <label class="checkout-field full-width">
-                  <span>Full Address</span>
-                  <textarea
-                    id="customerAddress"
-                    name="customerAddress"
-                    autocomplete="street-address"
-                    placeholder="Street, Barangay, City, Province, Postal Code"
-                    required
-                  ></textarea>
-                </label>
-                <label class="checkout-field full-width">
-                  <span>Church Name <small>(Optional)</small></span>
-                  <input
-                    type="text"
-                    id="customerChurch"
-                    name="customerChurch"
-                    autocomplete="organization"
-                    placeholder="Name of your church"
-                  />
-                </label>
-                <label class="checkout-field full-width">
-                  <span>Payment Method</span>
-                  <select id="paymentMethod" name="paymentMethod" required>
-                    <option value="">Select payment method</option>
-                    <option value="GCash">GCash</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Cash on Delivery">Cash on Delivery</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </label>
-                <label class="checkout-field full-width">
-                  <span>Special Notes <small>(Optional)</small></span>
-                  <textarea
-                    id="specialNotes"
-                    name="specialNotes"
-                    placeholder="Enter any delivery instructions or order notes"
-                  ></textarea>
-                </label>
-                <label class="checkout-field full-width">
-                  <span>Proof of Payment (Screenshot)</span>
-                  <input
-                    type="file"
-                    id="paymentScreenshot"
-                    name="paymentScreenshot"
-                    accept="image/*"
-                    required
-                  />
-                </label>
+              <div class="mobile-checkout-panels" id="mobileCheckoutPanels">
+                <section
+                  id="mobileCheckoutSummaryPanel"
+                  class="mobile-checkout-panel"
+                  role="tabpanel"
+                  aria-labelledby="mobileSummaryTab"
+                  aria-hidden="false"
+                >
+                  <div class="mobile-checkout-summary-card">
+                    <div class="mobile-checkout-summary-header">
+                      <div>
+                        <p class="mobile-checkout-label">Order summary</p>
+                        <p class="mobile-checkout-subtitle">
+                          Review your selected items before you continue.
+                        </p>
+                      </div>
+                      <span class="mobile-swipe-hint">Swipe left →</span>
+                    </div>
+                    <div
+                      id="mobileCheckoutSummaryList"
+                      class="checkout-summary"
+                    ></div>
+                    <div class="checkout-totals mobile-checkout-totals">
+                      <div class="summary-row">
+                        <span>Total items</span>
+                        <strong id="mobileSummaryTotalItems">0</strong>
+                      </div>
+                      <div class="summary-row">
+                        <span>Grand total</span>
+                        <strong id="mobileSummaryTotalAmount">PHP 0.00</strong>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      id="mobileContinueToDetails"
+                      class="cta-btn primary"
+                    >
+                      Continue to Customer Details
+                    </button>
+                    <p class="mobile-checkout-note">
+                      Swipe left or tap Continue to proceed to the secure order
+                      form.
+                    </p>
+                  </div>
+                </section>
+                <section
+                  id="mobileCheckoutDetailsPanel"
+                  class="mobile-checkout-panel"
+                  role="tabpanel"
+                  aria-labelledby="mobileDetailsTab"
+                  aria-hidden="true"
+                >
+                  <!-- Mobile compact order total removed per design -->
+                  <div class="checkout-form-header">
+                    <h2>Customer Details</h2>
+                    <p>Complete the form and submit to confirm your order.</p>
+                  </div>
+                  <form
+                    id="order-form"
+                    class="checkout-order-form"
+                    autocomplete="on"
+                    novalidate
+                  >
+                    <div class="checkout-fields-grid">
+                      <label class="checkout-field">
+                        <span>Full Name</span>
+                        <input
+                          type="text"
+                          id="customerName"
+                          name="customerName"
+                          placeholder="Juan Dela Cruz"
+                          required
+                        />
+                      </label>
+                      <label class="checkout-field">
+                        <span>Email</span>
+                        <input
+                          type="email"
+                          id="customerEmail"
+                          name="customerEmail"
+                          placeholder="juan@example.com"
+                          required
+                        />
+                      </label>
+                      <label class="checkout-field full-width">
+                        <span
+                          >Contact Number <small>(11 digits only)</small></span
+                        >
+                        <input
+                          type="tel"
+                          id="customerContact"
+                          name="customerContact"
+                          placeholder="09171234567"
+                          inputmode="numeric"
+                          autocomplete="tel"
+                          pattern="\d{11}"
+                          maxlength="11"
+                          required
+                        />
+                      </label>
+                      <label class="checkout-field full-width">
+                        <span>Full Address</span>
+                        <textarea
+                          id="customerAddress"
+                          name="customerAddress"
+                          autocomplete="street-address"
+                          placeholder="Street, Barangay, City, Province, Postal Code"
+                          required
+                        ></textarea>
+                      </label>
+                      <label class="checkout-field full-width">
+                        <span>Church Name <small>(Optional)</small></span>
+                        <input
+                          type="text"
+                          id="customerChurch"
+                          name="customerChurch"
+                          autocomplete="organization"
+                          placeholder="Name of your church"
+                        />
+                      </label>
+                      <label class="checkout-field full-width">
+                        <span>Payment Method</span>
+                        <select
+                          id="paymentMethod"
+                          name="paymentMethod"
+                          required
+                        >
+                          <option value="">Select payment method</option>
+                          <option value="GCash">GCash</option>
+                          <option value="Bank Transfer">Bank Transfer</option>
+                          <option value="Cash on Delivery">
+                            Cash on Delivery
+                          </option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </label>
+                      <label class="checkout-field full-width">
+                        <span>Special Notes <small>(Optional)</small></span>
+                        <textarea
+                          id="specialNotes"
+                          name="specialNotes"
+                          placeholder="Enter any delivery instructions or order notes"
+                        ></textarea>
+                      </label>
+                      <label class="checkout-field full-width">
+                        <span>Proof of Payment (Screenshot)</span>
+                        <input
+                          type="file"
+                          id="paymentScreenshot"
+                          name="paymentScreenshot"
+                          accept="image/*"
+                          required
+                        />
+                      </label>
+                    </div>
+                    <button
+                      type="submit"
+                      id="submitOrderBtn"
+                      class="cta-btn primary"
+                    >
+                      Submit Order
+                    </button>
+                    <div
+                      id="orderFeedback"
+                      class="checkout-feedback"
+                      aria-live="polite"
+                    ></div>
+                  </form>
+                </section>
               </div>
-              <button type="submit" id="submitOrderBtn" class="cta-btn primary">
+            </div>
+          </div>
+          <!-- Fixed footer for mobile checkout (appears only on small screens) -->
+          <div class="checkout-fixed-footer" aria-hidden="true">
+            <div class="footer-inner">
+              <div class="footer-total">
+                Grand total: <strong id="mobileFooterTotal">PHP 0.00</strong>
+              </div>
+              <button
+                type="button"
+                id="mobileSubmitBtn"
+                class="cta-btn primary"
+              >
                 Submit Order
               </button>
-              <div
-                id="orderFeedback"
-                class="checkout-feedback"
-                aria-live="polite"
-              ></div>
-            </form>
-            <!-- Order receipt placeholder moved to a standalone modal -->
+            </div>
           </div>
         </div>
       </div>
