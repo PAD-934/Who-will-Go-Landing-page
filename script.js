@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeNavigation();
   initializeModals();
   initializeContactForm();
+  initializeCheckoutForm();
   initializeLoveGiftForm();
   initializeProductFilters();
   enhanceProductPricing();
@@ -448,6 +449,249 @@ function initializeContactForm() {
   });
 }
 
+function initializeCheckoutForm() {
+  const form = document.getElementById("order-form");
+  if (!form) return;
+  form.addEventListener("submit", handleCheckoutSubmit);
+}
+
+async function handleCheckoutSubmit(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  if (!(form instanceof HTMLFormElement)) return;
+
+  if (!cart.length) {
+    showToast("Your cart is empty. Add items before submitting.");
+    return;
+  }
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  toggleSubmitButton(submitBtn, true, "Submitting order...");
+  clearOrderFeedback();
+
+  const orderId = document
+    .getElementById("checkoutOrderId")
+    ?.textContent.trim();
+  const customerName = form.customerName.value.trim();
+  const customerEmail = form.customerEmail.value.trim();
+  const customerContact = form.customerContact.value.trim();
+  const customerAddress = form.customerAddress.value.trim();
+  const customerChurch = form.customerChurch.value.trim();
+  const paymentMethod = form.paymentMethod.value.trim();
+  const specialNotes = form.specialNotes.value.trim();
+  const paymentInput = form.paymentScreenshot;
+
+  if (!customerName || !customerEmail || !customerContact || !customerAddress) {
+    showOrderFeedback("error", "Please complete all required contact fields.");
+    toggleSubmitButton(submitBtn, false);
+    return;
+  }
+
+  if (!paymentMethod) {
+    showOrderFeedback("error", "Please select your payment method.");
+    toggleSubmitButton(submitBtn, false);
+    return;
+  }
+
+  if (!paymentInput || !paymentInput.files || paymentInput.files.length === 0) {
+    showOrderFeedback("error", "Please upload a screenshot of your payment.");
+    toggleSubmitButton(submitBtn, false);
+    return;
+  }
+
+  const paymentFile = paymentInput.files[0];
+  let paymentScreenshotBase64;
+
+  try {
+    paymentScreenshotBase64 = await fileToBase64(paymentFile);
+  } catch (error) {
+    console.error(error);
+    showOrderFeedback(
+      "error",
+      "Unable to read the payment screenshot. Please try a different file.",
+    );
+    toggleSubmitButton(submitBtn, false);
+    return;
+  }
+
+  const orderItems = cart.map((item) => {
+    const options = {};
+    if (item.sizeLabel) options.size = item.sizeLabel;
+    if (item.variantLabel) options.color = item.variantLabel;
+
+    return {
+      name: item.title,
+      quantity: item.qty,
+      price: item.price,
+      subtotal: item.price * item.qty,
+      options,
+    };
+  });
+
+  const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+  const totalAmount = cart.reduce(
+    (sum, item) => sum + item.price * item.qty,
+    0,
+  );
+  const orderDetails = orderItems
+    .map((item) => `${item.name} x${item.quantity}`)
+    .join("; ");
+
+  if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL.includes("YOUR_")) {
+    showOrderFeedback(
+      "error",
+      "Google Apps Script URL is not configured. Update the script.js file.",
+    );
+    toggleSubmitButton(submitBtn, false);
+    return;
+  }
+
+  const payload = {
+    orderId: orderId || `WWG-${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    customerName,
+    customerEmail,
+    customerContact,
+    customerAddress,
+    customerChurch,
+    paymentMethod,
+    specialNotes,
+    status: "Pending",
+    screenshotFile: paymentScreenshotBase64,
+    screenshotFilename: paymentFile.name,
+    screenshotMimeType: paymentFile.type,
+    products: orderItems,
+    totalItems,
+    totalAmount,
+    orderDetails,
+  };
+
+  try {
+    const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    let result = null;
+    try {
+      result = await response.json();
+    } catch (error) {
+      result = null;
+    }
+
+    if (!response.ok || (result && result.success === false)) {
+      const errorMessage =
+        result?.message ||
+        `Unable to submit order. Server returned ${response.status}.`;
+      throw new Error(errorMessage);
+    }
+
+    const serverOrderId = result?.orderId || payload.orderId;
+    showOrderFeedback(
+      "success",
+      `Order submitted successfully. Your order ID is ${serverOrderId}.`,
+    );
+    // Populate and show receipt
+    populateReceipt({
+      orderId: serverOrderId,
+      timestamp: payload.timestamp || new Date().toLocaleString(),
+      customerName: payload.customerName,
+      customerEmail: payload.customerEmail,
+      customerContact: payload.customerContact,
+      customerAddress: payload.customerAddress,
+      products: payload.products,
+      totalItems: payload.totalItems,
+      totalAmount: payload.totalAmount,
+      paymentMethod: payload.paymentMethod,
+      specialNotes: payload.specialNotes,
+      status: payload.status || "Pending",
+    });
+    cart = [];
+    saveCart();
+    updateCartBadge();
+    if (typeof renderCartItems === "function") {
+      renderCartItems();
+    }
+    form.reset();
+    // Keep checkout modal open so the user can view the confirmation receipt.
+    // The receipt will be closed by the user with the Close Receipt button.
+  } catch (error) {
+    console.error("Checkout submission error:", error);
+    showOrderFeedback(
+      "error",
+      error.message ||
+        "Checkout failed. Please refresh the page and try again.",
+    );
+  } finally {
+    toggleSubmitButton(submitBtn, false);
+  }
+}
+
+function populateReceipt(data) {
+  const receipt = document.getElementById("orderReceipt");
+  if (!receipt) return;
+  document.getElementById("receiptOrderId").textContent = data.orderId || "-";
+  document.getElementById("receiptTimestamp").textContent =
+    data.timestamp || "-";
+  document.getElementById("receiptCustomerName").textContent =
+    data.customerName || "-";
+  document.getElementById("receiptCustomerEmail").textContent =
+    data.customerEmail || "-";
+  document.getElementById("receiptCustomerContact").textContent =
+    data.customerContact || "-";
+  document.getElementById("receiptCustomerAddress").textContent =
+    data.customerAddress || "-";
+  document.getElementById("receiptTotalItems").textContent =
+    data.totalItems || 0;
+  document.getElementById("receiptTotalAmount").textContent = `PHP ${(
+    data.totalAmount || 0
+  ).toFixed(2)}`;
+  document.getElementById("receiptPaymentMethod").textContent =
+    data.paymentMethod || "-";
+  document.getElementById("receiptSpecialNotes").textContent =
+    data.specialNotes || "-";
+  document.getElementById("receiptStatus").textContent =
+    data.status || "Pending";
+
+  const productsEl = document.getElementById("receiptProducts");
+  productsEl.innerHTML = "";
+  if (Array.isArray(data.products) && data.products.length) {
+    data.products.forEach((p) => {
+      const line = document.createElement("div");
+      line.className = "receipt-product-line";
+      const opts = p.options
+        ? " " +
+          Object.keys(p.options)
+            .map((k) => `${k}: ${p.options[k]}`)
+            .join(", ")
+        : "";
+      line.textContent = `${p.name}${opts} x${p.quantity} — PHP ${(p.subtotal || p.price * p.quantity).toFixed(2)}`;
+      productsEl.appendChild(line);
+    });
+  } else {
+    productsEl.textContent = data.orderDetails || "-";
+  }
+
+  receipt.hidden = false;
+  receipt.classList.remove("hidden");
+  // Keep modal open to show receipt; scroll to receipt
+  receipt.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+// Close receipt button
+document.addEventListener("click", (e) => {
+  const target = e.target;
+  if (target && target.id === "receiptCloseBtn") {
+    const receipt = document.getElementById("orderReceipt");
+    if (receipt) {
+      receipt.hidden = true;
+      receipt.classList.add("hidden");
+    }
+    // close modal and allow normal flow
+    closeCheckoutModal();
+  }
+});
+
 function validateContactForm(data) {
   if (!data.fullName) {
     showFormStatus("error", "Please enter your full name.");
@@ -598,6 +842,47 @@ function showToast(message, duration = 3500) {
   toast.dismissTimer = setTimeout(() => {
     toast.classList.remove("show");
   }, duration);
+}
+
+function showOrderFeedback(type, message) {
+  const feedback = document.getElementById("orderFeedback");
+  if (!feedback) return;
+  feedback.className = `checkout-feedback ${type}`;
+  feedback.textContent = message;
+}
+
+function clearOrderFeedback() {
+  const feedback = document.getElementById("orderFeedback");
+  if (!feedback) return;
+  feedback.textContent = "";
+  feedback.className = "checkout-feedback";
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      if (typeof dataUrl === "string") {
+        resolve(dataUrl.replace(/^data:[^;]+;base64,/, ""));
+      } else {
+        reject(new Error("Unable to encode file."));
+      }
+    };
+    reader.onerror = () => reject(new Error("Failed to read file."));
+    reader.readAsDataURL(file);
+  });
+}
+
+function toggleSubmitButton(button, isLoading, label) {
+  if (!button) return;
+  button.disabled = isLoading;
+  if (isLoading) {
+    button.dataset.originalText = button.textContent;
+    button.textContent = label || "Submitting...";
+  } else {
+    button.textContent = button.dataset.originalText || "Submit Final Order";
+  }
 }
 
 /* ==================== SIMPLE CART ==================== */
@@ -1202,6 +1487,11 @@ const PRODUCTS = [
 
 let cart = JSON.parse(localStorage.getItem("wwg_cart") || "[]");
 
+// Google Apps Script backend endpoint for native order submission.
+// Replace this with your deployed Web App URL after publishing the script.
+const GOOGLE_APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbxy7oLzRux_fCzUEzYpic4E_6Cws7psw0o3Ptv6RS65hyk88xCSQvqveGMe5sZMEFcg/exec";
+
 function saveCart() {
   localStorage.setItem("wwg_cart", JSON.stringify(cart));
 }
@@ -1679,6 +1969,72 @@ function toggleCart(open) {
   }
 }
 
+function getCheckoutOrderText() {
+  return cart
+    .map((item) => {
+      const parts = [item.title];
+      if (item.variantLabel) parts.push(item.variantLabel);
+      if (item.sizeLabel) parts.push(item.sizeLabel);
+      return `${parts.join(" / ")} x${item.qty} = PHP ${(
+        item.price * item.qty
+      ).toFixed(2)}`;
+    })
+    .join("\n");
+}
+
+function openCheckoutModal() {
+  if (!cart.length) {
+    showToast("Add products to your cart before checking out.");
+    return;
+  }
+
+  const modal = document.getElementById("checkoutModal");
+  const summaryEl = document.getElementById("checkoutSummary");
+  const totalItemsEl = document.getElementById("checkoutTotalItems");
+  const totalEl = document.getElementById("checkoutGrandTotal");
+  const orderIdEl = document.getElementById("checkoutOrderId");
+  if (!modal || !summaryEl || !totalItemsEl || !totalEl || !orderIdEl) {
+    return;
+  }
+
+  toggleCart(false);
+  const itemCount = cart.reduce((sum, item) => sum + item.qty, 0);
+  const grandTotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const orderId = `WWG-${Date.now()}`;
+
+  orderIdEl.textContent = orderId;
+  totalItemsEl.textContent = itemCount;
+  totalEl.textContent = `PHP ${grandTotal.toFixed(2)}`;
+  summaryEl.innerHTML = cart
+    .map((item) => {
+      const parts = [item.title];
+      if (item.variantLabel) parts.push(item.variantLabel);
+      if (item.sizeLabel) parts.push(item.sizeLabel);
+      return `
+        <div class="checkout-summary-item">
+          <div class="checkout-summary-item-meta">
+            <span>${parts.join(" • ")}</span>
+            <span class="checkout-summary-qty">Qty ${item.qty}</span>
+          </div>
+          <strong>PHP ${(item.price * item.qty).toFixed(2)}</strong>
+        </div>
+      `;
+    })
+    .join("");
+
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeCheckoutModal() {
+  const modal = document.getElementById("checkoutModal");
+  if (!modal) return;
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
 /* ==================== PRODUCT MODAL ==================== */
 function setProductModalPreview(product, variantId = null, variantIndex = 0) {
   const imageContainer = document.getElementById("productModalImagePreview");
@@ -2032,6 +2388,7 @@ document.addEventListener("click", function (e) {
 document.addEventListener("keydown", function (ev) {
   if (ev.key === "Escape") {
     closeProductModal();
+    closeCheckoutModal();
   }
 });
 
@@ -2169,8 +2526,20 @@ document.addEventListener("click", function (e) {
   }
 
   if (t.id === "checkoutBtn" || t.closest("#checkoutBtn")) {
-    showToast("Checkout is not configured in this demo.");
+    openCheckoutModal();
     return;
+  }
+
+  if (t.id === "checkoutClose" || t.closest("#checkoutClose")) {
+    closeCheckoutModal();
+    return;
+  }
+
+  if (t.id === "checkoutModal" || t.closest("#checkoutModal")) {
+    if (t.id === "checkoutModal") {
+      closeCheckoutModal();
+      return;
+    }
   }
 
   if (t.matches(".remove-item-btn") || t.closest(".remove-item-btn")) {

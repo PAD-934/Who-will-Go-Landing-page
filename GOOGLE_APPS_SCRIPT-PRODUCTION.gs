@@ -11,22 +11,22 @@
  */
 const CONFIG = {
   // Your Google Sheet ID (from URL: docs.google.com/spreadsheets/d/{SHEET_ID}/edit)
-  SHEET_ID: 'YOUR_GOOGLE_SHEET_ID_HERE',
-  
+  SHEET_ID: "YOUR_GOOGLE_SHEET_ID_HERE",
+
   // Sheet names within the workbook
   SHEETS: {
-    ORDERS: 'Orders',
-    PRODUCTS: 'Products',
-    SETTINGS: 'Settings'
+    ORDERS: "Orders",
+    PRODUCTS: "Products",
+    SETTINGS: "Settings",
   },
-  
+
   // Email configuration
-  ADMIN_EMAIL: 'admin@yourchurch.com',     // Where order notifications go
-  REPLY_TO: 'noreply@yourchurch.com',      // System email
-  
+  ADMIN_EMAIL: "admin@yourchurch.com", // Where order notifications go
+  REPLY_TO: "noreply@yourchurch.com", // System email
+
   // Order settings
-  ORDER_PREFIX: 'WWG',                      // Order ID prefix
-  TIMEZONE: 'Asia/Manila'                   // For timestamps
+  ORDER_PREFIX: "WWG", // Order ID prefix
+  TIMEZONE: "Asia/Manila", // For timestamps
 };
 
 /**
@@ -36,36 +36,50 @@ const CONFIG = {
 function doPost(e) {
   try {
     // Get client IP for rate limiting
-    const clientIp = e.clientAddress || 'unknown';
-    
+    const clientIp = e.clientAddress || "unknown";
+
     // Check rate limit (prevent abuse)
     if (checkRateLimit(clientIp)) {
-      return createJsonResponse({
-        success: false,
-        message: 'Too many requests. Please try again later.',
-        errors: ['Rate limit exceeded']
-      }, 429);
+      return createJsonResponse(
+        {
+          success: false,
+          message: "Too many requests. Please try again later.",
+          errors: ["Rate limit exceeded"],
+        },
+        429,
+      );
     }
-    
+
     // Parse incoming JSON data
     const requestData = JSON.parse(e.postData.contents);
-    
+
     // Validate that required fields are present
     if (!isValidOrderData(requestData)) {
-      return createJsonResponse({
-        success: false,
-        message: 'Invalid order data. Missing required fields.',
-        errors: validateOrderData(requestData)
-      }, 400);
+      return createJsonResponse(
+        {
+          success: false,
+          message: "Invalid order data. Missing required fields.",
+          errors: validateOrderData(requestData),
+        },
+        400,
+      );
     }
-    
+
     // Generate unique Order ID
     const orderId = generateOrderId();
-    
+
+    // Save payment proof if supplied
+    const paymentProof = requestData.paymentScreenshot || null;
+    const paymentProofInfo = paymentProof
+      ? savePaymentProofFile(paymentProof, orderId)
+      : null;
+
     // Create order object with metadata
     const orderData = {
       orderId: orderId,
-      timestamp: new Date().toLocaleString('en-PH', { timeZone: CONFIG.TIMEZONE }),
+      timestamp: new Date().toLocaleString("en-PH", {
+        timeZone: CONFIG.TIMEZONE,
+      }),
       timestampISO: new Date().toISOString(),
       customerName: requestData.customerName.trim(),
       email: requestData.email.toLowerCase().trim(),
@@ -74,50 +88,85 @@ function doPost(e) {
       products: requestData.products,
       totalItems: requestData.totalItems,
       totalAmount: requestData.totalAmount,
-      tshirtSize: requestData.tshirtSize || 'N/A',
+      tshirtSize: requestData.tshirtSize || "N/A",
       paymentMethod: requestData.paymentMethod,
-      notes: (requestData.notes || '').trim(),
-      status: 'Pending'
+      notes: (requestData.notes || "").trim(),
+      paymentScreenshotName: paymentProofInfo ? paymentProofInfo.fileName : "",
+      paymentScreenshotUrl: paymentProofInfo ? paymentProofInfo.fileUrl : "",
+      status: "Pending",
     };
-    
+
     // Save to Google Sheets
     const saveResult = saveOrderToSheet(orderData);
     if (!saveResult.success) {
-      return createJsonResponse({
-        success: false,
-        message: 'Failed to save order. ' + saveResult.error
-      }, 500);
+      return createJsonResponse(
+        {
+          success: false,
+          message: "Failed to save order. " + saveResult.error,
+        },
+        500,
+      );
     }
-    
+
     // Send email notification to admin
     try {
       sendAdminNotification(orderData);
     } catch (emailError) {
-      Logger.log('Warning: Admin email failed - ' + emailError.toString());
+      Logger.log("Warning: Admin email failed - " + emailError.toString());
     }
-    
+
     // Send confirmation email to customer
     try {
       sendCustomerConfirmation(orderData);
     } catch (emailError) {
-      Logger.log('Warning: Customer email failed - ' + emailError.toString());
+      Logger.log("Warning: Customer email failed - " + emailError.toString());
     }
-    
+
     // Return success response
-    return createJsonResponse({
-      success: true,
-      orderId: orderId,
-      message: 'Order received successfully!',
-      timestamp: orderData.timestamp
-    }, 200);
-    
+    return createJsonResponse(
+      {
+        success: true,
+        orderId: orderId,
+        message: "Order received successfully!",
+        timestamp: orderData.timestamp,
+      },
+      200,
+    );
   } catch (error) {
-    Logger.log('Error in doPost: ' + error.toString());
-    
-    return createJsonResponse({
-      success: false,
-      message: 'Server error: ' + error.toString()
-    }, 500);
+    Logger.log("Error in doPost: " + error.toString());
+
+    return createJsonResponse(
+      {
+        success: false,
+        message: "Server error: " + error.toString(),
+      },
+      500,
+    );
+  }
+}
+
+/**
+ * Saves the payment proof image to Drive and returns file metadata
+ */
+function savePaymentProofFile(paymentProof, orderId) {
+  try {
+    const contentBytes = Utilities.base64Decode(paymentProof.contentBase64);
+    const fileName = `${orderId}_${paymentProof.fileName}`;
+    const blob = Utilities.newBlob(
+      contentBytes,
+      paymentProof.fileType,
+      fileName,
+    );
+    const file = DriveApp.createFile(blob);
+    file.setDescription(`Payment screenshot for order ${orderId}`);
+
+    return {
+      fileName: fileName,
+      fileUrl: file.getUrl(),
+    };
+  } catch (error) {
+    Logger.log("Error saving payment proof: " + error.toString());
+    return null;
   }
 }
 
@@ -130,14 +179,14 @@ function checkRateLimit(clientIp) {
   const scriptProperties = PropertiesService.getScriptProperties();
   const key = `ratelimit_${clientIp}`;
   const data = scriptProperties.getProperty(key);
-  
+
   let requestCount = 0;
   let timestamp = Date.now();
-  
+
   if (data) {
     const parsed = JSON.parse(data);
     const elapsed = timestamp - parsed.timestamp;
-    
+
     // Reset if older than 1 minute
     if (elapsed > 60000) {
       requestCount = 0;
@@ -146,20 +195,23 @@ function checkRateLimit(clientIp) {
       requestCount = parsed.count;
     }
   }
-  
+
   requestCount++;
-  
+
   // Store updated count
-  scriptProperties.setProperty(key, JSON.stringify({
-    count: requestCount,
-    timestamp: timestamp
-  }));
-  
+  scriptProperties.setProperty(
+    key,
+    JSON.stringify({
+      count: requestCount,
+      timestamp: timestamp,
+    }),
+  );
+
   // Clean up old entries (older than 2 minutes)
   const allProps = scriptProperties.getProperties();
   const now = Date.now();
   for (let key in allProps) {
-    if (key.startsWith('ratelimit_')) {
+    if (key.startsWith("ratelimit_")) {
       try {
         const data = JSON.parse(allProps[key]);
         if (now - data.timestamp > 120000) {
@@ -170,7 +222,7 @@ function checkRateLimit(clientIp) {
       }
     }
   }
-  
+
   // Return true if rate limit exceeded (>10 requests/minute)
   return requestCount > 10;
 }
@@ -180,16 +232,30 @@ function checkRateLimit(clientIp) {
  */
 function isValidOrderData(data) {
   const required = [
-    'customerName', 'email', 'phone', 'address', 
-    'products', 'totalAmount', 'paymentMethod'
+    "customerName",
+    "email",
+    "phone",
+    "address",
+    "products",
+    "totalAmount",
+    "paymentMethod",
+    "paymentScreenshot",
   ];
-  
+
   for (let field of required) {
-    if (data[field] === undefined || data[field] === null || data[field] === '') {
+    if (
+      data[field] === undefined ||
+      data[field] === null ||
+      data[field] === ""
+    ) {
       return false;
     }
   }
-  
+
+  if (!data.paymentScreenshot || !data.paymentScreenshot.contentBase64) {
+    return false;
+  }
+
   return true;
 }
 
@@ -199,63 +265,72 @@ function isValidOrderData(data) {
  */
 function validateOrderData(data) {
   const errors = [];
-  
+
   // Name validation
   if (!data.customerName || data.customerName.trim().length === 0) {
-    errors.push('Customer name is required');
+    errors.push("Customer name is required");
   } else if (data.customerName.length > 100) {
-    errors.push('Customer name too long (max 100)');
+    errors.push("Customer name too long (max 100)");
   }
-  
+
   // Email validation
   if (!data.email || !isValidEmail(data.email)) {
-    errors.push('Valid email address is required');
+    errors.push("Valid email address is required");
   } else if (data.email.length > 254) {
-    errors.push('Email too long');
+    errors.push("Email too long");
   }
-  
+
   // Phone validation
   if (!data.phone || data.phone.trim().length < 7) {
-    errors.push('Valid phone number is required');
+    errors.push("Valid phone number is required");
   } else if (data.phone.length > 20) {
-    errors.push('Phone number too long');
+    errors.push("Phone number too long");
   } else if (!/^[0-9\s\-()]*$/.test(data.phone)) {
-    errors.push('Phone contains invalid characters');
+    errors.push("Phone contains invalid characters");
   }
-  
+
   // Address validation
   if (!data.address || data.address.trim().length === 0) {
-    errors.push('Delivery address is required');
+    errors.push("Delivery address is required");
   } else if (data.address.length > 500) {
-    errors.push('Address too long (max 500)');
+    errors.push("Address too long (max 500)");
   }
-  
+
   // Products validation
-  if (!data.products || !Array.isArray(data.products) || data.products.length === 0) {
-    errors.push('At least one product must be selected');
+  if (
+    !data.products ||
+    !Array.isArray(data.products) ||
+    data.products.length === 0
+  ) {
+    errors.push("At least one product must be selected");
   } else if (data.products.length > 50) {
-    errors.push('Too many products');
+    errors.push("Too many products");
   }
-  
+
   // Amount validation
   if (!data.totalAmount || data.totalAmount <= 0) {
-    errors.push('Total amount must be greater than 0');
+    errors.push("Total amount must be greater than 0");
   } else if (data.totalAmount > 1000000) {
-    errors.push('Total amount too high');
+    errors.push("Total amount too high");
   }
-  
+
   // Payment method validation
   if (!data.paymentMethod || data.paymentMethod.trim().length === 0) {
-    errors.push('Payment method must be selected');
+    errors.push("Payment method must be selected");
   } else if (data.paymentMethod.length > 50) {
-    errors.push('Payment method string too long');
+    errors.push("Payment method string too long");
   }
-  
+
+  // Payment proof validation
+  if (!data.paymentScreenshot || !data.paymentScreenshot.contentBase64) {
+    errors.push("Payment screenshot proof is required");
+  }
+
   // Notes validation
   if (data.notes && data.notes.length > 1000) {
-    errors.push('Special notes too long (max 1000)');
+    errors.push("Special notes too long (max 1000)");
   }
-  
+
   return errors;
 }
 
@@ -264,26 +339,26 @@ function validateOrderData(data) {
  */
 function isValidEmail(email) {
   if (!email || email.length > 254) return false;
-  
+
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   if (!re.test(email)) return false;
-  
-  if (email.startsWith('.') || email.endsWith('.')) return false;
-  if (email.includes('..')) return false;
-  
-  const [localPart, domain] = email.split('@');
-  
+
+  if (email.startsWith(".") || email.endsWith(".")) return false;
+  if (email.includes("..")) return false;
+
+  const [localPart, domain] = email.split("@");
+
   if (!localPart || localPart.length > 64) return false;
-  if (localPart.startsWith('.') || localPart.endsWith('.')) return false;
-  if (localPart.includes('..')) return false;
-  
+  if (localPart.startsWith(".") || localPart.endsWith(".")) return false;
+  if (localPart.includes("..")) return false;
+
   if (!domain || domain.length < 3) return false;
-  if (!domain.includes('.')) return false;
-  
-  const tld = domain.split('.').pop();
+  if (!domain.includes(".")) return false;
+
+  const tld = domain.split(".").pop();
   if (!tld || tld.length < 2) return false;
   if (/^\d+$/.test(tld)) return false;
-  
+
   return true;
 }
 
@@ -293,18 +368,20 @@ function isValidEmail(email) {
  */
 function generateOrderId() {
   try {
-    const sheet = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName(CONFIG.SHEETS.ORDERS);
+    const sheet = SpreadsheetApp.openById(CONFIG.SHEET_ID).getSheetByName(
+      CONFIG.SHEETS.ORDERS,
+    );
     const lastRow = sheet.getLastRow();
-    
+
     // Sequence number based on row count
-    const sequenceNumber = String(lastRow).padStart(6, '0');
-    
+    const sequenceNumber = String(lastRow).padStart(6, "0");
+
     // Current date
-    const date = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyyMMdd');
-    
+    const date = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, "yyyyMMdd");
+
     return `${CONFIG.ORDER_PREFIX}-${date}-${sequenceNumber}`;
   } catch (e) {
-    Logger.log('Error generating Order ID: ' + e.toString());
+    Logger.log("Error generating Order ID: " + e.toString());
     // Fallback to timestamp
     return `${CONFIG.ORDER_PREFIX}-${Date.now()}`;
   }
@@ -317,18 +394,18 @@ function saveOrderToSheet(orderData) {
   try {
     const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
     let sheet = ss.getSheetByName(CONFIG.SHEETS.ORDERS);
-    
+
     // Create sheet if it doesn't exist
     if (!sheet) {
       sheet = ss.insertSheet(CONFIG.SHEETS.ORDERS);
       initializeOrdersSheet(sheet);
     }
-    
+
     // Format products as string
     const productList = orderData.products
-      .map(p => `${p.name} x${p.quantity}`)
-      .join('; ');
-    
+      .map((p) => `${p.name} x${p.quantity}`)
+      .join("; ");
+
     // Append row to sheet
     sheet.appendRow([
       orderData.orderId,
@@ -343,15 +420,16 @@ function saveOrderToSheet(orderData) {
       orderData.totalAmount,
       orderData.tshirtSize,
       orderData.paymentMethod,
+      orderData.paymentScreenshotName || "",
+      orderData.paymentScreenshotUrl || "",
       orderData.notes,
-      orderData.status
+      orderData.status,
     ]);
-    
+
     // Format sheet for readability
     formatOrdersSheet(sheet);
-    
+
     return { success: true };
-    
   } catch (error) {
     return { success: false, error: error.toString() };
   }
@@ -362,41 +440,43 @@ function saveOrderToSheet(orderData) {
  */
 function initializeOrdersSheet(sheet) {
   const headers = [
-    'Order ID',
-    'Timestamp',
-    'ISO Timestamp',
-    'Customer Name',
-    'Email',
-    'Phone',
-    'Address',
-    'Products',
-    'Total Items',
-    'Total Amount (PHP)',
-    'T-Shirt Size',
-    'Payment Method',
-    'Special Notes',
-    'Status'
+    "Order ID",
+    "Timestamp",
+    "ISO Timestamp",
+    "Customer Name",
+    "Email",
+    "Phone",
+    "Address",
+    "Products",
+    "Total Items",
+    "Total Amount (PHP)",
+    "T-Shirt Size",
+    "Payment Method",
+    "Payment Proof File",
+    "Payment Proof URL",
+    "Special Notes",
+    "Status",
   ];
-  
+
   sheet.appendRow(headers);
-  
+
   // Format header row
   const headerRange = sheet.getRange(1, 1, 1, headers.length);
-  headerRange.setBackground('#0D1B2A');
-  headerRange.setFontColor('#C9A84C');
-  headerRange.setFontWeight('bold');
+  headerRange.setBackground("#0D1B2A");
+  headerRange.setFontColor("#C9A84C");
+  headerRange.setFontWeight("bold");
   headerRange.setFontSize(11);
-  
+
   // Set column widths
-  sheet.setColumnWidth(1, 130);   // Order ID
-  sheet.setColumnWidth(2, 180);   // Timestamp
-  sheet.setColumnWidth(3, 200);   // ISO Timestamp
-  sheet.setColumnWidth(4, 150);   // Customer Name
-  sheet.setColumnWidth(5, 180);   // Email
-  sheet.setColumnWidth(6, 120);   // Phone
-  sheet.setColumnWidth(7, 200);   // Address
-  sheet.setColumnWidth(8, 250);   // Products
-  sheet.setColumnWidth(14, 100);  // Status
+  sheet.setColumnWidth(1, 130); // Order ID
+  sheet.setColumnWidth(2, 180); // Timestamp
+  sheet.setColumnWidth(3, 200); // ISO Timestamp
+  sheet.setColumnWidth(4, 150); // Customer Name
+  sheet.setColumnWidth(5, 180); // Email
+  sheet.setColumnWidth(6, 120); // Phone
+  sheet.setColumnWidth(7, 200); // Address
+  sheet.setColumnWidth(8, 250); // Products
+  sheet.setColumnWidth(14, 100); // Status
 }
 
 /**
@@ -405,8 +485,8 @@ function initializeOrdersSheet(sheet) {
 function formatOrdersSheet(sheet) {
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) {
-    const dataRange = sheet.getRange(2, 1, lastRow - 1, 14);
-    dataRange.setVerticalAlignment('top');
+    const dataRange = sheet.getRange(2, 1, lastRow - 1, 16);
+    dataRange.setVerticalAlignment("top");
     dataRange.setWrap(true);
   }
 }
@@ -417,7 +497,7 @@ function formatOrdersSheet(sheet) {
 function sendAdminNotification(orderData) {
   try {
     const subject = `[New Order] ${orderData.orderId} - ${orderData.customerName}`;
-    
+
     const htmlBody = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #0D1B2A; padding: 20px; text-align: center; color: #C9A84C;">
@@ -456,12 +536,16 @@ function sendAdminNotification(orderData) {
           
           <h3 style="color: #0D1B2A; margin-top: 20px;">Items Ordered</h3>
           <table style="width: 100%; border-collapse: collapse;">
-            ${orderData.products.map(p => `
+            ${orderData.products
+              .map(
+                (p) => `
               <tr style="border-bottom: 1px solid #ddd;">
                 <td style="padding: 10px;">${escapeHtml(p.name)} (x${p.quantity})</td>
                 <td style="padding: 10px; text-align: right;">PHP ${(p.price * p.quantity).toLocaleString()}</td>
               </tr>
-            `).join('')}
+            `,
+              )
+              .join("")}
             <tr style="background-color: #0D1B2A; color: #C9A84C; font-weight: bold;">
               <td style="padding: 10px;">TOTAL:</td>
               <td style="padding: 10px; text-align: right;">PHP ${orderData.totalAmount.toLocaleString()}</td>
@@ -471,7 +555,7 @@ function sendAdminNotification(orderData) {
           <h3 style="color: #0D1B2A; margin-top: 20px;">Additional Information</h3>
           <p><strong>T-Shirt Size:</strong> ${orderData.tshirtSize}</p>
           <p><strong>Payment Method:</strong> ${escapeHtml(orderData.paymentMethod)}</p>
-          <p><strong>Special Notes:</strong> ${orderData.notes ? escapeHtml(orderData.notes) : 'None'}</p>
+          <p><strong>Special Notes:</strong> ${orderData.notes ? escapeHtml(orderData.notes) : "None"}</p>
           <p><strong>Status:</strong> <span style="color: #8B6914; font-weight: bold;">${orderData.status}</span></p>
           
           <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
@@ -481,16 +565,15 @@ function sendAdminNotification(orderData) {
         </div>
       </div>
     `;
-    
-    GmailApp.sendEmail(CONFIG.ADMIN_EMAIL, subject, '', {
+
+    GmailApp.sendEmail(CONFIG.ADMIN_EMAIL, subject, "", {
       htmlBody: htmlBody,
-      replyTo: CONFIG.REPLY_TO
+      replyTo: CONFIG.REPLY_TO,
     });
-    
-    Logger.log('✅ Admin notification sent to: ' + CONFIG.ADMIN_EMAIL);
-    
+
+    Logger.log("✅ Admin notification sent to: " + CONFIG.ADMIN_EMAIL);
   } catch (error) {
-    Logger.log('❌ Error sending admin email: ' + error.toString());
+    Logger.log("❌ Error sending admin email: " + error.toString());
     throw error;
   }
 }
@@ -501,7 +584,7 @@ function sendAdminNotification(orderData) {
 function sendCustomerConfirmation(orderData) {
   try {
     const subject = `Order Confirmation - #${orderData.orderId}`;
-    
+
     const htmlBody = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background-color: #0D1B2A; padding: 20px; text-align: center; color: #C9A84C;">
@@ -530,13 +613,17 @@ function sendCustomerConfirmation(orderData) {
           
           <h3 style="color: #0D1B2A;">Items Ordered:</h3>
           <table style="width: 100%; border-collapse: collapse;">
-            ${orderData.products.map(p => `
+            ${orderData.products
+              .map(
+                (p) => `
               <tr style="border-bottom: 1px solid #ddd;">
                 <td style="padding: 10px;">${escapeHtml(p.name)}</td>
                 <td style="padding: 10px; text-align: center;">x${p.quantity}</td>
                 <td style="padding: 10px; text-align: right;">PHP ${(p.price * p.quantity).toLocaleString()}</td>
               </tr>
-            `).join('')}
+            `,
+              )
+              .join("")}
             <tr style="background-color: #0D1B2A; color: #C9A84C; font-weight: bold;">
               <td colspan="2" style="padding: 10px;">TOTAL:</td>
               <td style="padding: 10px; text-align: right;">PHP ${orderData.totalAmount.toLocaleString()}</td>
@@ -567,16 +654,15 @@ function sendCustomerConfirmation(orderData) {
         </div>
       </div>
     `;
-    
-    GmailApp.sendEmail(orderData.email, subject, '', {
+
+    GmailApp.sendEmail(orderData.email, subject, "", {
       htmlBody: htmlBody,
-      replyTo: CONFIG.ADMIN_EMAIL
+      replyTo: CONFIG.ADMIN_EMAIL,
     });
-    
-    Logger.log('✅ Customer confirmation sent to: ' + orderData.email);
-    
+
+    Logger.log("✅ Customer confirmation sent to: " + orderData.email);
   } catch (error) {
-    Logger.log('❌ Error sending customer email: ' + error.toString());
+    Logger.log("❌ Error sending customer email: " + error.toString());
     throw error;
   }
 }
@@ -586,22 +672,22 @@ function sendCustomerConfirmation(orderData) {
  */
 function escapeHtml(text) {
   const map = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
   };
-  return String(text).replace(/[&<>"']/g, m => map[m]);
+  return String(text).replace(/[&<>"']/g, (m) => map[m]);
 }
 
 /**
  * Creates a JSON response with proper headers
  */
 function createJsonResponse(data, statusCode) {
-  return ContentService
-    .createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(
+    ContentService.MimeType.JSON,
+  );
 }
 
 /**
@@ -611,50 +697,49 @@ function createJsonResponse(data, statusCode) {
  */
 function testOrder() {
   const testData = {
-    customerName: 'Test Customer',
-    email: 'test@gmail.com',
-    phone: '09171234567',
-    address: '123 Test Street, Test City',
-    products: [
-      { name: 'Test Product', quantity: 1, price: 500 }
-    ],
+    customerName: "Test Customer",
+    email: "test@gmail.com",
+    phone: "09171234567",
+    address: "123 Test Street, Test City",
+    products: [{ name: "Test Product", quantity: 1, price: 500 }],
     totalItems: 1,
     totalAmount: 500,
-    tshirtSize: 'N/A',
-    paymentMethod: 'Test',
-    notes: 'This is a test order'
+    tshirtSize: "N/A",
+    paymentMethod: "Test",
+    notes: "This is a test order",
   };
-  
-  Logger.log('Testing order processing...');
-  
+
+  Logger.log("Testing order processing...");
+
   try {
     if (!isValidOrderData(testData)) {
-      Logger.log('❌ Validation failed');
+      Logger.log("❌ Validation failed");
       Logger.log(validateOrderData(testData));
       return;
     }
-    
+
     const orderId = generateOrderId();
-    Logger.log('✅ Generated Order ID: ' + orderId);
-    
+    Logger.log("✅ Generated Order ID: " + orderId);
+
     const orderData = {
       ...testData,
       orderId: orderId,
-      timestamp: new Date().toLocaleString('en-PH', { timeZone: CONFIG.TIMEZONE }),
+      timestamp: new Date().toLocaleString("en-PH", {
+        timeZone: CONFIG.TIMEZONE,
+      }),
       timestampISO: new Date().toISOString(),
-      status: 'Pending'
+      status: "Pending",
     };
-    
+
     const result = saveOrderToSheet(orderData);
     if (result.success) {
-      Logger.log('✅ Order saved to sheet successfully');
+      Logger.log("✅ Order saved to sheet successfully");
     } else {
-      Logger.log('❌ Save failed: ' + result.error);
+      Logger.log("❌ Save failed: " + result.error);
     }
-    
-    Logger.log('✅ Test complete');
-    
+
+    Logger.log("✅ Test complete");
   } catch (e) {
-    Logger.log('❌ Error: ' + e.toString());
+    Logger.log("❌ Error: " + e.toString());
   }
 }

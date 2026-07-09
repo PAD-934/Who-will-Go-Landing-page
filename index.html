@@ -128,6 +128,217 @@
         </div>
       </aside>
 
+      <!-- Checkout Modal -->
+      <div
+        id="checkoutModal"
+        class="modal checkout-modal"
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div class="modal-backdrop"></div>
+        <div class="modal-content checkout-modal-content">
+          <button
+            id="checkoutClose"
+            class="modal-close"
+            aria-label="Close checkout"
+          >
+            &times;
+          </button>
+          <div class="checkout-summary-section">
+            <h2>Checkout Summary</h2>
+            <p class="checkout-summary-note">
+              Quantities are shown below for review. Edit the quantity in your
+              cart before submitting the order.
+            </p>
+            <div id="checkoutSummary" class="checkout-summary"></div>
+            <div class="checkout-totals">
+              <div class="summary-row">
+                <span>Total items</span>
+                <strong id="checkoutTotalItems">0</strong>
+              </div>
+              <div class="summary-row">
+                <span>Grand total</span>
+                <strong id="checkoutGrandTotal">PHP 0.00</strong>
+              </div>
+              <div class="summary-row">
+                <span>Order ID</span>
+                <strong id="checkoutOrderId">-</strong>
+              </div>
+            </div>
+            <div class="checkout-help-text">
+              Your order details will be prefilled into the secure form. After
+              completing payment, upload your GCash payment screenshot in the
+              form before submitting.
+            </div>
+          </div>
+          <div class="checkout-form-section">
+            <div class="checkout-form-header">
+              <h2>Customer Details</h2>
+              <p>Complete the form and submit to confirm your order.</p>
+            </div>
+            <form id="order-form" class="checkout-order-form" autocomplete="on">
+              <div class="checkout-fields-grid">
+                <label class="checkout-field">
+                  <span>Full Name</span>
+                  <input
+                    type="text"
+                    id="customerName"
+                    name="customerName"
+                    placeholder="Juan Dela Cruz"
+                    required
+                  />
+                </label>
+                <label class="checkout-field">
+                  <span>Email</span>
+                  <input
+                    type="email"
+                    id="customerEmail"
+                    name="customerEmail"
+                    placeholder="juan@example.com"
+                    required
+                  />
+                </label>
+                <label class="checkout-field">
+                  <span>Contact Number</span>
+                  <input
+                    type="tel"
+                    id="customerContact"
+                    name="customerContact"
+                    placeholder="0917..."
+                    required
+                  />
+                </label>
+                <label class="checkout-field full-width">
+                  <span>Full Address</span>
+                  <textarea
+                    id="customerAddress"
+                    name="customerAddress"
+                    placeholder="Street, Barangay, City, Province, Postal Code"
+                    required
+                  ></textarea>
+                </label>
+                <label class="checkout-field full-width">
+                  <span>Church Name <small>(Optional)</small></span>
+                  <input
+                    type="text"
+                    id="customerChurch"
+                    name="customerChurch"
+                    placeholder="Name of your church"
+                  />
+                </label>
+                <label class="checkout-field full-width">
+                  <span>Payment Method</span>
+                  <select id="paymentMethod" name="paymentMethod" required>
+                    <option value="">Select payment method</option>
+                    <option value="GCash">GCash</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Cash on Delivery">Cash on Delivery</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </label>
+                <label class="checkout-field full-width">
+                  <span>Special Notes <small>(Optional)</small></span>
+                  <textarea
+                    id="specialNotes"
+                    name="specialNotes"
+                    placeholder="Enter any delivery instructions or order notes"
+                  ></textarea>
+                </label>
+                <label class="checkout-field full-width">
+                  <span>Proof of Payment (Screenshot)</span>
+                  <input
+                    type="file"
+                    id="paymentScreenshot"
+                    name="paymentScreenshot"
+                    accept="image/*"
+                    required
+                  />
+                </label>
+              </div>
+              <button type="submit" id="submitOrderBtn" class="cta-btn primary">
+                Submit Final Order
+              </button>
+              <div
+                id="orderFeedback"
+                class="checkout-feedback"
+                aria-live="polite"
+              ></div>
+            </form>
+            <!-- Order receipt (hidden until submission succeeds) -->
+            <div
+              id="orderReceipt"
+              class="checkout-receipt hidden"
+              aria-live="polite"
+              hidden
+            >
+              <div class="checkout-form-header">
+                <h2>Order Confirmation</h2>
+                <p>
+                  Your order has been received. Please keep this confirmation
+                  for reference.
+                </p>
+              </div>
+              <div class="receipt-card">
+                <div class="receipt-row">
+                  <span>Order ID</span>
+                  <strong id="receiptOrderId">-</strong>
+                </div>
+                <div class="receipt-row">
+                  <span>Date</span>
+                  <strong id="receiptTimestamp">-</strong>
+                </div>
+                <div class="receipt-row">
+                  <span>Name</span>
+                  <strong id="receiptCustomerName">-</strong>
+                </div>
+                <div class="receipt-row">
+                  <span>Email</span>
+                  <strong id="receiptCustomerEmail">-</strong>
+                </div>
+                <div class="receipt-row">
+                  <span>Contact</span>
+                  <strong id="receiptCustomerContact">-</strong>
+                </div>
+                <div class="receipt-row full-width">
+                  <span>Address</span>
+                  <strong id="receiptCustomerAddress">-</strong>
+                </div>
+                <div class="receipt-row full-width">
+                  <span>Products</span>
+                  <div id="receiptProducts" class="receipt-products">-</div>
+                </div>
+                <div class="receipt-row">
+                  <span>Total items</span>
+                  <strong id="receiptTotalItems">0</strong>
+                </div>
+                <div class="receipt-row">
+                  <span>Grand total</span>
+                  <strong id="receiptTotalAmount">PHP 0.00</strong>
+                </div>
+                <div class="receipt-row">
+                  <span>Payment Method</span>
+                  <strong id="receiptPaymentMethod">-</strong>
+                </div>
+                <div class="receipt-row full-width">
+                  <span>Special Notes</span>
+                  <strong id="receiptSpecialNotes">-</strong>
+                </div>
+                <div class="receipt-row">
+                  <span>Status</span>
+                  <strong id="receiptStatus">Pending</strong>
+                </div>
+              </div>
+              <div class="receipt-actions">
+                <button id="receiptCloseBtn" class="cta-btn primary">
+                  Close Receipt
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <nav class="bottom-nav" aria-label="Mobile bottom navigation">
         <a href="#" class="bottom-nav-item active" data-action="home">
           <span class="bottom-nav-icon">🏠</span>
