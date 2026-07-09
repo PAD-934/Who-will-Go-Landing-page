@@ -206,6 +206,9 @@
                     id="customerContact"
                     name="customerContact"
                     placeholder="0917..."
+                    inputmode="numeric"
+                    pattern="\d{11}"
+                    maxlength="11"
                     required
                   />
                 </label>
@@ -257,7 +260,7 @@
                 </label>
               </div>
               <button type="submit" id="submitOrderBtn" class="cta-btn primary">
-                Submit Final Order
+                Submit Order
               </button>
               <div
                 id="orderFeedback"
@@ -265,76 +268,7 @@
                 aria-live="polite"
               ></div>
             </form>
-            <!-- Order receipt (hidden until submission succeeds) -->
-            <div
-              id="orderReceipt"
-              class="checkout-receipt hidden"
-              aria-live="polite"
-              hidden
-            >
-              <div class="checkout-form-header">
-                <h2>Order Confirmation</h2>
-                <p>
-                  Your order has been received. Please keep this confirmation
-                  for reference.
-                </p>
-              </div>
-              <div class="receipt-card">
-                <div class="receipt-row">
-                  <span>Order ID</span>
-                  <strong id="receiptOrderId">-</strong>
-                </div>
-                <div class="receipt-row">
-                  <span>Date</span>
-                  <strong id="receiptTimestamp">-</strong>
-                </div>
-                <div class="receipt-row">
-                  <span>Name</span>
-                  <strong id="receiptCustomerName">-</strong>
-                </div>
-                <div class="receipt-row">
-                  <span>Email</span>
-                  <strong id="receiptCustomerEmail">-</strong>
-                </div>
-                <div class="receipt-row">
-                  <span>Contact</span>
-                  <strong id="receiptCustomerContact">-</strong>
-                </div>
-                <div class="receipt-row full-width">
-                  <span>Address</span>
-                  <strong id="receiptCustomerAddress">-</strong>
-                </div>
-                <div class="receipt-row full-width">
-                  <span>Products</span>
-                  <div id="receiptProducts" class="receipt-products">-</div>
-                </div>
-                <div class="receipt-row">
-                  <span>Total items</span>
-                  <strong id="receiptTotalItems">0</strong>
-                </div>
-                <div class="receipt-row">
-                  <span>Grand total</span>
-                  <strong id="receiptTotalAmount">PHP 0.00</strong>
-                </div>
-                <div class="receipt-row">
-                  <span>Payment Method</span>
-                  <strong id="receiptPaymentMethod">-</strong>
-                </div>
-                <div class="receipt-row full-width">
-                  <span>Special Notes</span>
-                  <strong id="receiptSpecialNotes">-</strong>
-                </div>
-                <div class="receipt-row">
-                  <span>Status</span>
-                  <strong id="receiptStatus">Pending</strong>
-                </div>
-              </div>
-              <div class="receipt-actions">
-                <button id="receiptCloseBtn" class="cta-btn primary">
-                  Close Receipt
-                </button>
-              </div>
-            </div>
+            <!-- Order receipt placeholder moved to a standalone modal -->
           </div>
         </div>
       </div>
@@ -1733,6 +1667,107 @@
       </div>
     </div>
 
+    <!-- Receipt Modal (shown after successful order submission) -->
+    <div
+      class="modal"
+      id="receiptModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="receiptModalTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-content receipt-modal-content">
+        <button
+          class="modal-close"
+          id="receiptModalClose"
+          aria-label="Close receipt"
+        >
+          &times;
+        </button>
+        <h2 id="receiptModalTitle">Order Confirmation</h2>
+        <p class="modal-subtitle">
+          Thank you — your order has been received. Keep this receipt for your
+          records.
+        </p>
+        <div class="receipt-card" id="receiptCard">
+          <div class="receipt-row">
+            <span>Order ID</span>
+            <strong id="receiptOrderId">-</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Date</span>
+            <strong id="receiptTimestamp">-</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Name</span>
+            <strong id="receiptCustomerName">-</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Email</span>
+            <strong id="receiptCustomerEmail">-</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Contact</span>
+            <strong id="receiptCustomerContact">-</strong>
+          </div>
+          <div class="receipt-row full-width">
+            <span>Address</span>
+            <strong id="receiptCustomerAddress">-</strong>
+          </div>
+          <div class="receipt-row full-width">
+            <span>Products</span>
+            <div id="receiptProducts" class="receipt-products">-</div>
+          </div>
+          <div class="receipt-row">
+            <span>Total items</span>
+            <strong id="receiptTotalItems">0</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Grand total</span>
+            <strong id="receiptTotalAmount">PHP 0.00</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Payment Method</span>
+            <strong id="receiptPaymentMethod">-</strong>
+          </div>
+          <div class="receipt-row full-width">
+            <span>Special Notes</span>
+            <strong id="receiptSpecialNotes">-</strong>
+          </div>
+          <div class="receipt-row">
+            <span>Status</span>
+            <strong id="receiptStatus">Pending</strong>
+          </div>
+        </div>
+        <div class="receipt-actions">
+          <label for="receiptFormat" class="visually-hidden">Format</label>
+          <select
+            id="receiptFormat"
+            class="receipt-format-select"
+            aria-label="Receipt format"
+          >
+            <option value="pdf">PDF</option>
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+          </select>
+          <button id="receiptDownloadBtn" class="cta-btn cta-outline">
+            Download
+          </button>
+          <button id="receiptCloseBtn" class="cta-btn cta-primary">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+      crossorigin="anonymous"
+    ></script>
     <script src="script.js"></script>
   </body>
 </html>

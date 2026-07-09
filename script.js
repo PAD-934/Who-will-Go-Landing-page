@@ -453,6 +453,45 @@ function initializeCheckoutForm() {
   const form = document.getElementById("order-form");
   if (!form) return;
   form.addEventListener("submit", handleCheckoutSubmit);
+  // real-time validation to toggle submit button glow/enable
+  const fields = [
+    "customerName",
+    "customerEmail",
+    "customerContact",
+    "customerAddress",
+    "paymentMethod",
+  ];
+  fields.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      clearFieldError(el);
+      updateCheckoutSubmitState();
+    });
+    el.addEventListener("change", () => {
+      clearFieldError(el);
+      updateCheckoutSubmitState();
+    });
+  });
+  const paymentInput = document.getElementById("paymentScreenshot");
+  if (paymentInput)
+    paymentInput.addEventListener("change", () => {
+      clearFieldError(paymentInput);
+      updateCheckoutSubmitState();
+    });
+
+  // sanitize contact input: digits only and max 11
+  const contactEl = document.getElementById("customerContact");
+  if (contactEl) {
+    contactEl.addEventListener("input", function (e) {
+      const v = this.value.replace(/[^0-9]/g, "").slice(0, 11);
+      if (this.value !== v) this.value = v;
+      updateCheckoutSubmitState();
+    });
+  }
+
+  // initial validation run
+  setTimeout(updateCheckoutSubmitState, 50);
 }
 
 async function handleCheckoutSubmit(event) {
@@ -462,6 +501,25 @@ async function handleCheckoutSubmit(event) {
 
   if (!cart.length) {
     showToast("Your cart is empty. Add items before submitting.");
+    return;
+  }
+
+  // run validation and show inline errors if any
+  clearAllFieldErrors(form);
+  const fieldErrors = validateCheckoutForm(form);
+  if (fieldErrors.length) {
+    fieldErrors.forEach((fe) => showFieldError(fe.el, fe.msg));
+    const first = fieldErrors[0].el;
+    try {
+      first.focus();
+      first.scrollIntoView({ behavior: "smooth", block: "center" });
+    } catch (err) {}
+    showOrderFeedback(
+      "error",
+      "Please fix the highlighted fields before submitting.",
+    );
+    const submitBtn = form.querySelector('button[type="submit"]');
+    toggleSubmitButton(submitBtn, false);
     return;
   }
 
@@ -483,6 +541,16 @@ async function handleCheckoutSubmit(event) {
 
   if (!customerName || !customerEmail || !customerContact || !customerAddress) {
     showOrderFeedback("error", "Please complete all required contact fields.");
+    toggleSubmitButton(submitBtn, false);
+    return;
+  }
+
+  // ensure contact is 11 digits (numbers only)
+  if (!/^[0-9]{11}$/.test(customerContact)) {
+    showOrderFeedback(
+      "error",
+      "Please enter a valid 11-digit contact number (numbers only).",
+    );
     toggleSubmitButton(submitBtn, false);
     return;
   }
@@ -628,8 +696,7 @@ async function handleCheckoutSubmit(event) {
 }
 
 function populateReceipt(data) {
-  const receipt = document.getElementById("orderReceipt");
-  if (!receipt) return;
+  // Populate receipt fields (standalone receipt modal is used)
   document.getElementById("receiptOrderId").textContent = data.orderId || "-";
   document.getElementById("receiptTimestamp").textContent =
     data.timestamp || "-";
@@ -672,23 +739,234 @@ function populateReceipt(data) {
     productsEl.textContent = data.orderDetails || "-";
   }
 
-  receipt.hidden = false;
-  receipt.classList.remove("hidden");
-  // Keep modal open to show receipt; scroll to receipt
-  receipt.scrollIntoView({ behavior: "smooth", block: "center" });
+  // Open the standalone receipt modal
+  openReceiptModal();
 }
 
-// Close receipt button
-document.addEventListener("click", (e) => {
-  const target = e.target;
-  if (target && target.id === "receiptCloseBtn") {
-    const receipt = document.getElementById("orderReceipt");
-    if (receipt) {
-      receipt.hidden = true;
-      receipt.classList.add("hidden");
-    }
-    // close modal and allow normal flow
+function openReceiptModal() {
+  const modal = document.getElementById("receiptModal");
+  if (!modal) return;
+  // Close checkout modal if still open
+  try {
     closeCheckoutModal();
+  } catch (err) {}
+  modal.classList.add("active");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeReceiptModal() {
+  const modal = document.getElementById("receiptModal");
+  if (!modal) return;
+  modal.classList.remove("active");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+async function downloadReceipt(format) {
+  const receiptCard = document.getElementById("receiptCard");
+  if (!receiptCard) return;
+  format = format || "pdf";
+  if (typeof html2canvas === "undefined") {
+    console.error("html2canvas not loaded");
+    return;
+  }
+  // Render title + subtitle + receipt together by cloning into a temporary wrapper
+  const titleEl = document.getElementById("receiptModalTitle");
+  const modal = document.getElementById("receiptModal");
+  const subtitleEl = modal ? modal.querySelector(".modal-subtitle") : null;
+  const wrapper = document.createElement("div");
+  wrapper.style.background = "#ffffff";
+  wrapper.style.padding = "24px";
+  wrapper.style.width = "780px";
+  wrapper.style.boxSizing = "border-box";
+  wrapper.style.fontFamily =
+    getComputedStyle(document.body).fontFamily ||
+    "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial";
+  if (titleEl) wrapper.appendChild(titleEl.cloneNode(true));
+  if (subtitleEl) wrapper.appendChild(subtitleEl.cloneNode(true));
+  wrapper.appendChild(receiptCard.cloneNode(true));
+  // place offscreen so html2canvas can render computed styles
+  wrapper.style.position = "fixed";
+  wrapper.style.left = "-9999px";
+  wrapper.style.top = "0";
+  document.body.appendChild(wrapper);
+
+  const scale = Math.min(2, window.devicePixelRatio || 1);
+  const canvas = await html2canvas(wrapper, {
+    scale,
+    useCORS: true,
+    backgroundColor: "#ffffff",
+  });
+
+  // remove wrapper after render
+  wrapper.remove();
+  if (format === "png" || format === "jpeg") {
+    const mime = format === "png" ? "image/png" : "image/jpeg";
+    const dataUrl = canvas.toDataURL(mime, 0.95);
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const orderId = (
+      document.getElementById("receiptOrderId")?.textContent || "receipt"
+    ).replace(/[^a-z0-9-_.]/gi, "_");
+    const ext = format === "jpeg" ? "jpg" : "png";
+    a.download = `${orderId}-receipt.${ext}`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return;
+  }
+  // PDF flow using jsPDF
+  if (typeof window.jspdf === "undefined") {
+    console.error("jsPDF not loaded");
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const imgData = canvas.toDataURL("image/png");
+  const pdf = new jsPDF({ unit: "pt", format: "a4" });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 24;
+  const availableWidth = pageWidth - margin * 2;
+  const imgProps = { width: canvas.width, height: canvas.height };
+  const imgHeight = (imgProps.height * availableWidth) / imgProps.width;
+  let y = margin;
+  pdf.addImage(imgData, "PNG", margin, y, availableWidth, imgHeight);
+  const orderId2 = (
+    document.getElementById("receiptOrderId")?.textContent || "receipt"
+  ).replace(/[^a-z0-9-_.]/gi, "_");
+  pdf.save(`${orderId2}-receipt.pdf`);
+}
+
+// Real-time validation helper for the checkout form
+function updateCheckoutSubmitState() {
+  const form = document.getElementById("order-form");
+  if (!form) return;
+  const btn = document.getElementById("submitOrderBtn");
+  if (!btn) return;
+
+  const name = form.customerName.value.trim();
+  const email = form.customerEmail.value.trim();
+  const contact = form.customerContact.value.trim();
+  const address = form.customerAddress.value.trim();
+  const paymentMethod = form.paymentMethod.value.trim();
+  const paymentInput = form.paymentScreenshot;
+
+  const hasPayment =
+    paymentInput && paymentInput.files && paymentInput.files.length > 0;
+  const contactValid = /^[0-9]{11}$/.test(contact);
+
+  const allValid =
+    name &&
+    isValidEmail(email) &&
+    contactValid &&
+    address &&
+    paymentMethod &&
+    hasPayment;
+
+  // keep the button clickable at all times, only toggle visual glow
+  if (allValid) {
+    btn.classList.add("glow");
+  } else {
+    btn.classList.remove("glow");
+  }
+}
+
+// Show inline field error message
+function showFieldError(el, message) {
+  if (!el) return;
+  el.classList.add("invalid");
+  // try to place error message after the input/textarea/select
+  let err = el.nextElementSibling;
+  if (!err || !err.classList || !err.classList.contains("field-error")) {
+    err = document.createElement("div");
+    err.className = "field-error";
+    el.parentNode.insertBefore(err, el.nextSibling);
+  }
+  err.textContent = message;
+}
+
+function clearFieldError(el) {
+  if (!el) return;
+  el.classList.remove("invalid");
+  const next = el.nextElementSibling;
+  if (next && next.classList && next.classList.contains("field-error")) {
+    next.remove();
+  }
+}
+
+function clearAllFieldErrors(form) {
+  if (!form) return;
+  const els = form.querySelectorAll(".invalid");
+  els.forEach((e) => e.classList.remove("invalid"));
+  form.querySelectorAll(".field-error").forEach((d) => d.remove());
+}
+
+function validateCheckoutForm(form) {
+  const errors = [];
+  const name = form.customerName && form.customerName.value.trim();
+  const email = form.customerEmail && form.customerEmail.value.trim();
+  const contact = form.customerContact && form.customerContact.value.trim();
+  const address = form.customerAddress && form.customerAddress.value.trim();
+  const paymentMethod = form.paymentMethod && form.paymentMethod.value.trim();
+  const paymentInput = form.paymentScreenshot;
+
+  if (!name)
+    errors.push({ el: form.customerName, msg: "Please enter your full name." });
+  if (!email || !isValidEmail(email))
+    errors.push({
+      el: form.customerEmail,
+      msg: "Please enter a valid email address.",
+    });
+  if (!contact)
+    errors.push({
+      el: form.customerContact,
+      msg: "Please enter your contact number (11 digits).",
+    });
+  else if (!/^[0-9]{11}$/.test(contact))
+    errors.push({
+      el: form.customerContact,
+      msg: "Contact must be 11 digits, numbers only.",
+    });
+  if (!address)
+    errors.push({
+      el: form.customerAddress,
+      msg: "Please enter your full address.",
+    });
+  if (!paymentMethod)
+    errors.push({
+      el: form.paymentMethod,
+      msg: "Please select a payment method.",
+    });
+  if (!paymentInput || !paymentInput.files || paymentInput.files.length === 0)
+    errors.push({
+      el: paymentInput || form.paymentScreenshot,
+      msg: "Please upload a screenshot of your payment.",
+    });
+
+  return errors;
+}
+
+// Attach receipt modal button handlers
+document.addEventListener("click", (e) => {
+  const t = e.target;
+  if (!t) return;
+  if (t.id === "receiptCloseBtn" || t.id === "receiptModalClose") {
+    closeReceiptModal();
+  }
+  if (t.id === "receiptDownloadBtn") {
+    const fmtSelect = document.getElementById("receiptFormat");
+    const format = (fmtSelect?.value || "pdf").toLowerCase();
+    const receiptCard = document.getElementById("receiptCard");
+    if (!receiptCard) return;
+    // call download flow
+    downloadReceipt(format).catch((err) =>
+      console.error("Download error", err),
+    );
   }
 });
 
@@ -881,7 +1159,7 @@ function toggleSubmitButton(button, isLoading, label) {
     button.dataset.originalText = button.textContent;
     button.textContent = label || "Submitting...";
   } else {
-    button.textContent = button.dataset.originalText || "Submit Final Order";
+    button.textContent = button.dataset.originalText || "Submit Order";
   }
 }
 
