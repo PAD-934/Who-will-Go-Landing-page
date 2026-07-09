@@ -330,21 +330,45 @@
                         />
                       </label>
                       <label class="checkout-field full-width">
-                        <span>Payment Method</span>
+                        <span>Payment Method <small>(GCash only)</small></span>
                         <select
                           id="paymentMethod"
                           name="paymentMethod"
                           required
                         >
-                          <option value="">Select payment method</option>
                           <option value="GCash">GCash</option>
-                          <option value="Bank Transfer">Bank Transfer</option>
-                          <option value="Cash on Delivery">
-                            Cash on Delivery
-                          </option>
-                          <option value="Other">Other</option>
                         </select>
                       </label>
+                      <div class="gcash-instructions">
+                        <div>
+                          <div class="gcash-instructions-title">
+                            <strong>GCash payment details</strong>
+                          </div>
+                          <p>
+                            Send payment to
+                            <strong id="gcashNumber">09550463152</strong>
+                            or scan the QR code below. After payment, upload a
+                            screenshot in the payment proof field.
+                          </p>
+                        </div>
+                        <img
+                          src="payment%20method/GCASH%20QR.png"
+                          alt="GCash QR code for 09550463152"
+                        />
+                        <div class="gcash-instructions-meta">
+                          <p class="gcash-note">
+                            Only GCash is accepted. Use the QR code or number
+                            above to complete your payment before submitting.
+                          </p>
+                          <button
+                            type="button"
+                            class="copy-button"
+                            data-copy-target="gcashNumber"
+                          >
+                            Copy number
+                          </button>
+                        </div>
+                      </div>
                       <label class="checkout-field full-width">
                         <span>Special Notes <small>(Optional)</small></span>
                         <textarea

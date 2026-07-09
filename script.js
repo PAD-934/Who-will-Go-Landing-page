@@ -68,6 +68,11 @@ try {
           const cartBtn =
             t.closest && t.closest("#cartButton, .bottom-nav-cart");
           if (cartBtn) {
+            try {
+              if (typeof toggleCart === "function") toggleCart();
+            } catch (tcErr) {
+              console.warn("WWG capture toggleCart error", tcErr);
+            }
             e.preventDefault && e.preventDefault();
             e.stopPropagation && e.stopPropagation();
             return;
@@ -179,35 +184,125 @@ function initializeProductHoverPreview() {
     <div class="image-preview-overlay-backdrop" aria-hidden="true"></div>
     <div class="image-preview-overlay-content">
       <button class="image-preview-overlay-close" aria-label="Close image preview" title="Close">&times;</button>
-      <img src="" alt="" />
+      <button class="image-preview-nav image-preview-nav-left" aria-label="Previous image">&#x2039;</button>
+      <div class="image-preview-inner">
+        <img src="" alt="" />
+      </div>
+      <button class="image-preview-nav image-preview-nav-right" aria-label="Next image">&#x203A;</button>
+      <div class="image-preview-counter" aria-hidden="true"></div>
     </div>
   `;
   document.body.appendChild(preview);
 
   const previewImage = preview.querySelector("img");
+  const previewLeft = preview.querySelector(".image-preview-nav-left");
+  const previewRight = preview.querySelector(".image-preview-nav-right");
+  const previewCounter = preview.querySelector(".image-preview-counter");
   const backdrop = preview.querySelector(".image-preview-overlay-backdrop");
 
-  function showPreview(target) {
-    previewImage.src = target.currentSrc || target.src;
-    previewImage.alt = target.alt || "Product preview";
+  // navigation support for galleries opened in the preview
+  let _navImages = [];
+  let _navIndex = -1;
+
+  function _resolveUrl(u) {
+    try {
+      return new URL(u, document.baseURI).href;
+    } catch (e) {
+      return String(u || "");
+    }
+  }
+
+  function _openPreviewAtIndex(images, index, alt) {
+    if (!images || !images.length) return;
+    // normalize to absolute URLs to avoid mismatches between currentSrc and
+    // provided gallery image strings (relative vs absolute paths)
+    // normalize and remove duplicates while preserving order
+    const resolved = [];
+    const seen = new Set();
+    for (const i of images) {
+      const r = _resolveUrl(i);
+      if (!r) continue;
+      if (seen.has(r)) continue;
+      seen.add(r);
+      resolved.push(r);
+    }
+    _navImages = resolved;
+    _navIndex = Math.max(0, Math.min(index || 0, _navImages.length - 1));
+    // helper to render current index
+    const _renderNavImage = (idx) => {
+      const src = _navImages[idx] || "";
+      previewImage.src = src;
+      previewImage.alt = alt || previewImage.alt || "Product preview";
+      if (previewCounter)
+        previewCounter.textContent = `${idx + 1} / ${_navImages.length}`;
+    };
+    _renderNavImage(_navIndex);
     preview.setAttribute("aria-hidden", "false");
     preview.classList.add("visible");
     preview.style.display = "flex";
   }
 
-  function showPreviewBySrc(src, alt) {
+  function showPreview(target) {
+    const src = target.currentSrc || target.src;
+    const alt = target.alt || "Product preview";
+    // try to find sibling images for gallery navigation
+    const gallery =
+      target.closest(".product-gallery") || target.closest(".product-card");
+    if (gallery) {
+      const imgs = Array.from(gallery.querySelectorAll("img"))
+        .map((i) => i.currentSrc || i.src)
+        .filter(Boolean);
+      const idx = imgs.indexOf(src);
+      if (imgs.length && idx >= 0) {
+        _openPreviewAtIndex(imgs, idx, alt);
+        return;
+      }
+    }
+    _openPreviewAtIndex([src], 0, alt);
+  }
+
+  function showPreviewBySrc(src, alt, galleryImgs) {
     if (!src) return;
-    previewImage.src = src;
-    previewImage.alt = alt || "Size guide preview";
-    preview.setAttribute("aria-hidden", "false");
-    preview.classList.add("visible");
-    preview.style.display = "flex";
+    const resolvedSrc = _resolveUrl(src);
+    if (Array.isArray(galleryImgs) && galleryImgs.length) {
+      const resolvedGallery = galleryImgs
+        .map((i) => _resolveUrl(i))
+        .filter(Boolean);
+      // try exact match first
+      let idx = resolvedGallery.indexOf(resolvedSrc);
+      if (idx === -1) {
+        // fallback: try match by filename or pathname end (handles some CMS/resolved differences)
+        const srcTail = resolvedSrc.split("/").slice(-1)[0];
+        idx = resolvedGallery.findIndex(
+          (g) => g.endsWith(srcTail) || g.includes(srcTail),
+        );
+      }
+      if (idx >= 0) {
+        _openPreviewAtIndex(resolvedGallery, idx, alt);
+        return;
+      }
+      // no match but gallery present — open gallery starting at 0
+      _openPreviewAtIndex(resolvedGallery, 0, alt);
+      return;
+    }
+    _openPreviewAtIndex([resolvedSrc], 0, alt);
   }
 
   function hidePreview() {
     preview.setAttribute("aria-hidden", "true");
     preview.classList.remove("visible");
     preview.style.display = "none";
+    _navImages = [];
+    _navIndex = -1;
+    // mark a short-lived flag so other global click handlers (e.g., product modal)
+    // can ignore the next click. This avoids closing the product modal when
+    // the user taps the preview's close button on mobile.
+    try {
+      window._justClosedImagePreview = Date.now();
+      setTimeout(() => {
+        window._justClosedImagePreview = 0;
+      }, 400);
+    } catch (e) {}
   }
 
   preview.style.display = "none";
@@ -221,6 +316,30 @@ function initializeProductHoverPreview() {
       previewButton.dataset.previewAlt = image.alt || "Product preview";
       previewButton.setAttribute("aria-label", "Preview product image");
     }
+  });
+
+  // expose preview helpers for other UI elements (e.g., GCash QR image)
+  try {
+    window.showPreviewBySrc = showPreviewBySrc;
+    window.showPreview = showPreview;
+    window.hidePreview = hidePreview;
+  } catch (e) {}
+
+  // attach click-to-enlarge for GCash QR images added in the checkout form
+  document.querySelectorAll(".gcash-instructions img").forEach((img) => {
+    img.style.cursor = "zoom-in";
+    img.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      const src = img.currentSrc || img.src;
+      try {
+        // use the exposed helper
+        if (typeof window.showPreviewBySrc === "function") {
+          window.showPreviewBySrc(src, img.alt || "GCash QR code");
+        }
+      } catch (err) {
+        console.warn("Failed to open image preview", err);
+      }
+    });
   });
 
   document.addEventListener("pointerup", (event) => {
@@ -237,11 +356,23 @@ function initializeProductHoverPreview() {
     }
 
     const closeButton = target.closest(".image-preview-overlay-close");
-    if (closeButton || target === backdrop || target === preview) {
+    if (closeButton) {
       event.preventDefault();
       event.stopImmediatePropagation();
       hidePreview();
+      return;
     }
+
+    // if clicking on the preview area itself (not the image), close
+    if (target === backdrop || target === preview) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      hidePreview();
+      return;
+    }
+
+    // Clicking the enlarged image should not advance the gallery —
+    // navigation is handled via the overlay nav buttons and keyboard only.
   });
 
   preview.addEventListener("click", (event) => {
@@ -263,9 +394,52 @@ function initializeProductHoverPreview() {
     });
   }
 
+  // nav buttons
+  if (previewLeft) {
+    previewLeft.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      if (_navImages.length > 1) {
+        _navIndex = (_navIndex - 1 + _navImages.length) % _navImages.length;
+        // update via centralized render
+        previewImage.src = _navImages[_navIndex];
+        previewImage.alt = previewImage.alt || "Product preview";
+        if (previewCounter)
+          previewCounter.textContent = `${_navIndex + 1} / ${_navImages.length}`;
+      }
+    });
+  }
+  if (previewRight) {
+    previewRight.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      if (_navImages.length > 1) {
+        _navIndex = (_navIndex + 1) % _navImages.length;
+        previewImage.src = _navImages[_navIndex];
+        previewImage.alt = previewImage.alt || "Product preview";
+        if (previewCounter)
+          previewCounter.textContent = `${_navIndex + 1} / ${_navImages.length}`;
+      }
+    });
+  }
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       hidePreview();
+      return;
+    }
+    if (
+      (event.key === "ArrowLeft" || event.key === "ArrowRight") &&
+      _navImages.length > 1
+    ) {
+      event.preventDefault();
+      if (event.key === "ArrowLeft") {
+        _navIndex = (_navIndex - 1 + _navImages.length) % _navImages.length;
+      } else {
+        _navIndex = (_navIndex + 1) % _navImages.length;
+      }
+      previewImage.src = _navImages[_navIndex];
+      previewImage.alt = previewImage.alt || "Product preview";
+      if (previewCounter)
+        previewCounter.textContent = `${_navIndex + 1} / ${_navImages.length}`;
     }
   });
 }
@@ -621,7 +795,7 @@ function initializeCheckoutForm() {
   if (paymentInput)
     paymentInput.addEventListener("change", () => {
       clearFieldError(paymentInput);
-      updateCheckoutSubmitState();
+      scheduleUpdateCheckoutSubmitState();
     });
 
   const mobileSubmitButton = document.getElementById("mobileSubmitBtn");
@@ -642,12 +816,25 @@ function initializeCheckoutForm() {
     contactEl.addEventListener("input", function (e) {
       const v = this.value.replace(/[^0-9]/g, "").slice(0, 11);
       if (this.value !== v) this.value = v;
-      updateCheckoutSubmitState();
+      scheduleUpdateCheckoutSubmitState();
     });
   }
 
-  // initial validation run
-  setTimeout(updateCheckoutSubmitState, 50);
+  // initial validation run (debounced)
+  scheduleUpdateCheckoutSubmitState(60);
+}
+
+// Debounced validation scheduler to avoid showing the glow while the user is typing
+let checkoutValidationTimer = null;
+function scheduleUpdateCheckoutSubmitState(delay = 400) {
+  if (checkoutValidationTimer) clearTimeout(checkoutValidationTimer);
+  checkoutValidationTimer = setTimeout(() => {
+    try {
+      updateCheckoutSubmitState();
+    } catch (e) {
+      console.warn("Validation schedule failed", e);
+    }
+  }, delay);
 }
 
 async function handleCheckoutSubmit(event) {
@@ -1029,6 +1216,10 @@ function updateCheckoutSubmitState() {
     btn.classList.add("glow");
     const mobileBtn = document.getElementById("mobileSubmitBtn");
     if (mobileBtn) mobileBtn.classList.add("glow");
+    // clear any top-level error message once the form becomes valid
+    try {
+      clearOrderFeedback();
+    } catch (e) {}
   } else {
     btn.classList.remove("glow");
     const mobileBtn = document.getElementById("mobileSubmitBtn");
@@ -1066,6 +1257,17 @@ function clearFieldError(el) {
   if (next && next.classList && next.classList.contains("field-error")) {
     next.remove();
   }
+  // If no more invalid fields remain in the form, clear the top-level order feedback
+  try {
+    const form =
+      el.closest && el.closest("form")
+        ? el.closest("form")
+        : document.getElementById("order-form");
+    const anyInvalid = form ? form.querySelector(".invalid") : null;
+    if (!anyInvalid) {
+      clearOrderFeedback();
+    }
+  } catch (e) {}
 }
 
 function clearAllFieldErrors(form) {
@@ -1124,6 +1326,39 @@ function validateCheckoutForm(form) {
 document.addEventListener("click", (e) => {
   const t = e.target;
   if (!t) return;
+
+  const copyButton = t.closest(".copy-button");
+  if (copyButton) {
+    e.preventDefault();
+    const targetId = copyButton.dataset.copyTarget;
+    const targetEl = targetId ? document.getElementById(targetId) : null;
+    const value = targetEl ? targetEl.textContent.trim() : "";
+    if (value) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(value).then(() => {
+          showToast("GCash number copied!");
+          try {
+            showCopiedPopup(copyButton, "Copied");
+          } catch (e) {}
+        });
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = value;
+        textarea.style.position = "fixed";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        showToast("GCash number copied!");
+        try {
+          showCopiedPopup(copyButton, "Copied");
+        } catch (e) {}
+      }
+    }
+    return;
+  }
+
   if (t.id === "receiptCloseBtn" || t.id === "receiptModalClose") {
     closeReceiptModal();
   }
@@ -1325,6 +1560,31 @@ function showToast(message, duration = 3500) {
   }, duration);
 }
 window.showToast = showToast;
+
+// Small popup near the clicked element to confirm copy action
+function showCopiedPopup(targetEl, message = "Copied") {
+  try {
+    if (!targetEl) return;
+    const popup = document.createElement("div");
+    popup.className = "copied-popup";
+    popup.textContent = message;
+    document.body.appendChild(popup);
+    const rect = targetEl.getBoundingClientRect();
+    // position above the button, centered
+    const left = rect.left + rect.width / 2;
+    const top = rect.top - 12;
+    popup.style.left = left + "px";
+    popup.style.top = top + "px";
+    // animate in
+    requestAnimationFrame(() => popup.classList.add("visible"));
+    setTimeout(() => {
+      popup.classList.remove("visible");
+      setTimeout(() => popup.remove(), 300);
+    }, 1500);
+  } catch (e) {
+    console.warn("showCopiedPopup failed", e);
+  }
+}
 
 function showOrderFeedback(type, message) {
   const feedback = document.getElementById("orderFeedback");
@@ -2695,12 +2955,93 @@ function setProductModalPreview(product, variantId = null, variantIndex = 0) {
       `;
   }
 
-  if (imageCount) {
-    const total = product.options?.length || 1;
-    const current = variantIndex + 1;
-    imageCount.textContent =
-      total > 1 ? `${current} of ${total} colors` : "1 photo";
+  // update navigation controls (arrows + counter)
+  try {
+    const modalElement = document.getElementById("productModal");
+    const prevBtn = document.getElementById("productModalPrev");
+    const nextBtn = document.getElementById("productModalNext");
+
+    // Build a list of actual images available for the product preview.
+    // Prefer explicit variant images, fall back to the product's main image.
+    const galleryImgs = (product.options || [])
+      .map((o) => o.img || o.image || o.preview)
+      .filter(Boolean);
+    if (!galleryImgs.length) galleryImgs.push(previewImg);
+
+    const totalImages = galleryImgs.length || 1;
+    const currentIndex = Math.min(
+      Math.max(Number(variantIndex) || 0, 0),
+      totalImages - 1,
+    );
+
+    // counter — concise, accessible format (e.g. "1 of 4")
+    if (imageCount) {
+      imageCount.textContent =
+        totalImages > 1 ? `${currentIndex + 1} of ${totalImages}` : "1 of 1";
+      imageCount.setAttribute(
+        "aria-label",
+        totalImages > 1
+          ? `Image ${currentIndex + 1} of ${totalImages}`
+          : "Single image",
+      );
+      // remove any stray 'colors' suffix if present (defensive)
+      try {
+        imageCount.textContent = imageCount.textContent.replace(
+          /\s*colors$/i,
+          "",
+        );
+      } catch (err) {}
+    }
+
+    // make arrows visible/usable and reflect state
+    if (prevBtn) {
+      prevBtn.disabled = totalImages <= 1;
+      prevBtn.setAttribute(
+        "aria-disabled",
+        prevBtn.disabled ? "true" : "false",
+      );
+      prevBtn.tabIndex = prevBtn.disabled ? -1 : 0;
+    }
+    if (nextBtn) {
+      nextBtn.disabled = totalImages <= 1;
+      nextBtn.setAttribute(
+        "aria-disabled",
+        nextBtn.disabled ? "true" : "false",
+      );
+      nextBtn.tabIndex = nextBtn.disabled ? -1 : 0;
+    }
+
+    // store current index on modal for other handlers
+    if (modalElement) {
+      modalElement.dataset.currentPhotoIndex = String(currentIndex);
+      modalElement.dataset.photoCount = String(totalImages);
+    }
+  } catch (e) {
+    // silent fail — don't break product modal when nav controls aren't present
   }
+
+  // attach click-to-enlarge only for the product modal image
+  try {
+    const imgEl = imageContainer.querySelector("img");
+    if (imgEl) {
+      imgEl.style.cursor = "zoom-in";
+      imgEl.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        const src = imgEl.currentSrc || imgEl.src;
+        // build gallery images from product options if available
+        const gallery = (product.options || [])
+          .map((o) => o.img || o.image || o.preview)
+          .filter(Boolean);
+        const galleryImgs = gallery.length ? gallery : [src];
+        // open preview at the selected src
+        if (typeof window.showPreviewBySrc === "function") {
+          window.showPreviewBySrc(src, altText, galleryImgs);
+        }
+      });
+    }
+  } catch (e) {}
+
+  // imageCount already updated above with a concise "1 / N" format.
 }
 
 function renderProductModalOptions(
@@ -2942,6 +3283,17 @@ document.addEventListener("click", function (e) {
   if (t.id === "productModal" || t.closest("#productModal")) {
     // clicking inside should not close; click overlay only
     if (t.id === "productModal") {
+      // If the image preview was just closed, ignore this click so that the
+      // product modal isn't also dismissed when the user tapped the '×' on
+      // the full-image preview (mobile behaviour).
+      if (
+        typeof window !== "undefined" &&
+        window._justClosedImagePreview &&
+        Date.now() - window._justClosedImagePreview < 400
+      ) {
+        // swallow silently
+        return;
+      }
       e.preventDefault();
       e.stopImmediatePropagation();
       closeProductModal();
@@ -2961,18 +3313,46 @@ document.addEventListener("click", function (e) {
     const modalElement = document.getElementById("productModal");
     const productId = modalElement?.dataset?.productId;
     const product = findProduct(productId);
-    if (product && product.options?.length > 1) {
-      const total = product.options.length;
+    if (product) {
+      // compute actual gallery images (variant images or main image)
+      const galleryImgs = (product.options || [])
+        .map((o) => o.img || o.image || o.preview)
+        .filter(Boolean);
+      if (!galleryImgs.length) galleryImgs.push(product.img);
+
+      const total = galleryImgs.length;
       const currentIndex = Number(modalElement.dataset.currentPhotoIndex) || 0;
       const step = prevArrow ? -1 : 1;
-      const newIndex = Math.min(Math.max(currentIndex + step, 0), total - 1);
-      const variantId = product.options[newIndex]?.id;
+      const newIndex = (currentIndex + step + total) % total;
+
+      // try to resolve a variant id for the new index when possible
+      let variantId = null;
+      if (product.options && product.options.length) {
+        if (product.options.length === total) {
+          variantId = product.options[newIndex]?.id;
+        } else {
+          const target = galleryImgs[newIndex];
+          for (const opt of product.options) {
+            const src = opt.img || opt.image || opt.preview;
+            if (!src) continue;
+            if (src === target) {
+              variantId = opt.id;
+              break;
+            }
+            const tail = (target || "").split("/").pop();
+            if (tail && src.includes(tail)) {
+              variantId = opt.id;
+              break;
+            }
+          }
+        }
+      }
+
       const variantSelect = document.getElementById(
         "productModalVariantSelect",
       );
-      if (variantSelect && variantId) {
-        variantSelect.value = variantId;
-      }
+      if (variantSelect && variantId) variantSelect.value = variantId;
+
       setProductModalPreview(product, variantId, newIndex);
       modalElement.dataset.currentPhotoIndex = newIndex;
     }
@@ -3021,6 +3401,54 @@ document.addEventListener("keydown", function (ev) {
     closeProductModal();
     closeCheckoutModal();
   }
+});
+
+// keyboard navigation for product modal (left/right arrows)
+document.addEventListener("keydown", function (ev) {
+  if (!(ev.key === "ArrowLeft" || ev.key === "ArrowRight")) return;
+  const modal = document.getElementById("productModal");
+  if (!modal) return;
+  if (modal.getAttribute("aria-hidden") === "true") return;
+  const productId = modal.dataset.productId;
+  const product = findProduct(productId);
+  if (!product) return;
+  ev.preventDefault();
+  // compute gallery images and map to variant ids when possible
+  const galleryImgs = (product.options || [])
+    .map((o) => o.img || o.image || o.preview)
+    .filter(Boolean);
+  if (!galleryImgs.length) galleryImgs.push(product.img);
+  const total = galleryImgs.length;
+  const current = Number(modal.dataset.currentPhotoIndex) || 0;
+  const step = ev.key === "ArrowLeft" ? -1 : 1;
+  const newIndex = (current + step + total) % total;
+
+  let variantId = null;
+  if (product.options && product.options.length) {
+    if (product.options.length === total)
+      variantId = product.options[newIndex]?.id;
+    else {
+      const target = galleryImgs[newIndex];
+      for (const opt of product.options) {
+        const src = opt.img || opt.image || opt.preview;
+        if (!src) continue;
+        if (src === target) {
+          variantId = opt.id;
+          break;
+        }
+        const tail = (target || "").split("/").pop();
+        if (tail && src.includes(tail)) {
+          variantId = opt.id;
+          break;
+        }
+      }
+    }
+  }
+
+  const variantSelect = document.getElementById("productModalVariantSelect");
+  if (variantSelect && variantId) variantSelect.value = variantId;
+  setProductModalPreview(product, variantId, newIndex);
+  modal.dataset.currentPhotoIndex = String(newIndex);
 });
 
 /* wire cart events */
