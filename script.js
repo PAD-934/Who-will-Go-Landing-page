@@ -880,19 +880,28 @@ function updateCheckoutSubmitState() {
 function showFieldError(el, message) {
   if (!el) return;
   el.classList.add("invalid");
-  // try to place error message after the input/textarea/select
+  el.setAttribute("aria-invalid", "true");
+  const errorId = `${el.id || "field"}-error`;
   let err = el.nextElementSibling;
   if (!err || !err.classList || !err.classList.contains("field-error")) {
     err = document.createElement("div");
     err.className = "field-error";
+    err.id = errorId;
+    err.setAttribute("role", "alert");
+    err.setAttribute("aria-live", "polite");
     el.parentNode.insertBefore(err, el.nextSibling);
+  } else if (!err.id) {
+    err.id = errorId;
   }
+  el.setAttribute("aria-describedby", errorId);
   err.textContent = message;
 }
 
 function clearFieldError(el) {
   if (!el) return;
   el.classList.remove("invalid");
+  el.removeAttribute("aria-invalid");
+  el.removeAttribute("aria-describedby");
   const next = el.nextElementSibling;
   if (next && next.classList && next.classList.contains("field-error")) {
     next.remove();
@@ -967,6 +976,40 @@ document.addEventListener("click", (e) => {
     downloadReceipt(format).catch((err) =>
       console.error("Download error", err),
     );
+  }
+});
+
+// Global keyboard handler: Esc closes active modals for accessibility
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" || e.key === "Esc") {
+    const checkoutModal = document.getElementById("checkoutModal");
+    const receiptModal = document.getElementById("receiptModal");
+    if (checkoutModal && checkoutModal.classList.contains("active")) {
+      closeCheckoutModal();
+      return;
+    }
+    if (receiptModal && receiptModal.classList.contains("active")) {
+      closeReceiptModal();
+      return;
+    }
+  }
+
+  // keyboard activation for mobile summary bar (Enter / Space)
+  if (e.key === "Enter" || e.key === " ") {
+    const active = document.activeElement;
+    if (active && active.id === "mobileSummaryBar") {
+      const details = document.getElementById("mobileSummaryDetails");
+      if (!details) return;
+      const isOpen = !details.hidden;
+      details.hidden = isOpen;
+      details.setAttribute("aria-hidden", String(isOpen));
+      const bar = document.getElementById("mobileSummaryBar");
+      const toggleBtn = document.getElementById("mobileSummaryToggle");
+      if (bar) bar.setAttribute("aria-expanded", String(!isOpen));
+      if (toggleBtn) toggleBtn.textContent = isOpen ? "▾" : "▴";
+      if (!isOpen)
+        details.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }
 });
 
@@ -2300,9 +2343,39 @@ function openCheckoutModal() {
     })
     .join("");
 
+  // Populate compact mobile summary (keeps UX snappy on phones)
+  try {
+    const mobileTotalItemsEl = document.getElementById("mobileTotalItems");
+    const mobileTotalAmountEl = document.getElementById("mobileTotalAmount");
+    const mobileDetails = document.getElementById("mobileSummaryDetails");
+    const mobileBar = document.getElementById("mobileSummaryBar");
+    if (mobileTotalItemsEl) mobileTotalItemsEl.textContent = itemCount;
+    if (mobileTotalAmountEl)
+      mobileTotalAmountEl.textContent = `PHP ${grandTotal.toFixed(2)}`;
+    if (mobileDetails) {
+      mobileDetails.innerHTML =
+        summaryEl.innerHTML +
+        `<div class="mobile-summary-actions-row" style="padding:12px;display:flex;gap:8px;justify-content:flex-end"><button id=\"mobileEditCart\" class=\"cta-outline\">Edit Cart</button></div>`;
+      mobileDetails.hidden = true;
+      mobileDetails.setAttribute("aria-hidden", "true");
+    }
+    if (mobileBar) mobileBar.setAttribute("aria-expanded", "false");
+  } catch (err) {
+    // non-fatal
+  }
+
   modal.classList.add("active");
   modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
+  document.documentElement.style.overflow = "hidden";
+  modal.scrollTop = 0;
+
+  const checkoutForm = document.getElementById("order-form");
+  if (checkoutForm) {
+    clearAllFieldErrors(checkoutForm);
+    clearOrderFeedback();
+  }
+  document.getElementById("customerName")?.focus();
 }
 
 function closeCheckoutModal() {
@@ -2311,6 +2384,7 @@ function closeCheckoutModal() {
   modal.classList.remove("active");
   modal.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
+  document.documentElement.style.overflow = "";
 }
 
 /* ==================== PRODUCT MODAL ==================== */
@@ -2803,6 +2877,16 @@ document.addEventListener("click", function (e) {
     return;
   }
 
+  if (t.id === "saveForLater" || t.closest("#saveForLater")) {
+    // Smoothly navigate to the shop section when Shop More is clicked
+    document.getElementById("shop")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+    toggleCart(false);
+    return;
+  }
+
   if (t.id === "checkoutBtn" || t.closest("#checkoutBtn")) {
     openCheckoutModal();
     return;
@@ -2810,6 +2894,46 @@ document.addEventListener("click", function (e) {
 
   if (t.id === "checkoutClose" || t.closest("#checkoutClose")) {
     closeCheckoutModal();
+    return;
+  }
+
+  if (t.id === "checkoutExitBtn" || t.closest("#checkoutExitBtn")) {
+    // quick exit from checkout (mobile friendly)
+    closeCheckoutModal();
+    return;
+  }
+
+  // Mobile summary toggle (bar or chevron)
+  if (
+    t.id === "mobileSummaryToggle" ||
+    t.closest("#mobileSummaryToggle") ||
+    t.id === "mobileSummaryBar" ||
+    t.closest("#mobileSummaryBar")
+  ) {
+    e.preventDefault();
+    const details = document.getElementById("mobileSummaryDetails");
+    const bar = document.getElementById("mobileSummaryBar");
+    const toggleBtn = document.getElementById("mobileSummaryToggle");
+    if (!details) return;
+    const isOpen = !details.hidden;
+    // flip
+    details.hidden = isOpen;
+    details.setAttribute("aria-hidden", String(isOpen));
+    if (bar) bar.setAttribute("aria-expanded", String(!isOpen));
+    if (toggleBtn) toggleBtn.textContent = isOpen ? "▾" : "▴";
+    if (!isOpen) {
+      // newly opened -> scroll into view
+      details.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    return;
+  }
+
+  if (t.id === "mobileEditCart" || t.closest("#mobileEditCart")) {
+    // Close checkout and open cart for editing
+    closeCheckoutModal();
+    toggleCart(true);
+    const cartButton = document.getElementById("cartButton");
+    if (cartButton) cartButton.setAttribute("aria-expanded", "true");
     return;
   }
 
