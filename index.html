@@ -68,12 +68,11 @@
               <span class="cart-badge" id="cartCount">0</span>
             </button>
             <a
-              href="https://m.me/paulAD934"
+              href="#"
               class="cta-btn cta-primary"
               title="Token Of Love"
-              aria-label="Send a Token Of Love via Facebook Messenger"
-              target="_blank"
-              rel="noopener noreferrer"
+              aria-label="Send a Token Of Love"
+              data-action="open-token-modal"
             >
               <i class="fas fa-heart"></i>
               <span class="support-text">Token Of Love</span>
@@ -127,6 +126,208 @@
           </div>
         </div>
       </aside>
+
+      <!-- Token Of Love: Donation Landing Modal -->
+      <div
+        class="modal"
+        id="tokenModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tokenModalTitle"
+        aria-hidden="true"
+      >
+        <div class="modal-content" role="document">
+          <button class="modal-close" aria-label="Close donation dialog">
+            &times;
+          </button>
+          <header class="donation-header">
+            <div class="donation-icon">❤️</div>
+            <div class="donation-title">
+              <h2 id="tokenModalTitle">Token Of Love</h2>
+              <p class="donation-sub">Support The Mission, Change Lives</p>
+              <p class="donation-lead">
+                Your generosity helps missionaries, training programs, and
+                community outreach continue making an impact.
+              </p>
+            </div>
+          </header>
+
+          <div class="donation-grid">
+            <!-- Left: Mission Story / Impact -->
+            <section class="donation-mission" aria-labelledby="whyGiveTitle">
+              <h3 id="whyGiveTitle">Why Your Gift Matters</h3>
+              <p class="mission-text">
+                Every donation, big or small, helps provide support, training,
+                and resources to those serving communities. Your kindness
+                becomes part of a bigger mission — bringing hope, tools, and
+                care where it is needed most.
+              </p>
+
+              <div class="impact-cards">
+                <div class="impact-card">
+                  <div class="impact-ico">❤️</div>
+                  <div>
+                    <strong>Support Missionaries</strong>
+                    <div class="impact-desc">
+                      Provide resources and care for those on the field.
+                    </div>
+                  </div>
+                </div>
+                <div class="impact-card">
+                  <div class="impact-ico">📚</div>
+                  <div>
+                    <strong>Provide Training</strong>
+                    <div class="impact-desc">
+                      Equip local leaders with practical skills and training.
+                    </div>
+                  </div>
+                </div>
+                <div class="impact-card">
+                  <div class="impact-ico">🤝</div>
+                  <div>
+                    <strong>Help Communities</strong>
+                    <div class="impact-desc">
+                      Support programs that strengthen families and
+                      neighborhoods.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Right: Donation Card -->
+            <aside class="donation-card" aria-labelledby="donationCardTitle">
+              <h4 id="donationCardTitle">GCash Donation</h4>
+              <p class="donation-instruction">
+                Send your gift through the number below or scan the QR code.
+              </p>
+
+              <div class="gcash-card">
+                <div class="gcash-number-row">
+                  <div class="gcash-number">
+                    <strong id="tokenGcashNumber">09550463152</strong>
+                  </div>
+                  <button
+                    id="tokenCopyBtn"
+                    class="copy-button"
+                    aria-label="Copy GCash number"
+                    data-copy-target="tokenGcashNumber"
+                  >
+                    Copy
+                  </button>
+                </div>
+
+                <div class="gcash-qr-wrap">
+                  <img
+                    id="tokenGcashQr"
+                    src="payment%20method/GCASH%20QR.png"
+                    alt="GCash QR code for 09550463152"
+                  />
+                </div>
+
+                <div class="gcash-actions">
+                  <button id="tokenPrimaryBtn" class="cta-btn cta-primary">
+                    ❤️ I Have Donated
+                  </button>
+                  <a
+                    id="tokenDownloadQr"
+                    href="payment%20method/GCASH%20QR.png"
+                    download
+                    class="cta-btn cta-outline"
+                    >⬇ Download QR Code</a
+                  >
+                </div>
+
+                <div class="donation-trust">
+                  <div class="trust-item">✓ Secure Giving</div>
+                  <div class="trust-item">✓ Every Gift Matters</div>
+                  <div class="trust-item">✓ Supporting Real Mission Work</div>
+                </div>
+              </div>
+
+              <div class="donation-thanks" id="tokenThanks" hidden>
+                <strong>Thank You for Your Generosity ❤️</strong>
+                <p>
+                  Your love and support help continue the mission
+                  <br />
+                  and bring meaningful change to lives in need.
+                </p>
+                <blockquote class="donation-quote">
+                  "No one may see the kindness you give,
+                  <br />
+                  but God sees your heart.
+                  <br />
+                  Every gift shared with love reflects His grace
+                  <br />
+                  and becomes a blessing to others." ❤️
+                </blockquote>
+                <p>Because of God's love, every act of generosity matters.</p>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customize Modal (Yarn's Of Joy) -->
+      <div
+        class="modal"
+        id="customizeModal"
+        role="dialog"
+        aria-modal="true"
+        aria-hidden="true"
+        aria-labelledby="customizeModalTitle"
+      >
+        <div class="modal-content" role="document">
+          <button class="modal-close" aria-label="Close customize dialog">
+            &times;
+          </button>
+          <header class="customize-header">
+            <img
+              id="customizeHeroImg"
+              class="customize-hero-img"
+              src=""
+              alt="Yarns of Joy"
+              style="display: none"
+            />
+            <h2 id="customizeModalTitle">Customize With Yarn's Of Joy</h2>
+            <p class="customize-lead">
+              Your idea. Your design. Your handmade story — created with Yarn's
+              Of Joy.
+            </p>
+          </header>
+
+          <div class="customize-body">
+            <ol class="customize-steps">
+              <li>
+                <strong>✨ Step 1</strong> — Choose your design inspiration
+                (photo or model).
+              </li>
+              <li>
+                <strong>🧶 Step 2</strong> — Send preferred colors, size,
+                quantity, and special instructions.
+              </li>
+              <li>
+                <strong>💖 Step 3</strong> — Yarn's Of Joy crafts your
+                personalized crochet piece and confirms delivery details.
+              </li>
+            </ol>
+
+            <div class="customize-note">
+              <p>
+                Please include: desired design, preferred colors, size
+                requirements, quantity, and any reference images when you
+                message Yarn's Of Joy.
+              </p>
+            </div>
+
+            <div class="customize-actions">
+              <button id="proceedCustomizeBtn" class="cta-btn cta-primary">
+                Proceed to Yarn's Of Joy
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Checkout Modal -->
       <div
@@ -392,6 +593,7 @@
                       type="submit"
                       id="submitOrderBtn"
                       class="cta-btn primary"
+                      disabled
                     >
                       Submit Order
                     </button>
@@ -405,7 +607,7 @@
               </div>
             </div>
           </div>
-          <!-- Fixed footer for mobile checkout (appears only on small screens) -->
+          <!-- Fixed footer for mobile checkout -->
           <div class="checkout-fixed-footer" aria-hidden="true">
             <div class="footer-inner">
               <div class="footer-total">
@@ -415,6 +617,7 @@
                 type="button"
                 id="mobileSubmitBtn"
                 class="cta-btn primary"
+                disabled
               >
                 Submit Order
               </button>
@@ -448,7 +651,7 @@
       </nav>
 
       <a
-        href="https://m.me/paulAD934"
+        href="https://www.facebook.com/SGBCTaytay"
         class="messenger-float-btn"
         aria-label="Message us on Facebook Messenger"
         title="Message us on Messenger"
@@ -476,8 +679,14 @@
 
           <div class="hero-actions">
             <a href="#shop" class="cta-btn cta-primary">Shop with Purpose</a>
-            <button class="cta-btn cta-secondary" data-action="open-love-gift">
-              Give a Love Gift
+            <button
+              type="button"
+              class="cta-btn cta-secondary token-cta"
+              data-action="open-token-modal"
+              aria-label="Token Of Love"
+            >
+              <i class="fas fa-heart" aria-hidden="true"></i>
+              <span>Token Of Love</span>
             </button>
           </div>
 
@@ -504,8 +713,10 @@
           <div class="mission-image">
             <img
               loading="lazy"
-              src="https://v3b.fal.media/files/b/0a9b7c4b/qvyZ3j0TEbi-bTl2ow9_D_4e26648e36bc45e8ae9a89600eedf566.webp?ar=landscape"
-              alt="Missionaries going to the world"
+              src="mockup/who%20will%20go%20MOCKUP.png"
+              alt="Who Will Go? mission poster"
+              width="1200"
+              height="700"
             />
           </div>
           <div class="mission-content">
@@ -1129,6 +1340,45 @@
             </article>
 
             <article
+              class="product-card customize-card"
+              data-action="open-customize-modal"
+              data-hero-image="Who Will Go Products/Crochet/yarns of joy.jpg"
+              data-hero-alt="Yarns of Joy"
+              data-category="crochet"
+              data-tags="made"
+            >
+              <div class="product-image">
+                <img
+                  src="Who Will Go Products/Crochet/yarns of joy.jpg"
+                  alt="Yarns of Joy"
+                />
+              </div>
+              <div class="product-info">
+                <p class="product-category">CROCHET</p>
+                <h3>Customize With Yarns of Joy</h3>
+                <p class="product-description">
+                  Every piece tells a story. Customize your crochet and create a
+                  meaningful handmade treasure made especially for you. ❤️
+                </p>
+                <div class="product-footer">
+                  <span class="product-price">PHP 60</span>
+                  <div class="product-actions">
+                    <button
+                      class="cta-btn cta-primary cta-small"
+                      type="button"
+                      data-action="open-customize-modal"
+                      data-hero-image="Who Will Go Products/Crochet/yarns of joy.jpg"
+                      data-hero-alt="Yarns of Joy"
+                      aria-label="Customize with Yarn's Of Joy"
+                    >
+                      CUSTOMIZE
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article
               class="product-card"
               data-product-id="14"
               data-category="crochet"
@@ -1137,15 +1387,15 @@
               <div class="product-image">
                 <img
                   src="Who Will Go Products/Crochet/Coaster.jpg"
-                  alt="Crochet Coaster"
+                  alt="Coaster"
                 />
               </div>
               <div class="product-info">
                 <p class="product-category">CROCHET</p>
-                <h3>Crochet Coaster</h3>
+                <h3>Coaster</h3>
                 <p class="product-description">
-                  Handmade coaster that protects surfaces and adds a warm,
-                  textured detail to any tabletop.
+                  Handcrafted crochet coaster that protects surfaces and adds a
+                  warm, textured accent to any tabletop.
                 </p>
                 <div class="product-footer">
                   <span class="product-price">PHP 60</span>
@@ -1537,8 +1787,13 @@
               >Shop Now &amp; Send Missionaries
               <i class="fas fa-arrow-right"></i
             ></a>
-            <button class="cta-btn cta-secondary" data-action="open-love-gift">
-              <i class="fas fa-heart"></i> Make a Love Gift
+            <button
+              type="button"
+              class="cta-btn cta-secondary"
+              data-action="open-token-modal"
+              aria-label="Token Of Love"
+            >
+              <i class="fas fa-heart"></i> Token Of Love
             </button>
           </div>
         </div>
@@ -1621,88 +1876,6 @@
           </p>
         </div>
       </footer>
-
-      <!-- Love Gift Modal -->
-      <div
-        class="modal"
-        id="loveGiftModal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="loveGiftTitle"
-      >
-        <div class="modal-content">
-          <button class="modal-close" aria-label="Close modal">&times;</button>
-          <h2 id="loveGiftTitle">Love Gift — Give Generously</h2>
-          <p class="modal-subtitle">
-            Every gift funds active missions worldwide. No purchase necessary —
-            just pure generosity for the Great Commission.
-          </p>
-
-          <form class="love-gift-form" id="loveGiftForm">
-            <div class="gift-amounts">
-              <button type="button" class="amount-btn" data-amount="25">
-                $25
-              </button>
-              <button type="button" class="amount-btn" data-amount="50">
-                $50
-              </button>
-              <button type="button" class="amount-btn" data-amount="100">
-                $100
-              </button>
-              <button type="button" class="amount-btn" data-amount="250">
-                $250
-              </button>
-            </div>
-
-            <div class="form-group">
-              <label for="customAmount">Or enter a custom amount</label>
-              <div class="input-group">
-                <span>$</span
-                ><input
-                  type="number"
-                  id="customAmount"
-                  name="customAmount"
-                  placeholder="0.00"
-                  min="1"
-                  step="0.01"
-                />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="giftName">Your Name *</label
-              ><input
-                type="text"
-                id="giftName"
-                name="giftName"
-                placeholder="Your name"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="giftEmail">Email Address *</label
-              ><input
-                type="email"
-                id="giftEmail"
-                name="giftEmail"
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label for="giftMessage">Message (Optional)</label
-              ><textarea
-                id="giftMessage"
-                name="giftMessage"
-                placeholder="Share why you're giving..."
-              ></textarea>
-            </div>
-            <button type="submit" class="cta-btn cta-primary cta-full">
-              <i class="fas fa-heart"></i> Give Love Gift
-            </button>
-          </form>
-        </div>
-      </div>
 
       <!-- Toast -->
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1834,7 +2007,7 @@
         >
           &times;
         </button>
-        <h2 id="receiptModalTitle">Order Confirmation</h2>
+        <h2 id="receiptModalTitle">Order Receipt</h2>
         <p class="modal-subtitle">
           Thank you — your order has been received. Keep this receipt for your
           records.

@@ -5,9 +5,10 @@ function initializeApp() {
   const initSteps = [
     ["navigation", initializeNavigation],
     ["modals", initializeModals],
+    ["token modal", initializeTokenModal],
+    ["customize modal", initializeCustomizeModal],
     ["contact form", initializeContactForm],
     ["checkout form", initializeCheckoutForm],
-    ["love gift form", initializeLoveGiftForm],
     ["product filters", initializeProductFilters],
     ["product pricing", enhanceProductPricing],
     ["product modal", initializeProductModal],
@@ -34,6 +35,234 @@ function initializeApp() {
     console.warn("Cart UI init failed", e);
   }
 }
+
+/* Customize modal behavior */
+function initializeCustomizeModal() {
+  const modal = document.getElementById("customizeModal");
+  if (!modal) return;
+
+  function openModal() {
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    try {
+      modal.querySelector(".modal-close")?.focus();
+    } catch (e) {}
+  }
+
+  function closeModal() {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "auto";
+  }
+
+  document.addEventListener("click", (e) => {
+    const trigger = e.target.closest('[data-action="open-customize-modal"]');
+    if (!trigger) return;
+    e.preventDefault();
+    const imageSrc = trigger.dataset.heroImage;
+    const imageAlt = trigger.dataset.heroAlt || "Yarn's Of Joy";
+    if (imageSrc) {
+      openCustomizeWithImage(imageSrc, imageAlt);
+    } else {
+      openModal();
+    }
+  });
+
+  modal.addEventListener("click", (ev) => {
+    if (ev.target === modal) closeModal();
+  });
+  modal
+    .querySelectorAll(".modal-close")
+    .forEach((btn) => btn.addEventListener("click", closeModal));
+
+  const proceed = document.getElementById("proceedCustomizeBtn");
+  if (proceed) {
+    proceed.addEventListener("click", () => {
+      // optional: copy suggested message for convenience
+      try {
+        const suggested =
+          "Hi Yarn's Of Joy — I'd like to customize a crochet piece. Design: [describe]. Colors: [colors]. Size: [size]. Quantity: [qty]. Notes: [any].";
+        if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(suggested)
+            .then(() => {
+              showToast(
+                "Suggested message copied. Paste it when you message Yarn's Of Joy.",
+              );
+            })
+            .catch(() => {});
+        }
+      } catch (e) {}
+      window.open(
+        "https://www.facebook.com/share/18GzwhJLgp/?mibextid=wwXIfr",
+        "_blank",
+        "noopener",
+      );
+      closeModal();
+    });
+  }
+
+  // helper: set hero image src and open modal
+  const heroImg = document.getElementById("customizeHeroImg");
+  function openCustomizeWithImage(src, alt) {
+    try {
+      if (heroImg) {
+        heroImg.src = src || "";
+        heroImg.alt = alt || "Yarn's Of Joy";
+        heroImg.style.display = src ? "block" : "none";
+      }
+    } catch (e) {}
+    openModal();
+  }
+
+  // clear hero on modal close
+  modal.querySelectorAll(".modal-close").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      try {
+        if (heroImg) heroImg.src = "";
+      } catch (e) {}
+    }),
+  );
+}
+
+/* Token modal: open/close and handlers */
+function initializeTokenModal() {
+  // target both header token trigger and bottom-nav token action
+  const triggers = document.querySelectorAll(
+    '[data-action="open-token-modal"], [data-action="token"]',
+  );
+  const modal = document.getElementById("tokenModal");
+  if (!modal) return;
+
+  const closeBtn = modal.querySelector(".modal-close");
+  const copyBtn = document.getElementById("tokenCopyBtn");
+  const downloadLink = document.getElementById("tokenDownloadQr");
+  const primaryBtn = document.getElementById("tokenPrimaryBtn");
+  const qr = document.getElementById("tokenGcashQr");
+  const thanks = document.getElementById("tokenThanks");
+
+  function openModal() {
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    // reset internal scroll so mobile users see top content
+    try {
+      const content = modal.querySelector(".modal-content");
+      if (content) content.scrollTop = 0;
+    } catch (e) {}
+    // add body class so floating chrome can be hidden while modal is open
+    try {
+      document.body.classList.add("token-modal-open");
+    } catch (e) {}
+    // focus close button for accessibility
+    setTimeout(() => closeBtn?.focus(), 60);
+    // gentle pulse on primary CTA
+    if (primaryBtn) {
+      primaryBtn.classList.add("pulse");
+      setTimeout(() => primaryBtn.classList.remove("pulse"), 3200);
+    }
+  }
+
+  function closeModal() {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "auto";
+    try {
+      document.body.classList.remove("token-modal-open");
+    } catch (e) {}
+  }
+
+  triggers.forEach((btn) =>
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      openModal();
+    }),
+  );
+
+  // delegated fallback: open modal if any element with matching action is clicked
+  document.addEventListener("click", function delegatedTokenClick(e) {
+    try {
+      const el =
+        e.target.closest &&
+        e.target.closest(
+          '[data-action="open-token-modal"], [data-action="token"]',
+        );
+      if (el) {
+        e.preventDefault();
+        openModal();
+      }
+    } catch (err) {}
+  });
+  closeBtn?.addEventListener("click", closeModal);
+
+  // copy handler
+  if (copyBtn) {
+    copyBtn.addEventListener("click", async (e) => {
+      const target = e.currentTarget.dataset.copyTarget || "tokenGcashNumber";
+      const el = document.getElementById(target);
+      if (!el) return showToast("Copy failed");
+      try {
+        await navigator.clipboard.writeText(el.textContent.trim());
+        showToast("GCash number copied!");
+      } catch (err) {
+        showToast("Unable to copy");
+      }
+    });
+  }
+
+  // QR preview
+  if (qr)
+    qr.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (window.showPreviewBySrc)
+        window.showPreviewBySrc(qr.src, qr.alt || "GCash QR");
+    });
+  if (downloadLink)
+    downloadLink.addEventListener("click", () =>
+      showToast("Downloading QR..."),
+    );
+
+  // primary donation flow: simple UX — quick acknowledgement and reveal thank-you panel
+  if (primaryBtn) {
+    primaryBtn.addEventListener("click", async (e) => {
+      try {
+        primaryBtn.disabled = true;
+        primaryBtn.classList.add("loading");
+        const original = primaryBtn.textContent;
+        primaryBtn.textContent = "Processing...";
+        // simulate small delay for UX
+        await new Promise((r) => setTimeout(r, 900));
+        if (thanks) {
+          thanks.hidden = false;
+        }
+        showToast("Thank you — your gift is appreciated.");
+        primaryBtn.textContent = original;
+        primaryBtn.classList.remove("loading");
+        primaryBtn.disabled = false;
+      } catch (err) {
+        console.warn("donation flow error", err);
+        primaryBtn.disabled = false;
+        primaryBtn.classList.remove("loading");
+        showToast("Something went wrong.");
+      }
+    });
+  }
+
+  // backdrop click and Escape to close
+  modal.addEventListener("click", (ev) => {
+    if (ev.target === modal) closeModal();
+  });
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape" && modal.classList.contains("active")) closeModal();
+  });
+}
+
+// Token modal now initialized as part of `initializeApp` steps.
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initializeApp);
@@ -643,53 +872,10 @@ function initializeNavigation() {
 
 /* ==================== MODALS ==================== */
 function initializeModals() {
-  const loveGiftModal = document.getElementById("loveGiftModal");
-  const loveGiftTriggers = document.querySelectorAll(
-    '[data-action="open-love-gift"]',
-  );
-  const modalClose = document.querySelector(".modal-close");
-
-  loveGiftTriggers.forEach((button) => {
-    button.addEventListener("click", function (e) {
-      e.preventDefault();
-      openLoveGiftModal();
-    });
-  });
-
-  if (modalClose) {
-    modalClose.addEventListener("click", closeLoveGiftModal);
-  }
-
-  if (loveGiftModal) {
-    loveGiftModal.addEventListener("click", function (event) {
-      if (event.target === loveGiftModal) {
-        closeLoveGiftModal();
-      }
-    });
-  }
-
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") {
-      closeLoveGiftModal();
-    }
-  });
+  // Love Gift modal removed — no modal initialization required here.
 }
 
-function openLoveGiftModal() {
-  const modal = document.getElementById("loveGiftModal");
-  if (modal) {
-    modal.classList.add("active");
-    document.body.style.overflow = "hidden";
-  }
-}
-
-function closeLoveGiftModal() {
-  const modal = document.getElementById("loveGiftModal");
-  if (modal) {
-    modal.classList.remove("active");
-    document.body.style.overflow = "auto";
-  }
-}
+// Love Gift modal removed; functions removed.
 
 function initializeProductModal() {
   const modal = document.getElementById("productModal");
@@ -802,6 +988,9 @@ function initializeCheckoutForm() {
   if (mobileSubmitButton) {
     mobileSubmitButton.addEventListener("click", function (event) {
       event.preventDefault();
+      if (form.dataset.submitting === "true" || mobileSubmitButton.disabled)
+        return;
+      mobileSubmitButton.disabled = true;
       if (form && typeof form.requestSubmit === "function") {
         form.requestSubmit();
       } else if (form) {
@@ -867,7 +1056,11 @@ async function handleCheckoutSubmit(event) {
   }
 
   const submitBtn = form.querySelector('button[type="submit"]');
+  const mobileSubmitBtn = document.getElementById("mobileSubmitBtn");
+  if (form.dataset.submitting === "true") return;
+  form.dataset.submitting = "true";
   toggleSubmitButton(submitBtn, true, "Submitting order...");
+  if (mobileSubmitBtn) mobileSubmitBtn.disabled = true;
   clearOrderFeedback();
 
   const orderId = document
@@ -1035,6 +1228,8 @@ async function handleCheckoutSubmit(event) {
     );
   } finally {
     toggleSubmitButton(submitBtn, false);
+    if (mobileSubmitBtn) mobileSubmitBtn.disabled = false;
+    delete form.dataset.submitting;
   }
 }
 
@@ -1211,18 +1406,21 @@ function updateCheckoutSubmitState() {
     paymentMethod &&
     hasPayment;
 
-  // keep the button clickable at all times, only toggle visual glow
-  if (allValid) {
+  const isSubmitting = form.dataset.submitting === "true";
+  const mobileBtn = document.getElementById("mobileSubmitBtn");
+
+  btn.disabled = !allValid || isSubmitting;
+  if (mobileBtn) mobileBtn.disabled = !allValid || isSubmitting;
+
+  const shouldGlow = allValid && !isSubmitting;
+  if (shouldGlow) {
     btn.classList.add("glow");
-    const mobileBtn = document.getElementById("mobileSubmitBtn");
     if (mobileBtn) mobileBtn.classList.add("glow");
-    // clear any top-level error message once the form becomes valid
     try {
       clearOrderFeedback();
     } catch (e) {}
   } else {
     btn.classList.remove("glow");
-    const mobileBtn = document.getElementById("mobileSubmitBtn");
     if (mobileBtn) mobileBtn.classList.remove("glow");
   }
 }
@@ -1447,81 +1645,9 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-/* ==================== LOVE GIFT FORM ==================== */
-function initializeLoveGiftForm() {
-  const form = document.getElementById("loveGiftForm");
-  const amountButtons = document.querySelectorAll(".amount-btn");
-  const customAmountInput = document.getElementById("customAmount");
-  let selectedAmount = null;
+/* Love Gift form removed */
 
-  amountButtons.forEach((button) => {
-    button.addEventListener("click", function () {
-      amountButtons.forEach((btn) => btn.classList.remove("active"));
-      this.classList.add("active");
-      selectedAmount = Number(this.dataset.amount);
-      if (customAmountInput) customAmountInput.value = "";
-    });
-  });
-
-  if (customAmountInput) {
-    customAmountInput.addEventListener("input", function () {
-      amountButtons.forEach((btn) => btn.classList.remove("active"));
-      selectedAmount = Number(this.value) || null;
-    });
-  }
-
-  if (!form) return;
-
-  form.addEventListener("submit", function (event) {
-    event.preventDefault();
-    const formData = new FormData(form);
-    const giftData = {
-      name: formData.get("giftName")?.toString().trim(),
-      email: formData.get("giftEmail")?.toString().trim(),
-      amount: selectedAmount || Number(formData.get("customAmount")) || 0,
-      message: formData.get("giftMessage")?.toString().trim(),
-      timestamp: new Date().toISOString(),
-    };
-
-    if (!giftData.amount || giftData.amount <= 0) {
-      showToast("Please select or enter a donation amount.");
-      return;
-    }
-    if (!giftData.name) {
-      showToast("Please enter your name.");
-      return;
-    }
-    if (!giftData.email || !isValidEmail(giftData.email)) {
-      showToast("Please enter a valid email address.");
-      return;
-    }
-
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML =
-      '<i class="fas fa-spinner fa-spin"></i> Processing...';
-    submitBtn.disabled = true;
-
-    setTimeout(() => {
-      saveLoveGift(giftData);
-      submitBtn.innerHTML = originalText;
-      submitBtn.disabled = false;
-      form.reset();
-      amountButtons.forEach((btn) => btn.classList.remove("active"));
-      selectedAmount = null;
-      closeLoveGiftModal();
-      showToast(
-        `Thank you for your Love Gift of $${giftData.amount.toFixed(2)}!`,
-      );
-    }, 1200);
-  });
-}
-
-function saveLoveGift(data) {
-  const existing = JSON.parse(localStorage.getItem("loveGifts") || "[]");
-  existing.push(data);
-  localStorage.setItem("loveGifts", JSON.stringify(existing));
-}
+/* Love Gift storage removed */
 
 /* ==================== SCROLL ANIMATIONS ==================== */
 function initializeScrollAnimations() {
@@ -2047,11 +2173,11 @@ const PRODUCTS = [
   },
   {
     id: "14",
-    title: "Crochet Coaster",
+    title: "Coaster",
     price: 60,
     img: "Who Will Go Products/Crochet/Coaster.jpg",
     description:
-      "Handcrafted crochet coaster designed to keep tables dry while adding mission-inspired charm.",
+      "Handcrafted crochet coaster that protects surfaces and adds a warm, textured accent to any tabletop.",
     options: [
       {
         id: "blue",

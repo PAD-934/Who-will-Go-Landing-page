@@ -459,11 +459,15 @@ body::before {
   box-shadow: 0 6px 18px rgba(208, 73, 73, 0.08) !important;
 }
 
-#submitOrderBtn[disabled] {
+#submitOrderBtn[disabled],
+#mobileSubmitBtn[disabled] {
   opacity: 0.65;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+  background: #f8fafc;
+  color: #334155;
+  border-color: rgba(148, 163, 184, 0.45);
 }
 
 .cta-primary {
@@ -723,13 +727,61 @@ body::before {
   color: white;
 }
 
-.cta-white {
-  background: white;
-  color: var(--color-primary-orange);
+/* Professional dark pill for Token CTA */
+.token-cta {
+  background: #1f1410; /* dark chocolate */
+  color: #fff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 30px rgba(31, 20, 16, 0.15);
+  font-weight: 800;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
 }
-
-.cta-large {
-  padding: 1rem 2.4rem;
+.token-cta i {
+  color: #fff;
+  font-size: 16px;
+}
+.token-cta {
+  /* outlined pill to match provided screenshot */
+  background: rgba(255, 255, 255, 0.04);
+  color: #1f1410;
+  border: 2px solid rgba(31, 20, 16, 0.95);
+  padding: 10px 22px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: none;
+  font-weight: 800;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease,
+    opacity 0.18s ease;
+}
+.token-cta i {
+  color: #1f1410;
+  font-size: 16px;
+}
+.token-cta span {
+  display: inline-block;
+}
+.token-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 46px rgba(31, 20, 16, 0.24);
+  background: #1f1410;
+  color: #fff;
+  border-color: #1f1410;
+}
+.token-cta:hover i {
+  color: #fff;
 }
 
 .cta-small {
@@ -1307,6 +1359,14 @@ body::before {
   object-fit: cover;
 }
 
+/* Ensure mockup poster stays centered and maintains visual weight */
+.mission-image {
+  min-height: 360px;
+}
+.mission-image img {
+  object-position: center center;
+}
+
 .mission-content h2 {
   font-family: var(--font-serif);
   font-size: clamp(2.4rem, 3.4vw, 3.2rem);
@@ -1510,6 +1570,19 @@ body::before {
     transform var(--transition-fast),
     box-shadow var(--transition-fast),
     border-color var(--transition-fast);
+}
+.product-card.customize-card {
+  cursor: pointer;
+}
+.product-card.customize-card .product-actions {
+  pointer-events: none;
+}
+.product-card.customize-card button {
+  pointer-events: auto;
+}
+.product-card.customize-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.16);
 }
 
 .product-card:hover {
@@ -2697,6 +2770,26 @@ body::before {
   overflow-y: auto;
   box-shadow: var(--shadow-lg);
 }
+
+/* Pop animation for modal content to emphasize opening */
+@keyframes modalPop {
+  0% {
+    transform: translateY(-8px) scale(0.98);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(2px) scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+.modal.active .modal-content {
+  animation: modalPop 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transform-origin: center center;
+}
 /* Larger content for receipt modal */
 .receipt-modal-content {
   width: min(780px, 100%);
@@ -2789,6 +2882,89 @@ body::before {
   }
 
   #mobileCheckoutSummaryPanel {
+    /* Token Of Love: Mobile-specific improvements */
+    @media (max-width: 720px) {
+      .modal {
+        align-items: flex-end;
+        padding: 0;
+      }
+      #tokenModal .modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 18px 18px 0 0;
+        padding: 16px !important;
+        height: 92vh;
+        margin: 0;
+        display: block;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        box-shadow: 0 -10px 40px rgba(2, 6, 23, 0.28);
+      }
+      .donation-header {
+        gap: 10px;
+      }
+      .donation-title h2 {
+        font-size: 26px;
+      }
+      .donation-lead {
+        font-size: 15px;
+      }
+      .donation-grid {
+        gap: 12px;
+      }
+      .donation-mission {
+        padding: 16px;
+      }
+      .impact-cards {
+        flex-direction: column;
+      }
+      .impact-card {
+        width: 100%;
+      }
+      .gcash-qr-wrap img {
+        width: 60%;
+        max-width: 320px;
+      }
+      .copy-button,
+      .cta-btn {
+        padding: 12px 16px;
+        font-size: 16px;
+      }
+
+      /* sticky CTA inside modal content for easier access */
+      .gcash-actions {
+        position: sticky;
+        bottom: 12px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0),
+          rgba(255, 255, 255, 0.95)
+        );
+        padding-top: 6px;
+        padding-bottom: 12px;
+        margin-bottom: -6px;
+      }
+
+      .modal-close {
+        right: 12px;
+        top: 8px;
+        font-size: 26px;
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .donation-card {
+        padding: 14px;
+      }
+      .donation-thanks {
+        padding: 10px;
+      }
+
+      /* hide bottom nav while modal is visible */
+      .modal[aria-hidden="false"] ~ .bottom-nav,
+      .modal.active ~ .bottom-nav {
+        display: none !important;
+      }
+    }
     display: none;
   }
 
@@ -2868,6 +3044,340 @@ body::before {
   border: 1px solid #c8f6d5;
   background: linear-gradient(180deg, #f7fff6 0%, #e8fdf0 100%);
   box-shadow: 0 12px 34px rgba(16, 185, 129, 0.08);
+}
+
+/* Token modal styles */
+.token-body {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+.token-left {
+  flex: 0 0 220px;
+}
+.token-right {
+  flex: 1 1 auto;
+}
+.token-message {
+  background: #fffaf0;
+  border-left: 4px solid #ff9d2f;
+  padding: 1rem;
+  border-radius: 8px;
+}
+.token-quote {
+  margin-top: 1rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #333;
+}
+.token-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.6rem;
+}
+@media (max-width: 720px) {
+  .token-body {
+    flex-direction: column;
+  }
+  .token-left {
+    flex: unset;
+  }
+}
+
+/* Donation modal refinements */
+#tokenModal .modal-content {
+  width: min(1100px, 96%);
+  padding: 28px;
+  border-radius: 24px;
+  max-height: 90vh;
+  overflow: auto;
+  position: relative; /* allow absolute close button inside */
+}
+.donation-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.donation-icon {
+  font-size: 28px;
+  background: #fff3e0;
+  color: #f59e0b;
+  padding: 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 56px;
+}
+.donation-title h2 {
+  margin: 0;
+  font-size: 36px;
+  color: #102a43;
+  font-weight: 800;
+}
+.donation-title {
+  flex: 1 1 auto;
+}
+.donation-sub {
+  margin: 6px 0 0 0;
+  color: #475569;
+  font-weight: 600;
+}
+.donation-lead {
+  margin: 8px 0 0 0;
+  color: #334155;
+}
+
+.donation-grid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 20px;
+  align-items: start;
+}
+.donation-mission {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(16, 24, 40, 0.04);
+}
+.donation-mission h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  color: #102a43;
+}
+.mission-text {
+  color: #334155;
+  line-height: 1.6;
+}
+
+.impact-cards {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+.impact-card {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #fff8ed;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+  flex: 1;
+}
+.impact-ico {
+  font-size: 18px;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+.impact-desc {
+  font-size: 13px;
+  color: #475569;
+}
+
+.donation-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(16, 24, 40, 0.04);
+}
+.donation-card h4 {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+  color: #102a43;
+}
+.donation-instruction {
+  margin: 0 0 12px 0;
+  color: #475569;
+}
+
+.gcash-card {
+  background: #fff8f0;
+  padding: 14px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gcash-number-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.gcash-number {
+  font-size: 18px;
+  color: #102a43;
+}
+.gcash-number strong {
+  font-size: 20px;
+  font-weight: 800;
+}
+.gcash-qr-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(16, 24, 40, 0.03);
+}
+.gcash-qr-wrap img {
+  width: 220px;
+  height: auto;
+  border-radius: 10px;
+}
+
+.gcash-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 16px;
+}
+.cta-primary {
+  background: linear-gradient(180deg, #f59e0b, #f28705);
+  color: #fff;
+  border: 0;
+  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.12);
+}
+.cta-primary:hover {
+  transform: translateY(-2px);
+}
+.cta-outline {
+  background: #fff;
+  color: #102a43;
+  border: 1px solid rgba(16, 24, 40, 0.06);
+}
+
+.donation-trust {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.trust-item {
+  background: #fff;
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: #16a34a;
+  border: 1px solid rgba(16, 24, 40, 0.03);
+}
+
+.donation-thanks {
+  margin-top: 16px;
+  background: #f3fff6; /* soft mint */
+  padding: 18px 18px 16px 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(16, 24, 40, 0.04);
+  box-shadow: 0 8px 20px rgba(2, 6, 23, 0.04);
+}
+.donation-thanks strong {
+  display: block;
+  font-size: 1.05rem;
+  color: #07263a;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.donation-thanks p {
+  margin: 0 0 10px 0;
+  color: #123040;
+  line-height: 1.6;
+  font-size: 15px;
+}
+.donation-quote {
+  display: block;
+  margin: 10px 0;
+  padding: 12px 14px;
+  background: rgba(255, 245, 235, 0.6);
+  border-left: 4px solid rgba(245, 158, 11, 0.95);
+  color: #15343a;
+  font-style: italic;
+  border-radius: 8px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+@media (max-width: 920px) {
+  .donation-grid {
+    grid-template-columns: 1fr;
+  }
+  .donation-header {
+    align-items: flex-start;
+  }
+  .donation-title h2 {
+    font-size: 26px;
+  }
+  .gcash-qr-wrap img {
+    width: 60%;
+  }
+}
+
+/* Customize modal styles */
+.customize-header h2 {
+  font-family: var(--font-serif);
+  margin-bottom: 6px;
+}
+.customize-hero-img {
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 18px;
+  margin-bottom: 18px;
+  display: block;
+}
+.customize-lead {
+  color: var(--color-dark-gray);
+  margin-bottom: 12px;
+}
+.customize-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+.customize-steps li {
+  margin: 10px 0;
+  font-weight: 700;
+}
+.customize-note {
+  color: var(--color-medium-gray);
+  margin-bottom: 14px;
+}
+.customize-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 720px) {
+  .customize-body {
+    padding: 12px;
+  }
+  .customize-steps li {
+    font-size: 15px;
+  }
+  #proceedCustomizeBtn {
+    min-height: 48px;
+  }
 }
 
 .gcash-instructions img {
@@ -3438,6 +3948,135 @@ body::before {
   }
 }
 
+/* Consolidated mobile Token modal bottom-sheet styles (professional polish) */
+@media (max-width: 720px) {
+  /* treat the modal as a bottom sheet */
+  .modal {
+    align-items: flex-end;
+    padding: 0;
+  }
+  #tokenModal {
+    z-index: 22000;
+  }
+  #tokenModal .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 18px 18px 0 0 !important;
+    padding: 18px !important;
+    margin: 0 !important;
+    height: auto;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 -20px 60px rgba(2, 6, 23, 0.28);
+    background: linear-gradient(180deg, #ffffff, #fffdfc);
+  }
+
+  /* Keep header in normal flow so elements do not shift while scrolling */
+  #tokenModal .donation-header {
+    position: relative; /* normal flow inside modal */
+    top: auto;
+    z-index: 1;
+    margin-bottom: 12px;
+    padding: 12px 84px 8px 12px; /* reserve right space for close */
+    border-radius: 0;
+    background: transparent;
+  }
+
+  /* larger, round close button in top-right (repositioned) */
+  #tokenModal .modal-close {
+    position: absolute;
+    right: 14px;
+    top: 6px;
+    width: 42px;
+    height: 42px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(16, 24, 40, 0.04);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    font-size: 18px;
+    z-index: 60;
+  }
+
+  /* ensure mission cards stack and have breathing room */
+  .impact-cards {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .impact-card {
+    padding: 14px;
+  }
+
+  /* QR card center + refined look */
+  .gcash-qr-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+    border: 1px solid rgba(16, 24, 40, 0.03);
+  }
+  .gcash-qr-wrap img {
+    width: 56%;
+    max-width: 320px;
+  }
+  .gcash-qr-wrap {
+    margin-bottom: 8px;
+  }
+  .gcash-actions {
+    margin-top: 12px;
+  }
+
+  /* Action area stays in flow (below QR) to avoid overlapping and unexpected movement */
+  .gcash-actions {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    padding: 12px 10px 20px;
+    margin-top: 8px;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .cta-primary {
+    width: 84%;
+    max-width: 460px;
+    padding: 14px 18px;
+    font-size: 16px;
+    border-radius: 999px;
+  }
+  .copy-button {
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+
+  /* hide floating chrome while token modal open via body class */
+  body.token-modal-open .bottom-nav,
+  body.token-modal-open .messenger-float-btn,
+  body.token-modal-open .navbar {
+    display: none !important;
+  }
+
+  /* ensure readable type sizes and stable spacing */
+  #tokenModal .donation-title h2 {
+    font-size: 20px;
+    line-height: 1.05;
+    margin: 0 0 6px 0;
+  }
+  #tokenModal .donation-title {
+    margin-top: 2px;
+  }
+  #tokenModal .donation-lead {
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
 /* Mobile overrides to ensure checkout panels expand fully to the bottom edge
      and the submit button remains visible above system safe areas. */
 @media (max-width: 640px) {
@@ -3609,11 +4248,6 @@ body::before {
       display: none !important;
     }
 
-    /* Ensure form has enough bottom padding so fields don't scroll under button */
-    .checkout-form-section form.checkout-order-form {
-      padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
-    }
-
     /* Mobile fixed footer styling */
     .checkout-fixed-footer {
       position: fixed;
@@ -3659,6 +4293,11 @@ body::before {
       .checkout-fixed-footer[aria-hidden="true"] {
         display: none;
       }
+    }
+
+    /* Ensure form has enough bottom padding so fields don't scroll under button */
+    .checkout-form-section form.checkout-order-form {
+      padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
     }
 
     /* Hide bottom nav while modal active */
