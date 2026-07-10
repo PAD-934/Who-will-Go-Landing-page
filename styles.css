@@ -6214,6 +6214,36 @@ body {
     gap: 1rem;
   }
 
+  /* Make modal content scrollable when options/content is long so buyers
+     can easily pick from long lists (sizes, designs). Keeps image fixed
+     and lets the info column scroll within the modal viewport. */
+  .product-modal .product-modal-body {
+    max-height: 75vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 0.5rem; /* room for scrollbar */
+  }
+
+  /* Improve select appearance inside modal for readability */
+  .product-modal .product-option-group select,
+  .product-modal .product-option-group .variant-select {
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: 0.65rem 0.9rem;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #fff;
+    font-size: 0.95rem;
+  }
+
+  /* If the native select is rendered as a listbox (size attr), allow scrolling */
+  .product-modal .product-option-group select[multiple],
+  .product-modal .product-option-group select[size] {
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
   .product-modal .product-modal-image {
     min-height: 280px;
     padding: 0.75rem 0.85rem 0.85rem;

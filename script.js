@@ -285,12 +285,41 @@ try {
             if (id) {
               console.log("WWG capture: add-to-cart", id);
               try {
-                addToCart(id, null, null, 1);
+                // Only intercept the Magnetic Bookmark (id '12') at capture
+                // phase so it opens the product modal instead of adding.
+                if (String(id) === "12") {
+                  try {
+                    openProductModal(id, null, null, 1, true);
+                    setTimeout(() => {
+                      try {
+                        const addBtn = document.getElementById(
+                          "productModalAddToCart",
+                        );
+                        if (addBtn) {
+                          try {
+                            addBtn.focus({ preventScroll: true });
+                          } catch (err) {
+                            addBtn.focus();
+                          }
+                          addBtn.classList.add("product-add-highlight");
+                          setTimeout(
+                            () =>
+                              addBtn.classList.remove("product-add-highlight"),
+                            1200,
+                          );
+                        }
+                      } catch (e) {}
+                    }, 140);
+                    e.preventDefault && e.preventDefault();
+                    return;
+                  } catch (e) {
+                    console.warn("WWG capture openProductModal error", e);
+                  }
+                }
+                // otherwise allow normal handlers to run (do not add here)
               } catch (err) {
                 console.warn("WWG capture addToCart error", err);
               }
-              e.preventDefault && e.preventDefault();
-              return;
             }
           }
 
@@ -336,6 +365,29 @@ function attachCartBindings() {
         if (!id) return;
         try {
           console.log("Add to cart clicked", id);
+          // For the Magnetic Bookmark (id '12') open the product modal so user sees details
+          if (String(id) === "12") {
+            openProductModal(id, null, null, 1, true);
+            setTimeout(() => {
+              try {
+                const addBtn = document.getElementById("productModalAddToCart");
+                if (addBtn) {
+                  try {
+                    addBtn.focus({ preventScroll: true });
+                  } catch (err) {
+                    addBtn.focus();
+                  }
+                  addBtn.classList.add("product-add-highlight");
+                  setTimeout(
+                    () => addBtn.classList.remove("product-add-highlight"),
+                    1200,
+                  );
+                }
+              } catch (e) {}
+            }, 140);
+            return;
+          }
+          // Fallback: add directly for other products
           addToCart(id, null, null, 1);
         } catch (err) {
           console.warn("addToCart failed:", err);
@@ -2805,6 +2857,11 @@ function toggleCart(open) {
   const ov = document.getElementById("cartOverlay");
   const cartButton = document.getElementById("cartButton");
   if (!sb || !ov) return;
+  // debounce repeated calls to avoid double-toggle from pointerdown+click
+  if (!toggleCart._last) toggleCart._last = 0;
+  const now = Date.now();
+  if (now - toggleCart._last < 350) return;
+  toggleCart._last = now;
   const doOpen =
     typeof open === "boolean" ? open : !sb.classList.contains("open");
   if (doOpen) {
@@ -3321,6 +3378,56 @@ function openProductModal(
       qty,
       selectedIndex >= 0 ? selectedIndex : 0,
     );
+    // After rendering options, set the price based on the selected or
+    // default size (kids vs adult). This ensures opening the modal from
+    // an Add-to-Cart control shows the correct price immediately.
+    try {
+      const finalSizeId =
+        selectedSizeId ||
+        (product.sizes && product.sizes.length ? product.sizes[0].id : null);
+      if (price)
+        price.textContent = `PHP ${getProductPrice(product, finalSizeId)}`;
+      if (addBtn) addBtn.dataset.size = finalSizeId || "";
+    } catch (e) {}
+    // Ensure selects inside the modal update the displayed price immediately
+    // (some browsers/custom-styles can prevent delegated change handlers firing
+    // reliably, so attach directly here for robustness).
+    setTimeout(() => {
+      try {
+        const sizeSelect = document.getElementById("productModalSizeSelect");
+        const variantSelect = document.getElementById(
+          "productModalVariantSelect",
+        );
+        const priceEl = document.getElementById("productModalPrice");
+        const addBtnEl = document.getElementById("productModalAddToCart");
+        if (sizeSelect && priceEl) {
+          sizeSelect.addEventListener("change", function () {
+            try {
+              const selectedSize = sizeSelect.value || null;
+              priceEl.textContent = `PHP ${getProductPrice(product, selectedSize)}`;
+              if (addBtnEl) addBtnEl.dataset.size = selectedSize;
+            } catch (err) {}
+          });
+        }
+        if (variantSelect) {
+          variantSelect.addEventListener("change", function () {
+            try {
+              // update preview when variant changes
+              const selIndex = product.options?.findIndex(
+                (o) => o.id === variantSelect.value,
+              );
+              setProductModalPreview(
+                product,
+                variantSelect.value,
+                selIndex >= 0 ? selIndex : 0,
+              );
+              if (addBtnEl)
+                addBtnEl.dataset.variant = variantSelect.value || "";
+            } catch (err) {}
+          });
+        }
+      } catch (e) {}
+    }, 40);
     const modalElement = document.getElementById("productModal");
     if (modalElement) {
       modalElement.dataset.currentPhotoIndex =
@@ -3647,10 +3754,31 @@ document.addEventListener("click", function (e) {
   if (t.matches(".add-to-cart") || t.closest(".add-to-cart")) {
     const btn = t.matches(".add-to-cart") ? t : t.closest(".add-to-cart");
     const id = btn.dataset.id;
-    // For products that benefit from a quick confirmation (mug, bookmark),
-    // open the product modal and highlight the Add-to-Cart CTA instead
-    // of adding immediately. This gives the user a chance to confirm.
-    const idsToConfirm = ["1", "12"]; // Who Will Go Mug (1), Magnetic Bookmark (12)
+    // For the Mug (id '1') show the product modal so user can see details
+    if (String(id) === "1") {
+      openProductModal(id, null, null, 1, true);
+      setTimeout(() => {
+        try {
+          const addBtn = document.getElementById("productModalAddToCart");
+          if (addBtn) {
+            try {
+              addBtn.focus({ preventScroll: true });
+            } catch (err) {
+              addBtn.focus();
+            }
+            addBtn.classList.add("product-add-highlight");
+            setTimeout(
+              () => addBtn.classList.remove("product-add-highlight"),
+              1200,
+            );
+          }
+        } catch (e) {}
+      }, 140);
+      return;
+    }
+
+    // For other products that benefit from confirmation, keep the modal flow
+    const idsToConfirm = ["12"]; // Magnetic Bookmark (12)
     if (idsToConfirm.includes(String(id))) {
       openProductModal(id, null, null, 1, false);
       setTimeout(() => {
@@ -3862,6 +3990,16 @@ document.addEventListener("change", function (e) {
     const key = target.dataset.key;
     const newValue = target.value;
     updateCartVariant(key, newValue);
+    return;
+  }
+
+  if (
+    target instanceof HTMLSelectElement &&
+    target.classList.contains("cart-size-select")
+  ) {
+    const key = target.dataset.key;
+    const newValue = target.value;
+    updateCartSize(key, newValue);
     return;
   }
 
