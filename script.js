@@ -285,9 +285,9 @@ try {
             if (id) {
               console.log("WWG capture: add-to-cart", id);
               try {
-                // Only intercept the Magnetic Bookmark (id '12') at capture
-                // phase so it opens the product modal instead of adding.
-                if (String(id) === "12") {
+                // Intercept products that should open the product modal
+                // instead of adding directly to cart.
+                if (String(id) === "12" || String(id) === "1") {
                   try {
                     openProductModal(id, null, null, 1, true);
                     setTimeout(() => {
@@ -365,8 +365,9 @@ function attachCartBindings() {
         if (!id) return;
         try {
           console.log("Add to cart clicked", id);
-          // For the Magnetic Bookmark (id '12') open the product modal so user sees details
-          if (String(id) === "12") {
+          // For products that should open the product modal instead of
+          // adding directly to cart.
+          if (String(id) === "12" || String(id) === "1") {
             openProductModal(id, null, null, 1, true);
             setTimeout(() => {
               try {
