@@ -2563,6 +2563,35 @@ body::before {
   font-weight: 600;
 }
 
+/* Allow long names/emails to wrap inside the grid column cleanly */
+.info-item > div {
+  min-width: 0; /* enable the 1fr column to shrink below content width */
+}
+.info-value {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
+/* Ensure form inputs and textareas behave gracefully with long content */
+.contact-form .form-group input,
+.contact-form .form-group textarea {
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* For professional alignment on narrow screens increase spacing */
+@media (max-width: 600px) {
+  .contact-form-wrapper {
+    padding: 1.25rem;
+  }
+  .product-card.customize-card .product-actions .cta-btn.customize-stretch {
+    padding: 14px 18px;
+    font-size: 16px;
+  }
+}
+
 .info-highlight {
   margin-top: 1.5rem;
   background: rgba(255, 181, 28, 0.12);
@@ -3534,6 +3563,58 @@ body::before {
   font-size: 0.95rem;
   color: #0f172a;
   margin-top: 0.4rem;
+}
+.receipt-products-list {
+  list-style: disc inside;
+  padding-left: 1rem;
+  margin: 0.5rem 0 0;
+  display: grid;
+  gap: 0.6rem;
+}
+.receipt-product-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  background: rgba(255, 251, 239, 0.85);
+  border: 1px solid rgba(245, 210, 125, 0.55);
+  border-radius: 12px;
+  padding: 0.85rem 0.95rem;
+}
+.receipt-product-item .rp-main {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.receipt-product-item .rp-name {
+  font-weight: 700;
+  color: #111827;
+}
+.receipt-product-item .rp-opts {
+  font-size: 0.92rem;
+  color: #52525b;
+}
+.receipt-product-item .rp-meta {
+  display: grid;
+  gap: 0.35rem;
+  text-align: right;
+  white-space: nowrap;
+}
+.receipt-product-item .rp-size {
+  color: #d97706;
+  font-weight: 600;
+}
+.receipt-product-item .rp-qty,
+.receipt-product-item .rp-amount,
+.receipt-product-item .rp-size {
+  font-weight: 600;
+  color: #111827;
+}
+.receipt-product-item .rp-qty {
+  color: #7c3aed;
+}
+.receipt-product-item .rp-amount {
+  color: #0b1220;
 }
 .receipt-actions {
   margin-top: 1rem;

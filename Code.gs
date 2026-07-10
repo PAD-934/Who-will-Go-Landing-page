@@ -61,12 +61,13 @@ function doPost(e) {
       ? payload.products
           .map((p) => {
             const options = [];
-            if (p.options && p.options.size)
-              options.push(`Size: ${p.options.size}`);
-            if (p.options && p.options.color)
-              options.push(`Color: ${p.options.color}`);
-            if (p.options && p.options.design)
-              options.push(`Design: ${p.options.design}`);
+            if (p.options && typeof p.options === "object") {
+              Object.entries(p.options).forEach(([key, value]) => {
+                if (!value) return;
+                const label = `${key.charAt(0).toUpperCase()}${key.slice(1)}`;
+                options.push(`${label}: ${value}`);
+              });
+            }
             const optionsString =
               options.length > 0 ? ` (${options.join(", ")})` : "";
             return `${p.name}${optionsString} x${p.quantity}`;

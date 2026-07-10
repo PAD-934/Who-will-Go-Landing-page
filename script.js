@@ -1172,8 +1172,12 @@ async function handleCheckoutSubmit(event) {
 
   const orderItems = cart.map((item) => {
     const options = {};
+    const product = findProduct(item.id);
     if (item.sizeLabel) options.size = item.sizeLabel;
-    if (item.variantLabel) options.color = item.variantLabel;
+    if (item.variantLabel) {
+      const optionKey = product?.optionLabel || "color";
+      options[optionKey] = item.variantLabel;
+    }
 
     return {
       name: item.title,
@@ -1313,18 +1317,46 @@ function populateReceipt(data) {
   const productsEl = document.getElementById("receiptProducts");
   productsEl.innerHTML = "";
   if (Array.isArray(data.products) && data.products.length) {
+    const list = document.createElement("ul");
+    list.className = "receipt-products-list";
     data.products.forEach((p) => {
-      const line = document.createElement("div");
-      line.className = "receipt-product-line";
-      const opts = p.options
+      const li = document.createElement("li");
+      li.className = "receipt-product-item";
+      const optionEntries = p.options ? Object.entries(p.options) : [];
+      const sizeOption = optionEntries.find(
+        ([key]) => key.toLowerCase() === "size",
+      );
+      const otherOptions = optionEntries.filter(
+        ([key]) => key.toLowerCase() !== "size",
+      );
+      const opts = otherOptions.length
         ? " " +
-          Object.keys(p.options)
-            .map((k) => `${k}: ${p.options[k]}`)
+          otherOptions
+            .map(([key, value]) => {
+              const label = `${key.charAt(0).toUpperCase()}${key.slice(1)}`;
+              return `${label}: ${value}`;
+            })
             .join(", ")
         : "";
-      line.textContent = `${p.name}${opts} x${p.quantity} — PHP ${(p.subtotal || p.price * p.quantity).toFixed(2)}`;
-      productsEl.appendChild(line);
+      const qty = p.quantity || 1;
+      const amount = (p.subtotal || p.price * qty).toFixed(2);
+      const sizeHtml = sizeOption
+        ? `<span class="rp-size">Size: ${sizeOption[1]}</span>`
+        : "";
+      li.innerHTML = `
+        <div class="rp-main">
+          <span class="rp-name">${p.name}</span>
+          ${opts ? `<span class="rp-opts">${opts}</span>` : ""}
+        </div>
+        <div class="rp-meta">
+          <span class="rp-qty">Qty: ${qty}</span>
+          ${sizeHtml}
+          <span class="rp-amount">PHP ${amount}</span>
+        </div>
+      `;
+      list.appendChild(li);
     });
+    productsEl.appendChild(list);
   } else {
     productsEl.textContent = data.orderDetails || "-";
   }
@@ -2758,11 +2790,14 @@ function renderCartItems() {
     const itemId = getCartItemId(item);
     const product = findProduct(item.id);
     const variantOptions = product?.options || [];
+    const optionLabel = product?.optionLabel || "option";
+    const optionLabelText =
+      optionLabel.charAt(0).toUpperCase() + optionLabel.slice(1);
     const variantSelect = variantOptions.length
       ? `
           <div class="cart-item-options">
-            <div class="cart-item-option-label">Color</div>
-            <select class="cart-variant-select" id="variant-${itemId}" data-key="${itemKey}" aria-label="Choose a color for ${item.title}">
+            <div class="cart-item-option-label">${optionLabelText}</div>
+            <select class="cart-variant-select" id="variant-${itemId}" data-key="${itemKey}" aria-label="Choose a ${optionLabel} for ${item.title}">
               ${variantOptions
                 .map(
                   (option) => `
@@ -2773,7 +2808,7 @@ function renderCartItems() {
                 )
                 .join("")}
             </select>
-            <div class="cart-item-option-helper">Choose color variations</div>
+            <div class="cart-item-option-helper">Choose ${optionLabel} variations</div>
           </div>
         `
       : "";
