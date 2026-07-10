@@ -1017,6 +1017,7 @@ function initializeCheckoutForm() {
     "customerContact",
     "customerAddress",
     "paymentMethod",
+    "transactionId",
   ];
   fields.forEach((id) => {
     const el = document.getElementById(id);
@@ -1125,6 +1126,10 @@ async function handleCheckoutSubmit(event) {
   const customerAddress = form.customerAddress.value.trim();
   const customerChurch = form.customerChurch.value.trim();
   const paymentMethod = form.paymentMethod.value.trim();
+  const transactionId =
+    form.transactionId && form.transactionId.value
+      ? form.transactionId.value.trim()
+      : "";
   const specialNotes = form.specialNotes.value.trim();
   const paymentInput = form.paymentScreenshot;
 
@@ -1146,6 +1151,19 @@ async function handleCheckoutSubmit(event) {
 
   if (!paymentMethod) {
     showOrderFeedback("error", "Please select your payment method.");
+    toggleSubmitButton(submitBtn, false);
+    return;
+  }
+
+  // GCash reference is required for GCash payment method
+  if (
+    paymentMethod === "GCash" &&
+    (!transactionId || transactionId.length < 6)
+  ) {
+    showOrderFeedback(
+      "error",
+      "Please enter a valid Transaction ID or GCash reference.",
+    );
     toggleSubmitButton(submitBtn, false);
     return;
   }
@@ -1211,16 +1229,27 @@ async function handleCheckoutSubmit(event) {
     orderId: orderId || `WWG-${Date.now()}`,
     timestamp: new Date().toISOString(),
     customerName,
+    email: customerEmail,
     customerEmail,
+    phone: customerContact,
     customerContact,
+    address: customerAddress,
     customerAddress,
     customerChurch,
     paymentMethod,
+    transactionId,
+    gcashReference: transactionId,
+    notes: specialNotes,
     specialNotes,
     status: "Pending",
+    paymentScreenshot: {
+      contentBase64: paymentScreenshotBase64,
+      fileName: paymentFile.name,
+      fileType: paymentFile.type,
+    },
     screenshotFile: paymentScreenshotBase64,
     screenshotFilename: paymentFile.name,
-    screenshotMimeType: paymentFile.type,
+    screenshotMimeType: paymentFile.type || "image/png",
     products: orderItems,
     totalItems,
     totalAmount,
@@ -1253,20 +1282,22 @@ async function handleCheckoutSubmit(event) {
       `Order submitted successfully. Your order ID is ${serverOrderId}.`,
     );
     // Populate and show receipt
-    populateReceipt({
+    const receiptData = {
       orderId: serverOrderId,
       timestamp: payload.timestamp || new Date().toLocaleString(),
       customerName: payload.customerName,
       customerEmail: payload.customerEmail,
       customerContact: payload.customerContact,
       customerAddress: payload.customerAddress,
+      transactionId: payload.transactionId,
+      paymentMethod: payload.paymentMethod,
       products: payload.products,
       totalItems: payload.totalItems,
       totalAmount: payload.totalAmount,
-      paymentMethod: payload.paymentMethod,
-      specialNotes: payload.specialNotes,
+      specialNotes: payload.notes,
       status: payload.status || "Pending",
-    });
+    };
+    populateReceipt(receiptData);
     cart = [];
     saveCart();
     updateCartBadge();
@@ -1296,13 +1327,13 @@ function populateReceipt(data) {
   document.getElementById("receiptTimestamp").textContent =
     data.timestamp || "-";
   document.getElementById("receiptCustomerName").textContent =
-    data.customerName || "-";
+    data.customerName || data.customer_name || "-";
   document.getElementById("receiptCustomerEmail").textContent =
-    data.customerEmail || "-";
+    data.email || data.customerEmail || "-";
   document.getElementById("receiptCustomerContact").textContent =
-    data.customerContact || "-";
+    data.phone || data.customerContact || "-";
   document.getElementById("receiptCustomerAddress").textContent =
-    data.customerAddress || "-";
+    data.address || data.customerAddress || "-";
   document.getElementById("receiptTotalItems").textContent =
     data.totalItems || 0;
   document.getElementById("receiptTotalAmount").textContent = `PHP ${(
@@ -1310,8 +1341,13 @@ function populateReceipt(data) {
   ).toFixed(2)}`;
   document.getElementById("receiptPaymentMethod").textContent =
     data.paymentMethod || "-";
+  const receiptTransactionId = document.getElementById("receiptTransactionId");
+  if (receiptTransactionId)
+    receiptTransactionId.textContent =
+      data.transactionId || data.gcashReference || "-";
+
   document.getElementById("receiptSpecialNotes").textContent =
-    data.specialNotes || "-";
+    data.notes || data.specialNotes || "-";
   document.getElementById("receiptStatus").textContent =
     data.status || "Pending";
 
@@ -1477,13 +1513,17 @@ function updateCheckoutSubmitState() {
   const contact = form.customerContact.value.trim();
   const address = form.customerAddress.value.trim();
   const paymentMethod = form.paymentMethod.value.trim();
+  const transactionId = form.transactionId?.value.trim() || "";
   const paymentInput = form.paymentScreenshot;
 
   const hasPayment =
     paymentInput && paymentInput.files && paymentInput.files.length > 0;
   const contactValid = /^[0-9]{11}$/.test(contact);
+  const transactionIdRequired = paymentMethod === "GCash";
+  const transactionIdValid =
+    !transactionIdRequired || (transactionId && transactionId.length >= 6);
 
-  const allValid =
+  const requiredFieldsValid =
     name &&
     isValidEmail(email) &&
     contactValid &&
@@ -1494,11 +1534,11 @@ function updateCheckoutSubmitState() {
   const isSubmitting = form.dataset.submitting === "true";
   const mobileBtn = document.getElementById("mobileSubmitBtn");
 
-  btn.disabled = !allValid || isSubmitting;
-  if (mobileBtn) mobileBtn.disabled = !allValid || isSubmitting;
+  btn.disabled = isSubmitting;
+  if (mobileBtn) mobileBtn.disabled = isSubmitting;
 
-  const shouldGlow = allValid && !isSubmitting;
-  if (shouldGlow) {
+  const canGlow = requiredFieldsValid && transactionIdValid && !isSubmitting;
+  if (canGlow) {
     btn.classList.add("glow");
     if (mobileBtn) mobileBtn.classList.add("glow");
     try {
@@ -1507,6 +1547,18 @@ function updateCheckoutSubmitState() {
   } else {
     btn.classList.remove("glow");
     if (mobileBtn) mobileBtn.classList.remove("glow");
+
+    if (transactionIdRequired && !transactionIdValid && requiredFieldsValid) {
+      showOrderFeedback(
+        "error",
+        "GCash payments require a Transaction ID or reference number before submission.",
+      );
+    } else if (!requiredFieldsValid) {
+      showOrderFeedback(
+        "error",
+        "Please complete all required fields before submitting your order.",
+      );
+    }
   }
 }
 
@@ -1596,6 +1648,17 @@ function validateCheckoutForm(form) {
       el: form.paymentMethod,
       msg: "Please select a payment method.",
     });
+  if (paymentMethod === "GCash") {
+    const transactionId =
+      form.transactionId && form.transactionId.value
+        ? form.transactionId.value.trim()
+        : "";
+    if (!transactionId || transactionId.length < 6)
+      errors.push({
+        el: form.transactionId,
+        msg: "Please enter the GCash Transaction ID or reference number.",
+      });
+  }
   if (!paymentInput || !paymentInput.files || paymentInput.files.length === 0)
     errors.push({
       el: paymentInput || form.paymentScreenshot,

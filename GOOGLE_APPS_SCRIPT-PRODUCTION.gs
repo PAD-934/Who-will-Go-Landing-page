@@ -52,14 +52,15 @@ function doPost(e) {
 
     // Parse incoming JSON data
     const requestData = JSON.parse(e.postData.contents);
+    const normalizedRequest = normalizeRequestData(requestData);
 
     // Validate that required fields are present
-    if (!isValidOrderData(requestData)) {
+    if (!isValidOrderData(normalizedRequest)) {
       return createJsonResponse(
         {
           success: false,
           message: "Invalid order data. Missing required fields.",
-          errors: validateOrderData(requestData),
+          errors: validateOrderData(normalizedRequest),
         },
         400,
       );
@@ -69,7 +70,7 @@ function doPost(e) {
     const orderId = generateOrderId();
 
     // Save payment proof if supplied
-    const paymentProof = requestData.paymentScreenshot || null;
+    const paymentProof = normalizedRequest.paymentScreenshot || null;
     const paymentProofInfo = paymentProof
       ? savePaymentProofFile(paymentProof, orderId)
       : null;
@@ -81,16 +82,20 @@ function doPost(e) {
         timeZone: CONFIG.TIMEZONE,
       }),
       timestampISO: new Date().toISOString(),
-      customerName: requestData.customerName.trim(),
-      email: requestData.email.toLowerCase().trim(),
-      phone: requestData.phone.trim(),
-      address: requestData.address.trim(),
-      products: requestData.products,
-      totalItems: requestData.totalItems,
-      totalAmount: requestData.totalAmount,
-      tshirtSize: requestData.tshirtSize || "N/A",
-      paymentMethod: requestData.paymentMethod,
-      notes: (requestData.notes || "").trim(),
+      customerName: normalizedRequest.customerName.trim(),
+      email: normalizedRequest.email.toLowerCase().trim(),
+      phone: normalizedRequest.phone,
+      address: normalizedRequest.address,
+      customerChurch: normalizedRequest.customerChurch
+        ? normalizedRequest.customerChurch.trim()
+        : "",
+      products: normalizedRequest.products,
+      totalItems: normalizedRequest.totalItems,
+      totalAmount: normalizedRequest.totalAmount,
+      tshirtSize: normalizedRequest.tshirtSize || "N/A",
+      paymentMethod: normalizedRequest.paymentMethod,
+      transactionId: normalizedRequest.transactionId,
+      notes: (normalizedRequest.notes || "").trim(),
       paymentScreenshotName: paymentProofInfo ? paymentProofInfo.fileName : "",
       paymentScreenshotUrl: paymentProofInfo ? paymentProofInfo.fileUrl : "",
       status: "Pending",
@@ -129,6 +134,7 @@ function doPost(e) {
         orderId: orderId,
         message: "Order received successfully!",
         timestamp: orderData.timestamp,
+        paymentScreenshotUrl: paymentProofInfo ? paymentProofInfo.fileUrl : "",
       },
       200,
     );
@@ -168,6 +174,39 @@ function savePaymentProofFile(paymentProof, orderId) {
     Logger.log("Error saving payment proof: " + error.toString());
     return null;
   }
+}
+
+/**
+ * Normalizes incoming payload field names so both old and new frontend shapes work.
+ */
+function normalizeRequestData(data) {
+  const normalized = Object.assign({}, data);
+
+  normalized.email = (data.email || data.customerEmail || "").trim();
+  normalized.phone = (data.phone || data.customerContact || "").trim();
+  normalized.address = (data.address || data.customerAddress || "").trim();
+  normalized.transactionId = (
+    data.transactionId ||
+    data.gcashReference ||
+    data.gCashReference ||
+    ""
+  ).trim();
+  normalized.customerName = (
+    data.customerName ||
+    data.customer_name ||
+    ""
+  ).trim();
+  normalized.customerChurch =
+    data.customerChurch || data.customer_church || data.churchName || "";
+  normalized.notes = data.notes || data.specialNotes || "";
+  normalized.paymentMethod = data.paymentMethod || "";
+  normalized.products = Array.isArray(data.products) ? data.products : [];
+  normalized.totalItems = data.totalItems || 0;
+  normalized.totalAmount = data.totalAmount || 0;
+  normalized.paymentScreenshot = data.paymentScreenshot || null;
+  normalized.tshirtSize = data.tshirtSize || "N/A";
+
+  return normalized;
 }
 
 /**
@@ -252,6 +291,12 @@ function isValidOrderData(data) {
     }
   }
 
+  if (data.paymentMethod === "GCash") {
+    if (!data.transactionId || data.transactionId.trim().length < 6) {
+      return false;
+    }
+  }
+
   if (!data.paymentScreenshot || !data.paymentScreenshot.contentBase64) {
     return false;
   }
@@ -319,6 +364,15 @@ function validateOrderData(data) {
     errors.push("Payment method must be selected");
   } else if (data.paymentMethod.length > 50) {
     errors.push("Payment method string too long");
+  }
+
+  // GCash transaction reference validation when required
+  if (data.paymentMethod === "GCash") {
+    if (!data.transactionId || data.transactionId.trim().length < 6) {
+      errors.push(
+        "Transaction ID or GCash reference is required for GCash payments",
+      );
+    }
   }
 
   // Payment proof validation
@@ -395,11 +449,11 @@ function saveOrderToSheet(orderData) {
     const ss = SpreadsheetApp.openById(CONFIG.SHEET_ID);
     let sheet = ss.getSheetByName(CONFIG.SHEETS.ORDERS);
 
-    // Create sheet if it doesn't exist
+    // Create sheet if it doesn't exist, otherwise ensure the header row is up to date
     if (!sheet) {
       sheet = ss.insertSheet(CONFIG.SHEETS.ORDERS);
-      initializeOrdersSheet(sheet);
     }
+    ensureOrdersSheetHeaders(sheet);
 
     // Format products as string
     const productList = orderData.products
@@ -410,19 +464,18 @@ function saveOrderToSheet(orderData) {
     sheet.appendRow([
       orderData.orderId,
       orderData.timestamp,
-      orderData.timestampISO,
       orderData.customerName,
       orderData.email,
       orderData.phone,
       orderData.address,
+      orderData.customerChurch || "",
       productList,
       orderData.totalItems,
       orderData.totalAmount,
-      orderData.tshirtSize,
       orderData.paymentMethod,
-      orderData.paymentScreenshotName || "",
+      orderData.transactionId || "",
       orderData.paymentScreenshotUrl || "",
-      orderData.notes,
+      orderData.notes || "",
       orderData.status,
     ]);
 
@@ -439,44 +492,75 @@ function saveOrderToSheet(orderData) {
  * Initializes the Orders sheet with headers
  */
 function initializeOrdersSheet(sheet) {
-  const headers = [
+  const headers = getOrdersSheetHeaders();
+  sheet.appendRow(headers);
+  applyOrdersSheetHeaderStyles(sheet);
+}
+
+function ensureOrdersSheetHeaders(sheet) {
+  if (!sheet) return;
+  const headers = getOrdersSheetHeaders();
+  if (sheet.getMaxColumns() < headers.length) {
+    sheet.insertColumnsAfter(
+      sheet.getMaxColumns(),
+      headers.length - sheet.getMaxColumns(),
+    );
+  }
+
+  const currentHeaders = sheet.getRange(1, 1, 1, headers.length).getValues()[0];
+  const headersDiffer = headers.some(
+    (header, index) => currentHeaders[index] !== header,
+  );
+  if (headersDiffer) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
+  applyOrdersSheetHeaderStyles(sheet);
+}
+
+function getOrdersSheetHeaders() {
+  return [
     "Order ID",
     "Timestamp",
-    "ISO Timestamp",
-    "Customer Name",
+    "Full Name",
     "Email",
-    "Phone",
-    "Address",
+    "Contact Number",
+    "Full Address",
+    "Church Name (Optional)",
     "Products",
     "Total Items",
     "Total Amount (PHP)",
-    "T-Shirt Size",
     "Payment Method",
-    "Payment Proof File",
-    "Payment Proof URL",
+    "Transaction ID",
+    "Proof of Payment (Screenshot)",
     "Special Notes",
     "Status",
   ];
+}
 
-  sheet.appendRow(headers);
-
-  // Format header row
+function applyOrdersSheetHeaderStyles(sheet) {
+  const headers = getOrdersSheetHeaders();
   const headerRange = sheet.getRange(1, 1, 1, headers.length);
   headerRange.setBackground("#0D1B2A");
   headerRange.setFontColor("#C9A84C");
   headerRange.setFontWeight("bold");
   headerRange.setFontSize(11);
+  sheet.setFrozenRows(1);
 
-  // Set column widths
   sheet.setColumnWidth(1, 130); // Order ID
   sheet.setColumnWidth(2, 180); // Timestamp
-  sheet.setColumnWidth(3, 200); // ISO Timestamp
-  sheet.setColumnWidth(4, 150); // Customer Name
-  sheet.setColumnWidth(5, 180); // Email
-  sheet.setColumnWidth(6, 120); // Phone
-  sheet.setColumnWidth(7, 200); // Address
+  sheet.setColumnWidth(3, 180); // Full Name
+  sheet.setColumnWidth(4, 180); // Email
+  sheet.setColumnWidth(5, 150); // Contact Number
+  sheet.setColumnWidth(6, 250); // Full Address
+  sheet.setColumnWidth(7, 180); // Church Name
   sheet.setColumnWidth(8, 250); // Products
-  sheet.setColumnWidth(14, 100); // Status
+  sheet.setColumnWidth(9, 100); // Total Items
+  sheet.setColumnWidth(10, 130); // Total Amount
+  sheet.setColumnWidth(11, 130); // Payment Method
+  sheet.setColumnWidth(12, 160); // Transaction ID
+  sheet.setColumnWidth(13, 220); // Proof of Payment URL
+  sheet.setColumnWidth(14, 250); // Special Notes
+  sheet.setColumnWidth(15, 100); // Status
 }
 
 /**
@@ -485,7 +569,7 @@ function initializeOrdersSheet(sheet) {
 function formatOrdersSheet(sheet) {
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) {
-    const dataRange = sheet.getRange(2, 1, lastRow - 1, 16);
+    const dataRange = sheet.getRange(2, 1, lastRow - 1, 15);
     dataRange.setVerticalAlignment("top");
     dataRange.setWrap(true);
   }

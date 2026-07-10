@@ -1,12 +1,16 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
- * WHO WILL GO - ADVANCED GOOGLE APPS SCRIPT BACKEND (CUSTOMIZED)
- * Handles complex orders with product variations and file uploads.
- * Version updated to match user's specific sheet column order.
+ * WHO WILL GO - COMPLETE ORDER MANAGEMENT SYSTEM (v3.1 - Final)
+ *
+ * This script contains two main functionalities:
+ * 1. doPost(e): A web app endpoint that receives new orders from a landing page.
+ * 2. onEdit(e): An automation trigger that physically moves order rows between
+ *    sheets based on status changes.
+ *
  * ═══════════════════════════════════════════════════════════════════
  */
 
-// ----------------- CONFIGURATION -----------------
+// ----------------- GLOBAL CONFIGURATION -----------------
 const CONFIG = {
   SHEET_ID: "1K_lcQzY_2iNo-DEO206XJOkhtxa4Qz-CB7GUeoD4zVc",
   ORDERS_SHEET_NAME: "Orders",
@@ -14,7 +18,7 @@ const CONFIG = {
   TIMEZONE: "Asia/Manila",
 };
 
-// ----------------- MAIN FUNCTION -----------------
+// ----------------- WEB APP: RECEIVES NEW ORDERS -----------------
 function doPost(e) {
   try {
     if (!e || !e.postData || !e.postData.contents) {
@@ -24,9 +28,9 @@ function doPost(e) {
       );
     }
 
-    const payload = JSON.parse(e.postData.contents);
+    const rawPayload = JSON.parse(e.postData.contents);
+    const payload = normalizeRequestData(rawPayload);
 
-    // --- 1. File Upload Handling ---
     let screenshotUrl = "No Screenshot Uploaded";
     const screenshotData = getScreenshotPayload(payload);
 
@@ -49,7 +53,6 @@ function doPost(e) {
       screenshotUrl = savedFile.getUrl();
     }
 
-    // --- 2. Data Preparation ---
     const orderSheet = getOrCreateSheet(
       CONFIG.SHEET_ID,
       CONFIG.ORDERS_SHEET_NAME,
@@ -79,27 +82,92 @@ function doPost(e) {
       orderId,
       Utilities.formatDate(timestamp, CONFIG.TIMEZONE, "yyyy-MM-dd HH:mm:ss"),
       payload.customerName || "",
-      payload.customerEmail || "",
-      payload.customerContact || "",
-      payload.customerAddress || "",
+      payload.email || "",
+      payload.phone || "",
+      payload.address || "",
       payload.customerChurch || "N/A",
       productsString,
       payload.totalItems || 0,
       payload.totalAmount || 0,
       payload.paymentMethod || "",
+      payload.transactionId || "",
       screenshotUrl,
-      payload.specialNotes || "N/A",
+      payload.notes || payload.specialNotes || "N/A",
       "Pending",
     ];
 
     orderSheet.appendRow(newRow);
 
-    return createJsonResponse({ success: true, orderId: orderId });
+    return createJsonResponse({
+      success: true,
+      orderId: orderId,
+      paymentScreenshotUrl: screenshotUrl,
+    });
   } catch (error) {
-    Logger.log(error.toString());
+    Logger.log(`doPost Error: ${error.toString()}`);
     return createJsonResponse(
       { success: false, message: error.toString() },
       500,
+    );
+  }
+}
+
+// ----------------- AUTOMATION: MANAGES ORDER STATUS -----------------
+function onEdit(e) {
+  try {
+    const range = e.range;
+    const sheet = range.getSheet();
+    const sheetName = sheet.getName();
+    const row = range.getRow();
+    const column = range.getColumn();
+
+    if (e.value === undefined || e.value === null) return;
+    const newStatus = e.value.toString().trim();
+
+    const STATUS_COLUMN = 15; // Column O
+
+    const MONITORED_SHEETS = [
+      CONFIG.ORDERS_SHEET_NAME,
+      "Processing",
+      "On Hold",
+      "Cancelled",
+      "Ready for Shipment",
+      "Pending",
+      "Completed",
+    ];
+
+    if (!MONITORED_SHEETS.includes(sheetName)) return;
+    if (column !== STATUS_COLUMN) return;
+    if (row === 1) return;
+    if (newStatus === "") return;
+
+    let targetSheetName = newStatus;
+    if (newStatus === "Pending") {
+      targetSheetName = CONFIG.ORDERS_SHEET_NAME;
+    }
+
+    if (targetSheetName === sheetName) {
+      return;
+    }
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const targetSheet = ss.getSheetByName(targetSheetName);
+    const sourceDataRange = sheet.getRange(row, 1, 1, sheet.getLastColumn());
+    const sourceData = sourceDataRange.getValues()[0];
+
+    if (!targetSheet) {
+      const newSheet = getOrCreateSheet(CONFIG.SHEET_ID, targetSheetName);
+      newSheet.appendRow(sourceData);
+      sheet.deleteRow(row);
+    } else {
+      targetSheet.appendRow(sourceData);
+      sheet.deleteRow(row);
+    }
+  } catch (error) {
+    Logger.log(
+      `onEdit Error: ${error.toString()} | Sheet: ${e.range
+        .getSheet()
+        .getName()} | Cell: ${e.range.getA1Notation()} | New Value: ${e.value}`,
     );
   }
 }
@@ -110,31 +178,54 @@ function getOrCreateSheet(spreadsheetId, sheetName) {
   let sheet = ss.getSheetByName(sheetName);
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
-    const headers = [
-      "Order ID",
-      "Timestamp",
-      "Full Name",
-      "Email",
-      "Contact Number",
-      "Full Address",
-      "Church Name (Optional)",
-      "Products",
-      "Total Items",
-      "Total Amount (PHP)",
-      "Payment Method",
-      "Proof of Payment (Screenshot)",
-      "Special Notes",
-      "Status",
-    ];
-    sheet.appendRow(headers);
-    const headerRange = sheet.getRange(1, 1, 1, headers.length);
-    headerRange
-      .setFontWeight("bold")
-      .setBackground("#4a4a4a")
-      .setFontColor("#ffffff");
-    sheet.setFrozenRows(1);
   }
+  ensureOrdersSheetHeaders(sheet);
   return sheet;
+}
+
+function ensureOrdersSheetHeaders(sheet) {
+  if (!sheet) return;
+  const headers = [
+    "Order ID",
+    "Timestamp",
+    "Full Name",
+    "Email",
+    "Contact Number",
+    "Full Address",
+    "Church Name (Optional)",
+    "Products",
+    "Total Items",
+    "Total Amount (PHP)",
+    "Payment Method",
+    "Transaction ID",
+    "Proof of Payment (Screenshot)",
+    "Special Notes",
+    "Status",
+  ];
+
+  if (sheet.getMaxColumns() < headers.length) {
+    sheet.insertColumnsAfter(
+      sheet.getMaxColumns(),
+      headers.length - sheet.getMaxColumns(),
+    );
+  }
+
+  const existingHeaders = sheet
+    .getRange(1, 1, 1, headers.length)
+    .getValues()[0];
+  const headersDiffer = headers.some(
+    (header, index) => existingHeaders[index] !== header,
+  );
+  if (headersDiffer) {
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
+
+  const headerRange = sheet.getRange(1, 1, 1, headers.length);
+  headerRange
+    .setFontWeight("bold")
+    .setBackground("#4a4a4a")
+    .setFontColor("#ffffff");
+  sheet.setFrozenRows(1);
 }
 
 function getOrCreateDriveFolder(folderName) {
@@ -167,6 +258,38 @@ function getScreenshotPayload(payload) {
   }
 
   return null;
+}
+
+function normalizeRequestData(data) {
+  const normalized = Object.assign({}, data);
+
+  normalized.email = (data.email || data.customerEmail || "").trim();
+  normalized.phone = (data.phone || data.customerContact || "").trim();
+  normalized.address = (data.address || data.customerAddress || "").trim();
+  normalized.transactionId = (
+    data.transactionId ||
+    data.gcashReference ||
+    data.gCashReference ||
+    ""
+  ).trim();
+  normalized.customerName = (
+    data.customerName ||
+    data.customer_name ||
+    ""
+  ).trim();
+  normalized.customerChurch =
+    data.customerChurch || data.customer_church || data.churchName || "";
+  normalized.notes = (data.notes || data.specialNotes || "").trim();
+  normalized.paymentMethod = data.paymentMethod || data.payment_method || "";
+  normalized.products = Array.isArray(data.products) ? data.products : [];
+  normalized.totalItems = Number(data.totalItems) || 0;
+  normalized.totalAmount = Number(data.totalAmount) || 0;
+  normalized.paymentScreenshot = data.paymentScreenshot || null;
+  normalized.screenshotFile = data.screenshotFile || null;
+  normalized.screenshotFilename = data.screenshotFilename || null;
+  normalized.screenshotMimeType = data.screenshotMimeType || null;
+
+  return normalized;
 }
 
 function generateOrderId(sheet) {
