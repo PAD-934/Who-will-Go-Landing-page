@@ -1574,11 +1574,32 @@ body::before {
 .product-card.customize-card {
   cursor: pointer;
 }
-.product-card.customize-card .product-actions {
-  pointer-events: none;
+.product-card.customize-card .product-price {
+  display: none;
 }
-.product-card.customize-card button {
-  pointer-events: auto;
+.product-card.customize-card .product-actions {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+}
+.product-card.customize-card .product-actions .cta-btn.customize-stretch {
+  display: inline-block;
+  width: 100%;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+  text-align: center;
+  letter-spacing: 0.3px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+.product-card.customize-card .product-actions .cta-btn.customize-stretch:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.12);
 }
 .product-card.customize-card:hover {
   transform: translateY(-10px);
