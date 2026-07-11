@@ -41,7 +41,7 @@
           <ul class="nav-menu" id="mainNav">
             <li><a href="#shop">Shop</a></li>
             <li><a href="#missions">Missions</a></li>
-            <li><a href="#impact">Impact</a></li>
+            <li><a href="#mission-gallery">Gallery</a></li>
             <li><a href="#contact">Contact</a></li>
           </ul>
 
@@ -1729,66 +1729,79 @@
         </div>
       </section>
 
-      <!-- Impact Stories -->
-      <section class="impact-stories">
+      <!-- Mission Gallery -->
+      <section class="impact-stories gallery-section" id="mission-gallery">
         <div class="container">
-          <button class="section-badge">Real Impact</button>
+          <button class="section-badge">Gallery</button>
           <h2 class="section-title">
-            Stories of <span class="accent">Transformation</span>
+            Mission <span class="accent">Gallery</span>
           </h2>
           <p class="section-subtitle">
-            See how generosity is changing lives and advancing the Gospel across
-            the globe.
+            Browse real moments from Pathfinder Baptist Missions. These images show the people, places, and hope behind every gift.
           </p>
 
-          <div class="stories-grid">
-            <article class="story-card">
-              <div class="story-icon"><i class="fas fa-heart"></i></div>
-              <h3>A church planted in remote Kenya</h3>
-              <p>
-                Pastor David used funds from WHO WILL GO? to establish a church
-                in an unreached region of Kenya. Within one year, 150 souls have
-                come to Christ.
-              </p>
-              <p class="story-stat">
-                <strong>$8,400 deployed</strong> •
-                <strong>150 believers</strong> •
-                <strong>1 church planted</strong>
-              </p>
+          <div class="gallery-grid">
+            <article class="gallery-card">
+              <a href="missions/gallery/1b1f7036-ec04-4854-8ddd-12d872a2087a.jpg" target="_blank" rel="noopener noreferrer">
+                <img src="missions/gallery/1b1f7036-ec04-4854-8ddd-12d872a2087a.jpg" alt="Mission gallery photo 1">
+                <div class="gallery-overlay">View full image</div>
+              </a>
+              <p class="gallery-caption">Mission field photo</p>
             </article>
 
-            <article class="story-card">
-              <div class="story-icon"><i class="fas fa-globe"></i></div>
-              <h3>Bibles reach a persecuted underground church</h3>
-              <p>
-                In a hostile nation where Christianity is illegal, donations
-                provided 500 Bibles and training materials to an underground
-                network. Their faith is growing despite persecution.
-              </p>
-              <p class="story-stat">
-                <strong>500 Bibles distributed</strong> •
-                <strong>47 small groups</strong> •
-                <strong>Growing safely</strong>
-              </p>
+            <article class="gallery-card">
+              <a href="missions/gallery/22ab17f9-6406-4829-9ba9-c57a6ff3ee89.jpg" target="_blank" rel="noopener noreferrer">
+                <img src="missions/gallery/22ab17f9-6406-4829-9ba9-c57a6ff3ee89.jpg" alt="Mission gallery photo 2">
+                <div class="gallery-overlay">View full image</div>
+              </a>
+              <p class="gallery-caption">Community outreach moment</p>
             </article>
 
-            <article class="story-card">
-              <div class="story-icon"><i class="fas fa-users"></i></div>
-              <h3>Leadership training in Southeast Asia</h3>
-              <p>
-                Missionary Maria established a discipleship center to train
-                local leaders. With your support, 300+ young church planters are
-                now equipped and sent out to unreached villages.
-              </p>
-              <p class="story-stat">
-                <strong>300+ trained leaders</strong> •
-                <strong>45 new churches</strong> •
-                <strong>Spiritual multiplication</strong>
-              </p>
+            <article class="gallery-card">
+              <a href="missions/gallery/685a5de0-98df-4976-996c-21f1db3dc2fb.jpg" target="_blank" rel="noopener noreferrer">
+                <img src="missions/gallery/685a5de0-98df-4976-996c-21f1db3dc2fb.jpg" alt="Mission gallery photo 3">
+                <div class="gallery-overlay">View full image</div>
+              </a>
+              <p class="gallery-caption">Mission team gathering</p>
+            </article>
+
+            <article class="gallery-card">
+              <a href="missions/gallery/7c0143f7-7756-4327-a3d9-40cfb39ec6b4.jpg" target="_blank" rel="noopener noreferrer">
+                <img src="missions/gallery/7c0143f7-7756-4327-a3d9-40cfb39ec6b4.jpg" alt="Mission gallery photo 4">
+                <div class="gallery-overlay">View full image</div>
+              </a>
+              <p class="gallery-caption">Local church planting</p>
+            </article>
+
+            <article class="gallery-card">
+              <a href="missions/gallery/9aa324dd-17ac-4e59-bedb-8f48b198a3ab.jpg" target="_blank" rel="noopener noreferrer">
+                <img src="missions/gallery/9aa324dd-17ac-4e59-bedb-8f48b198a3ab.jpg" alt="Mission gallery photo 5">
+                <div class="gallery-overlay">View full image</div>
+              </a>
+              <p class="gallery-caption">Training and discipleship</p>
+            </article>
+
+            <article class="gallery-card">
+              <a href="missions/gallery/c717c3fd-3d43-4bfa-8e10-eff930799694.jpg" target="_blank" rel="noopener noreferrer">
+                <img src="missions/gallery/c717c3fd-3d43-4bfa-8e10-eff930799694.jpg" alt="Mission gallery photo 6">
+                <div class="gallery-overlay">View full image</div>
+              </a>
+              <p class="gallery-caption">Moments of worship</p>
             </article>
           </div>
         </div>
       </section>
+
+      <div class="gallery-lightbox" id="galleryLightbox" aria-hidden="true" role="dialog" aria-label="Mission photo viewer">
+        <div class="gallery-lightbox-backdrop" data-close-lightbox></div>
+        <div class="gallery-lightbox-panel">
+          <button class="gallery-lightbox-close" type="button" aria-label="Close photo viewer">&times;</button>
+          <div class="gallery-lightbox-inner">
+            <img id="galleryLightboxImage" src="" alt="" />
+            <p id="galleryLightboxCaption" class="gallery-lightbox-caption"></p>
+          </div>
+        </div>
+      </div>
 
       <!-- CTA Banner -->
       <section class="cta-banner" id="donation">
@@ -1828,16 +1841,10 @@
               gift spreads the Gospel. Shop with purpose, give with heart.
             </p>
             <div class="social-icons">
-              <a href="#" aria-label="Facebook"
+              <a href="https://www.facebook.com/SGBCTaytay" aria-label="Facebook" target="_blank" rel="noopener noreferrer"
                 ><i class="fab fa-facebook-f"></i
               ></a>
-              <a href="#" aria-label="Instagram"
-                ><i class="fab fa-instagram"></i
-              ></a>
-              <a href="#" aria-label="Twitter"
-                ><i class="fab fa-x-twitter"></i
-              ></a>
-              <a href="#" aria-label="YouTube"
+              <a href="https://www.youtube.com/@rrp1051" aria-label="YouTube" target="_blank" rel="noopener noreferrer"
                 ><i class="fab fa-youtube"></i
               ></a>
             </div>
@@ -1846,20 +1853,18 @@
             <h4>Shop &amp; Give</h4>
             <ul>
               <li><a href="#shop">Shop All Products</a></li>
-              <li><a href="#donation">Love Gift</a></li>
-              <li><a href="#impact">Our Impact</a></li>
+              <li><a href="#donation">Token of Love</a></li>
+              <li><a href="#mission-gallery">Gallery</a></li>
               <li><a href="#missions">Active Missions</a></li>
-              <li><a href="#">FAQ</a></li>
             </ul>
           </div>
           <div class="footer-section">
             <h4>Learn</h4>
             <ul>
               <li><a href="#missions">About Us</a></li>
-              <li><a href="#impact">Our Impact</a></li>
+              <li><a href="#mission-gallery">Gallery</a></li>
               <li><a href="#missions">Get Involved</a></li>
-              <li><a href="#">Stories</a></li>
-              <li><a href="#">Blog</a></li>
+              <li><a href="#mission-profiles">Stories</a></li>
             </ul>
           </div>
           <div class="footer-section" id="contact">

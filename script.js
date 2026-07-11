@@ -7,6 +7,7 @@ function initializeApp() {
     ["modals", initializeModals],
     ["token modal", initializeTokenModal],
     ["customize modal", initializeCustomizeModal],
+    ["gallery lightbox", initializeGalleryLightbox],
     ["contact form", initializeContactForm],
     ["checkout form", initializeCheckoutForm],
     ["product filters", initializeProductFilters],
@@ -126,6 +127,56 @@ function initializeCustomizeModal() {
       } catch (e) {}
     }),
   );
+}
+
+function initializeGalleryLightbox() {
+  const lightbox = document.getElementById("galleryLightbox");
+  if (!lightbox) return;
+
+  const imageEl = document.getElementById("galleryLightboxImage");
+  const captionEl = document.getElementById("galleryLightboxCaption");
+  const closeBtn = lightbox.querySelector(".gallery-lightbox-close");
+  const backdrop = lightbox.querySelector("[data-close-lightbox]");
+
+  function openLightbox(src, alt, caption) {
+    if (!imageEl) return;
+    imageEl.src = src;
+    imageEl.alt = alt || "Mission photo";
+    captionEl.textContent = caption || alt || "Mission photo";
+    lightbox.classList.add("active");
+    lightbox.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    closeBtn?.focus();
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove("active");
+    lightbox.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "auto";
+    if (imageEl) imageEl.src = "";
+  }
+
+  document.addEventListener("click", (event) => {
+    const link =
+      event.target.closest && event.target.closest(".gallery-card a");
+    if (!link) return;
+    const img = link.querySelector("img");
+    const caption = link
+      .closest(".gallery-card")
+      ?.querySelector(".gallery-caption")?.textContent;
+    const url = link.href;
+    if (!url || !img) return;
+    event.preventDefault();
+    openLightbox(url, img.alt, caption);
+  });
+
+  closeBtn?.addEventListener("click", closeLightbox);
+  backdrop?.addEventListener("click", closeLightbox);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && lightbox.classList.contains("active")) {
+      closeLightbox();
+    }
+  });
 }
 
 /* Token modal: open/close and handlers */
