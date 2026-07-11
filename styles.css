@@ -471,6 +471,38 @@ body::before {
   border-color: rgba(148, 163, 184, 0.45);
 }
 
+.cta-btn.loading {
+  cursor: progress;
+  opacity: 1;
+  pointer-events: none;
+  background: linear-gradient(135deg, #ff8c00 0%, #ff4f2f 100%);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 18px 36px rgba(255, 92, 0, 0.22);
+}
+
+.button-spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spinnerRotate 0.85s linear infinite;
+}
+
+.button-label {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.55rem;
+}
+
+@keyframes spinnerRotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .cta-primary {
   background: linear-gradient(135deg, #ff9f1c 0%, #ff7d00 100%);
   color: white;
@@ -519,6 +551,62 @@ body::before {
 #mobileContinueToDetails:active:not([disabled]) {
   transform: translateY(0) scale(0.99);
   box-shadow: 0 10px 26px rgba(34, 197, 94, 0.22);
+}
+
+/* Product gallery thumbnails (books bundle) */
+.product-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+.product-gallery > img {
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  max-height: 260px;
+  object-fit: contain;
+}
+.product-thumbs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+.product-thumbs .thumb {
+  border: none;
+  background: transparent;
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 56px;
+  height: 80px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  cursor: pointer;
+}
+.product-thumbs .thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.product-thumbs .thumb:hover,
+.product-thumbs .thumb:focus {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 720px) {
+  .product-gallery > img {
+    max-height: 200px;
+  }
+  .product-thumbs .thumb {
+    width: 48px;
+    height: 68px;
+  }
 }
 
 .product-option-group,
@@ -750,15 +838,22 @@ body::before {
   padding: 1rem 1.75rem;
   border-radius: 999px;
   letter-spacing: 0.01em;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.15;
 }
 
 .hero-actions .cta-primary {
   box-shadow: 0 18px 46px rgba(255, 149, 0, 0.23);
 }
 
+/* Ensure Token CTA matches Shop CTA exactly in size and typographic scale */
 .hero-actions .cta-secondary.token-cta {
-  padding: 1rem 1.5rem;
-  min-width: 190px;
+  padding: 1rem 1.75rem;
+  min-width: 210px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.15;
 }
 
 .hero-actions .cta-secondary.token-cta i {
@@ -854,6 +949,23 @@ body::before {
 .token-cta:hover i,
 .token-cta:focus-visible i {
   color: #fff;
+}
+
+/* Strong override: when token CTA appears in hero-actions make it visually identical to Shop CTA */
+.hero-actions .token-cta {
+  padding: 1rem 1.75rem !important;
+  min-width: 210px !important;
+  font-size: 0.98rem !important;
+  font-weight: 700 !important;
+  line-height: 1.15 !important;
+}
+.hero-actions .token-cta i {
+  width: 1.35rem !important;
+  height: 1.35rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.12rem !important;
 }
 
 .support-text {
@@ -2366,6 +2478,13 @@ body::before {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+.product-limited-stock {
+  background: #bf211e;
+  left: 1rem;
+  right: auto;
 }
 
 .product-new {
@@ -6670,6 +6789,14 @@ body {
   color: var(--color-dark-brown);
   font-weight: 700;
   border: none;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.bottom-nav-item[data-action="token"] .bottom-nav-icon,
+.bottom-nav-item[data-action="token"] .bottom-nav-label {
+  margin: 0 auto;
 }
 
 .bottom-nav-item[data-action="token"].active {
@@ -6695,47 +6822,54 @@ body {
     display: flex;
     position: fixed;
     inset: auto 0 0 0;
-    width: 100%;
-    max-width: 100%;
+    width: calc(100% - 2rem);
+    margin: 0 1rem 0.9rem;
+    max-width: 720px;
     box-sizing: border-box;
     z-index: 2200;
-    gap: 0.4rem;
-    justify-content: space-evenly;
+    gap: 0.35rem;
+    justify-content: space-between;
     align-items: center;
-    padding: 0.55rem 0.55rem calc(0.8rem + env(safe-area-inset-bottom));
-    background: rgba(255, 255, 255, 0.98);
-    border-top: 1px solid rgba(230, 223, 217, 0.9);
-    box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.12);
-    backdrop-filter: blur(18px);
+    padding: 0.45rem 0.6rem calc(0.6rem + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.995);
+    border: 1px solid rgba(230, 223, 217, 0.92);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(12px);
     min-width: 0;
-    border-radius: 18px 18px 0 0;
+    border-radius: 14px;
   }
 
   .bottom-nav-item {
     min-width: 0;
-    gap: 0.2rem;
-    padding: 0.65rem 0.55rem;
-    border-radius: 18px;
-    flex: 1 1 80px;
-    min-width: 72px;
-    max-width: 120px;
+    gap: 0.15rem;
+    padding: 0.45rem 0.5rem;
+    border-radius: 12px;
+    flex: 0 0 auto;
+    min-width: 56px;
+    max-width: 92px;
     justify-content: center;
     align-items: center;
-    min-height: 56px;
+    min-height: 48px;
   }
 
   .bottom-nav-item .bottom-nav-icon {
-    font-size: 1.16rem;
+    font-size: 1rem;
+    display: inline-block;
+    line-height: 1;
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
   }
 
   .bottom-nav-item .bottom-nav-label {
     display: block;
-    font-size: 0.72rem;
-    line-height: 1.2;
-    white-space: normal;
+    font-size: 0.68rem;
+    line-height: 1.1;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 82px;
+    max-width: 72px;
     margin: 0;
   }
 
@@ -6743,9 +6877,12 @@ body {
   .bottom-nav-item[data-action="token"].active {
     background: rgba(255, 149, 0, 0.18);
     color: var(--color-primary-orange);
-    border: 1px solid rgba(255, 149, 0, 0.32);
-    box-shadow: 0 8px 24px rgba(255, 149, 0, 0.18);
-    transform: translateY(-1px);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 149, 0, 0.28);
+    box-shadow: 0 8px 22px rgba(255, 149, 0, 0.16);
+    transform: translateY(-2px);
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
   }
 
   .bottom-nav-item.active .bottom-nav-icon,
@@ -6757,7 +6894,7 @@ body {
     background: rgba(255, 149, 0, 0.08);
   }
 
-  .bottom-nav-item.bottom-nav-cart {
+  .bottom-nav-item.bottom-nav-gallery {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
   }
@@ -7530,6 +7667,13 @@ body {
   max-width: 920px;
 }
 
+/* Center hero content and ensure action buttons align centrally */
+.hero-content {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
 .hero-headline {
   font-size: clamp(3.6rem, 7vw, 6.6rem);
   letter-spacing: 0.14em;
@@ -7556,11 +7700,89 @@ body {
   margin-bottom: 2rem;
 }
 
+/* Make the action row take full width on narrow screens while keeping buttons centered */
+@media (max-width: 900px) {
+  .hero-actions {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 .hero-actions .cta-btn {
   min-width: 220px;
   padding: 1rem 1.95rem;
   font-size: 0.98rem;
   border-radius: 999px;
+}
+
+/* Ensure CTA content (icon + text) is centered inside the button */
+.hero-actions .cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Specifically ensure the Token button centers its icon + label when stacked */
+.hero-actions .cta-secondary.token-cta {
+  justify-content: center;
+}
+.hero-actions .cta-secondary.token-cta i {
+  margin: 0;
+  display: inline-block;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+/* Strong centering for token CTA: icon + label are a centered group */
+.hero-actions .cta-secondary.token-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+/* Strong mobile centering for Token CTA */
+@media (max-width: 900px) {
+  .hero-actions .cta-secondary.token-cta {
+    width: calc(100% - 2rem) !important;
+    max-width: 720px;
+    box-sizing: border-box;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center !important;
+  }
+
+  .hero-actions .cta-secondary.token-cta i {
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 1.4rem !important;
+    height: 1.4rem !important;
+    line-height: 1 !important;
+    font-size: 1.15rem !important;
+  }
+
+  .hero-actions .cta-secondary.token-cta span {
+    display: inline-block !important;
+    margin: 0 !important;
+    vertical-align: middle !important;
+    text-align: center !important;
+  }
+}
+
+/* On small screens, make the action buttons stretch to the available width while keeping centered content */
+@media (max-width: 900px) {
+  .hero-actions .cta-btn {
+    width: 100%;
+    max-width: 720px;
+    box-sizing: border-box;
+  }
 }
 
 .hero-actions .cta-primary {
@@ -7581,6 +7803,13 @@ body {
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 0 20px 46px rgba(0, 0, 0, 0.22);
+  justify-content: center;
+  text-align: center;
+}
+
+.hero-actions .cta-secondary.token-cta i,
+.hero-actions .cta-secondary.token-cta span {
+  margin: 0 auto;
 }
 
 .hero-actions .cta-secondary.token-cta:hover,

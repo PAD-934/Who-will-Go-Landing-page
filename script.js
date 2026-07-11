@@ -338,9 +338,19 @@ try {
               try {
                 // Intercept products that should open the product modal
                 // instead of adding directly to cart.
-                if (String(id) === "12" || String(id) === "1") {
-                  try {
-                    openProductModal(id, null, null, 1, true);
+                try {
+                  const prod = findProduct(id);
+                  if (prod && prod.openModalOnAdd) {
+                    const pendingVariant =
+                      e.target.closest && e.target.closest(".product-card")
+                        ? e.target.closest(".product-card").dataset
+                            .pendingVariant || null
+                        : null;
+                    openProductModal(id, pendingVariant, null, 1, true);
+                    if (e.target.closest && e.target.closest(".product-card")) {
+                      e.target.closest(".product-card").dataset.pendingVariant =
+                        "";
+                    }
                     setTimeout(() => {
                       try {
                         const addBtn = document.getElementById(
@@ -363,9 +373,9 @@ try {
                     }, 140);
                     e.preventDefault && e.preventDefault();
                     return;
-                  } catch (e) {
-                    console.warn("WWG capture openProductModal error", e);
                   }
+                } catch (e) {
+                  console.warn("WWG capture openProductModal error", e);
                 }
                 // otherwise allow normal handlers to run (do not add here)
               } catch (err) {
@@ -418,29 +428,57 @@ function attachCartBindings() {
           console.log("Add to cart clicked", id);
           // For products that should open the product modal instead of
           // adding directly to cart.
-          if (String(id) === "12" || String(id) === "1") {
-            openProductModal(id, null, null, 1, true);
-            setTimeout(() => {
-              try {
-                const addBtn = document.getElementById("productModalAddToCart");
-                if (addBtn) {
-                  try {
-                    addBtn.focus({ preventScroll: true });
-                  } catch (err) {
-                    addBtn.focus();
-                  }
-                  addBtn.classList.add("product-add-highlight");
-                  setTimeout(
-                    () => addBtn.classList.remove("product-add-highlight"),
-                    1200,
+          try {
+            const prod = findProduct(id);
+            const card = btn.closest && btn.closest(".product-card");
+            const pendingVariant = card?.dataset?.pendingVariant || null;
+            if (prod && prod.openModalOnAdd) {
+              openProductModal(id, pendingVariant, null, 1, true);
+              if (card) card.dataset.pendingVariant = "";
+              setTimeout(() => {
+                try {
+                  const addBtn = document.getElementById(
+                    "productModalAddToCart",
                   );
-                }
-              } catch (e) {}
-            }, 140);
-            return;
+                  if (addBtn) {
+                    try {
+                      addBtn.focus({ preventScroll: true });
+                    } catch (err) {
+                      addBtn.focus();
+                    }
+                    addBtn.classList.add("product-add-highlight");
+                    setTimeout(
+                      () => addBtn.classList.remove("product-add-highlight"),
+                      1200,
+                    );
+                  }
+                } catch (e) {}
+              }, 140);
+              return;
+            }
+          } catch (e) {
+            console.warn("attachCartBindings check openModalOnAdd error", e);
           }
-          // Fallback: add directly for other products
-          addToCart(id, null, null, 1);
+          // For all add-to-cart buttons, open the product modal first.
+          openProductModal(id, null, null, 1, true);
+          setTimeout(() => {
+            try {
+              const addBtn = document.getElementById("productModalAddToCart");
+              if (addBtn) {
+                try {
+                  addBtn.focus({ preventScroll: true });
+                } catch (err) {
+                  addBtn.focus();
+                }
+                addBtn.classList.add("product-add-highlight");
+                setTimeout(
+                  () => addBtn.classList.remove("product-add-highlight"),
+                  1200,
+                );
+              }
+            } catch (e) {}
+          }, 140);
+          return;
         } catch (err) {
           console.warn("addToCart failed:", err);
           showToast("Unable to add to cart. Please try again.");
@@ -681,6 +719,17 @@ function initializeProductHoverPreview() {
     if (summaryButton) {
       event.preventDefault();
       event.stopPropagation();
+      const card = summaryButton.closest(".product-card");
+      const variantId = summaryButton.dataset.variantId || null;
+      if (card && variantId) {
+        card.dataset.pendingVariant = variantId;
+        card
+          .querySelectorAll(".product-summary-preview.selected")
+          .forEach((btn) => {
+            btn.classList.remove("selected");
+          });
+        summaryButton.classList.add("selected");
+      }
       showPreviewBySrc(
         summaryButton.dataset.previewSrc,
         summaryButton.dataset.previewAlt,
@@ -813,6 +862,12 @@ function initializeBottomNav() {
           block: "start",
         });
         break;
+      case "gallery":
+        document.getElementById("mission-gallery")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+        break;
       case "contact":
         document.getElementById("contact")?.scrollIntoView({
           behavior: "smooth",
@@ -841,21 +896,28 @@ function setBottomNavActive(action) {
 function initializeBottomNavScrollSpy() {
   const shopSection = document.getElementById("shop");
   const donationSection = document.getElementById("donation");
+  const gallerySection = document.getElementById("mission-gallery");
   if (!shopSection || !donationSection) return;
 
   let shopTop = 0;
   let donationTop = 0;
+  let galleryTop = Infinity;
   let ticking = false;
 
   const updateOffsets = () => {
     shopTop = shopSection.getBoundingClientRect().top + window.scrollY;
     donationTop = donationSection.getBoundingClientRect().top + window.scrollY;
+    galleryTop = gallerySection
+      ? gallerySection.getBoundingClientRect().top + window.scrollY
+      : Infinity;
   };
 
   const refreshActiveNav = () => {
     ticking = false;
     const scrollIndicator = window.scrollY + window.innerHeight * 0.24;
-    if (scrollIndicator >= donationTop) {
+    if (gallerySection && scrollIndicator >= galleryTop) {
+      setBottomNavActive("gallery");
+    } else if (scrollIndicator >= donationTop) {
       setBottomNavActive("token");
     } else if (scrollIndicator >= shopTop) {
       setBottomNavActive("shop");
@@ -933,9 +995,7 @@ function initializeProductFilters() {
 
       const categoryMatch = category === "all" || cardCategory === category;
       const tagMatch =
-        tag === "all" ||
-        (tag === "limited" &&
-          (cardTags.includes("made") || cardTags.includes("onsite")));
+        tag === "all" || (tag === "limited" && cardTags.includes("limited"));
 
       if (categoryMatch && tagMatch) {
         card.style.display = "block";
@@ -1211,17 +1271,14 @@ async function handleCheckoutSubmit(event) {
       "error",
       "Please fix the highlighted fields before submitting.",
     );
-    const submitBtn = form.querySelector('button[type="submit"]');
-    toggleSubmitButton(submitBtn, false);
+    setCheckoutSubmitting(form, false);
     return;
   }
 
   const submitBtn = form.querySelector('button[type="submit"]');
   const mobileSubmitBtn = document.getElementById("mobileSubmitBtn");
   if (form.dataset.submitting === "true") return;
-  form.dataset.submitting = "true";
-  toggleSubmitButton(submitBtn, true, "Submitting order...");
-  if (mobileSubmitBtn) mobileSubmitBtn.disabled = true;
+  setCheckoutSubmitting(form, true, "Submitting order...");
   clearOrderFeedback();
 
   const orderId = document
@@ -1242,7 +1299,7 @@ async function handleCheckoutSubmit(event) {
 
   if (!customerName || !customerEmail || !customerContact || !customerAddress) {
     showOrderFeedback("error", "Please complete all required contact fields.");
-    toggleSubmitButton(submitBtn, false);
+    setCheckoutSubmitting(form, false);
     return;
   }
 
@@ -1252,13 +1309,13 @@ async function handleCheckoutSubmit(event) {
       "error",
       "Please enter a valid 11-digit contact number (numbers only).",
     );
-    toggleSubmitButton(submitBtn, false);
+    setCheckoutSubmitting(form, false);
     return;
   }
 
   if (!paymentMethod) {
     showOrderFeedback("error", "Please select your payment method.");
-    toggleSubmitButton(submitBtn, false);
+    setCheckoutSubmitting(form, false);
     return;
   }
 
@@ -1271,13 +1328,13 @@ async function handleCheckoutSubmit(event) {
       "error",
       "Please enter a valid Transaction ID or GCash reference.",
     );
-    toggleSubmitButton(submitBtn, false);
+    setCheckoutSubmitting(form, false);
     return;
   }
 
   if (!paymentInput || !paymentInput.files || paymentInput.files.length === 0) {
     showOrderFeedback("error", "Please upload a screenshot of your payment.");
-    toggleSubmitButton(submitBtn, false);
+    setCheckoutSubmitting(form, false);
     return;
   }
 
@@ -1292,7 +1349,7 @@ async function handleCheckoutSubmit(event) {
       "error",
       "Unable to read the payment screenshot. Please try a different file.",
     );
-    toggleSubmitButton(submitBtn, false);
+    setCheckoutSubmitting(form, false);
     return;
   }
 
@@ -1328,7 +1385,7 @@ async function handleCheckoutSubmit(event) {
       "error",
       "Google Apps Script URL is not configured. Update the script.js file.",
     );
-    toggleSubmitButton(submitBtn, false);
+    setCheckoutSubmitting(form, false);
     return;
   }
 
@@ -1422,9 +1479,7 @@ async function handleCheckoutSubmit(event) {
         "Checkout failed. Please refresh the page and try again.",
     );
   } finally {
-    toggleSubmitButton(submitBtn, false);
-    if (mobileSubmitBtn) mobileSubmitBtn.disabled = false;
-    delete form.dataset.submitting;
+    setCheckoutSubmitting(form, false);
   }
 }
 
@@ -2006,11 +2061,46 @@ function toggleSubmitButton(button, isLoading, label) {
   if (!button) return;
   button.disabled = isLoading;
   if (isLoading) {
-    button.dataset.originalText = button.textContent;
-    button.textContent = label || "Submitting...";
+    button.dataset.originalText = button.textContent.trim();
+    button.classList.add("loading");
+
+    let spinner = button.querySelector(".button-spinner");
+    if (!spinner) {
+      spinner = document.createElement("span");
+      spinner.className = "button-spinner";
+    }
+
+    const labelText = label || "Submitting...";
+    let labelSpan = button.querySelector(".button-label");
+    if (!labelSpan) {
+      labelSpan = document.createElement("span");
+      labelSpan.className = "button-label";
+    }
+    labelSpan.textContent = labelText;
+
+    button.innerHTML = "";
+    button.appendChild(spinner);
+    button.appendChild(labelSpan);
   } else {
-    button.textContent = button.dataset.originalText || "Submit Order";
+    button.classList.remove("loading");
+    const originalText = button.dataset.originalText || "Submit Order";
+    button.textContent = originalText;
   }
+}
+
+function setCheckoutSubmitting(form, isLoading, label = "Submitting order...") {
+  if (!form) return;
+  if (isLoading) {
+    form.dataset.submitting = "true";
+  } else {
+    delete form.dataset.submitting;
+  }
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) toggleSubmitButton(submitBtn, isLoading, label);
+
+  const mobileSubmitBtn = document.getElementById("mobileSubmitBtn");
+  if (mobileSubmitBtn) toggleSubmitButton(mobileSubmitBtn, isLoading, label);
 }
 
 /* ==================== SIMPLE CART ==================== */
@@ -2258,6 +2348,79 @@ const PRODUCTS = [
       { id: "adult-l", label: "L", category: "Adult", price: 250 },
       { id: "adult-xl", label: "XL", category: "Adult", price: 250 },
       { id: "adult-2xl", label: "2XL", category: "Adult", price: 250 },
+    ],
+  },
+  // Ptr. Adewale Books bundle (4 books) - id 30
+  {
+    id: "30",
+    title: "Ptr. Adewale Books Bundle (4 books)",
+    category: "books",
+    price: 250,
+    img: "Who Will Go Products/Books/main books.png",
+    description:
+      "Bundle: four ministry books curated by Ptr. Adewale. Includes Baptism of the Holy Spirit; How to Obtain Fullness of Power; Why God Used D. L. Moody; Ten Reasons Why I Believe the Bible.",
+    tags: ["bundle", "books"],
+    openModalOnAdd: true,
+    suppressOptionSelect: true,
+    options: [
+      {
+        id: "book-1",
+        label: "Baptism of the Holy Spirit",
+        img: "Who Will Go Products/Books/1.png",
+      },
+      {
+        id: "book-2",
+        label: "How to Obtain Fullness of Power",
+        img: "Who Will Go Products/Books/2.png",
+      },
+      {
+        id: "book-3",
+        label: "Why God Used D. L. Moody",
+        img: "Who Will Go Products/Books/3.png",
+      },
+      {
+        id: "book-4",
+        label: "Ten Reasons Why I Believe the Bible",
+        img: "Who Will Go Products/Books/4.png",
+      },
+    ],
+  },
+  {
+    id: "31",
+    title: "Adewale Single Book Collection",
+    category: "books",
+    price: 60,
+    img: "Who Will Go Products/Books/main book 1.png",
+    optionLabel: "book",
+    description:
+      "Choose a single title from the Adewale book collection. Each booklet is sold per piece at PHP 60, with a clean preview of every cover and easy selection.",
+    tags: ["books", "single"],
+    options: [
+      {
+        id: "i-must-go",
+        label: "I Must Go",
+        img: "Who Will Go Products/Books/options/I Must Go.png",
+      },
+      {
+        id: "hebrew-children-series",
+        label: "Hebrew Children Series",
+        img: "Who Will Go Products/Books/options/20.png",
+      },
+      {
+        id: "5-things-robert-smith-taught-me",
+        label: "5 Things Robert Smith Taught Me",
+        img: "Who Will Go Products/Books/options/50.png",
+      },
+      {
+        id: "the-bus-ministry",
+        label: "The Bus Ministry",
+        img: "Who Will Go Products/Books/options/60.png",
+      },
+      {
+        id: "africans-in-the-bible",
+        label: "Africans in the Bible",
+        img: "Who Will Go Products/Books/options/Africans in the Bible.png",
+      },
     ],
   },
   {
@@ -2669,7 +2832,9 @@ function addToCart(id, variantId = null, sizeId = null, qty = 1) {
   const product = findProduct(id);
   if (!product) return showToast("Product not found");
 
-  if (product.options?.length && !variantId) {
+  // If product has selectable options normally, require selection — but
+  // allow products that explicitly suppress option selection (bundles)
+  if (product.options?.length && !product.suppressOptionSelect && !variantId) {
     openProductModal(id, null, sizeId);
     return;
   }
@@ -2692,7 +2857,7 @@ function addToCart(id, variantId = null, sizeId = null, qty = 1) {
   if (existing) {
     existing.qty += qty;
   } else {
-    cart.push({
+    cart.unshift({
       key: cartKey,
       id: product.id,
       title: product.title,
@@ -2965,7 +3130,9 @@ function renderCartItems() {
     const itemKey = getCartItemKey(item);
     const itemId = getCartItemId(item);
     const product = findProduct(item.id);
-    const variantOptions = product?.options || [];
+    const variantOptions = product?.suppressOptionSelect
+      ? []
+      : product?.options || [];
     const optionLabel = product?.optionLabel || "option";
     const optionLabelText =
       optionLabel.charAt(0).toUpperCase() + optionLabel.slice(1);
@@ -3438,6 +3605,33 @@ function setProductModalPreview(product, variantId = null, variantIndex = 0) {
   // imageCount already updated above with a concise "1 / N" format.
 }
 
+function updateProductModalSubtitle(product, variantId = null) {
+  const subtitleEl = document.getElementById("productModalSubtitle");
+  if (!subtitleEl || !product) return;
+
+  const variant = variantId ? getVariant(product, variantId) : null;
+  if (variant && product.optionLabel) {
+    const labelName =
+      product.optionLabel.charAt(0).toUpperCase() +
+      product.optionLabel.slice(1);
+    subtitleEl.textContent = `${labelName}: ${variant.label}`;
+    return;
+  }
+
+  const optionsCount =
+    product.options?.length && !product.suppressOptionSelect
+      ? product.options.length
+      : 0;
+  subtitleEl.textContent =
+    optionsCount && product.sizes?.length
+      ? `Select your ${product.optionLabel || "option"} and size before checkout`
+      : optionsCount
+        ? `Select your ${product.optionLabel || "option"} before checkout`
+        : product.sizes?.length
+          ? "Select your size before checkout"
+          : "";
+}
+
 function renderProductModalOptions(
   product,
   selectedVariantId = null,
@@ -3447,8 +3641,11 @@ function renderProductModalOptions(
 ) {
   const optionsContainer = document.getElementById("productModalOptions");
   if (!optionsContainer) return;
+  // allow specific products (e.g., bundles) to provide gallery images via
+  // `options` but suppress showing an options selector in the modal UI.
+  const hasOptions = product?.options?.length && !product.suppressOptionSelect;
 
-  const variantHtml = product?.options?.length
+  const variantHtml = hasOptions
     ? (() => {
         const defaultVariant =
           getVariant(product, selectedVariantId) || product.options[0];
@@ -3525,15 +3722,33 @@ function renderProductModalOptions(
 
   optionsContainer.innerHTML = `${variantHtml}${sizeHtml}${quantityHtml}`;
 
-  const selectedVariant = selectedVariantId
-    ? getVariant(product, selectedVariantId)
+  const resolvedVariant =
+    (selectedVariantId && getVariant(product, selectedVariantId)) ||
+    product?.options?.[0];
+
+  const variantSelect = document.getElementById("productModalVariantSelect");
+  if (variantSelect && resolvedVariant?.id) {
+    variantSelect.value = resolvedVariant.id;
+  }
+
+  const activeVariantId =
+    variantSelect?.value ||
+    resolvedVariant?.id ||
+    product?.options?.[0]?.id ||
+    null;
+  const activeVariant = activeVariantId
+    ? getVariant(product, activeVariantId)
     : product?.options?.[0];
   const currentIndex = product?.options?.findIndex(
-    (option) => option.id === selectedVariant?.id,
+    (option) => option.id === activeVariant?.id,
   );
+
+  const addBtn = document.getElementById("productModalAddToCart");
+  if (addBtn) addBtn.dataset.variant = activeVariant?.id || "";
+
   setProductModalPreview(
     product,
-    selectedVariant?.id,
+    activeVariant?.id,
     currentIndex >= 0 ? currentIndex : 0,
   );
 }
@@ -3556,9 +3771,22 @@ function openProductModal(
   const subtitle = document.getElementById("productModalSubtitle");
 
   if (product) {
+    const card = document.querySelector(
+      `.product-card[data-product-id="${id}"]`,
+    );
+    const resolvedVariantId =
+      selectedVariantId ||
+      card?.dataset?.pendingVariant ||
+      card?.querySelector(".product-summary-preview.selected")?.dataset
+        ?.variantId ||
+      null;
+    selectedVariantId = resolvedVariantId;
     const selectedIndex = product?.options?.findIndex(
       (option) => option.id === selectedVariantId,
     );
+    if (card && card.dataset.pendingVariant) {
+      delete card.dataset.pendingVariant;
+    }
     setProductModalPreview(
       product,
       selectedVariantId,
@@ -3577,14 +3805,14 @@ function openProductModal(
         `.product-card[data-product-id="${id}"] .product-category`,
       )?.textContent || "";
     addBtn.dataset.id = product.id;
-    addBtn.dataset.variant = selectedVariantId || "";
+    addBtn.dataset.variant = resolvedVariantId || "";
     addBtn.dataset.size = selectedSizeId || "";
     modal.dataset.productId = product.id;
     modal.dataset.currentPhotoIndex = selectedIndex >= 0 ? selectedIndex : 0;
     modal.dataset.photoCount = product.options?.length || 1;
     renderProductModalOptions(
       product,
-      selectedVariantId,
+      resolvedVariantId,
       selectedSizeId,
       qty,
       selectedIndex >= 0 ? selectedIndex : 0,
@@ -3632,6 +3860,7 @@ function openProductModal(
                 variantSelect.value,
                 selIndex >= 0 ? selIndex : 0,
               );
+              updateProductModalSubtitle(product, variantSelect.value);
               if (addBtnEl)
                 addBtnEl.dataset.variant = variantSelect.value || "";
             } catch (err) {}
@@ -3645,14 +3874,29 @@ function openProductModal(
         selectedIndex >= 0 ? selectedIndex : 0;
       modalElement.dataset.photoCount = product.options?.length || 1;
     }
-    subtitle.textContent =
-      product.options?.length && product.sizes?.length
-        ? `Select your ${product.optionLabel || "option"} and size before checkout`
-        : product.options?.length
-          ? `Select your ${product.optionLabel || "option"} before checkout`
-          : product.sizes?.length
-            ? "Select your size before checkout"
-            : "";
+    const optionsCount =
+      product.options?.length && !product.suppressOptionSelect
+        ? product.options.length
+        : 0;
+    const resolvedVariant =
+      (resolvedVariantId && getVariant(product, resolvedVariantId)) ||
+      product?.options?.[0] ||
+      null;
+    if (resolvedVariant && product.optionLabel) {
+      const labelName =
+        product.optionLabel.charAt(0).toUpperCase() +
+        product.optionLabel.slice(1);
+      subtitle.textContent = `${labelName}: ${resolvedVariant.label}`;
+    } else {
+      subtitle.textContent =
+        optionsCount && product.sizes?.length
+          ? `Select your ${product.optionLabel || "option"} and size before checkout`
+          : optionsCount
+            ? `Select your ${product.optionLabel || "option"} before checkout`
+            : product.sizes?.length
+              ? "Select your size before checkout"
+              : "";
+    }
 
     const sizeGuideSection = document.getElementById("productModalSizeGuide");
     if (sizeGuideSection) {
@@ -3795,9 +4039,15 @@ document.addEventListener("click", function (e) {
       const variantSelect = document.getElementById(
         "productModalVariantSelect",
       );
-      if (variantSelect && variantId) variantSelect.value = variantId;
+      if (variantSelect && variantId) {
+        variantSelect.value = variantId;
+      }
+
+      const addBtn = document.getElementById("productModalAddToCart");
+      if (addBtn && variantId) addBtn.dataset.variant = variantId;
 
       setProductModalPreview(product, variantId, newIndex);
+      updateProductModalSubtitle(product, variantId);
       modalElement.dataset.currentPhotoIndex = newIndex;
     }
     return;
@@ -3890,8 +4140,15 @@ document.addEventListener("keydown", function (ev) {
   }
 
   const variantSelect = document.getElementById("productModalVariantSelect");
-  if (variantSelect && variantId) variantSelect.value = variantId;
+  if (variantSelect && variantId) {
+    variantSelect.value = variantId;
+  }
+
+  const addBtn = document.getElementById("productModalAddToCart");
+  if (addBtn && variantId) addBtn.dataset.variant = variantId;
+
   setProductModalPreview(product, variantId, newIndex);
+  updateProductModalSubtitle(product, variantId);
   modal.dataset.currentPhotoIndex = String(newIndex);
 });
 
@@ -3916,6 +4173,7 @@ document.addEventListener("click", function (e) {
   if (imageArea) {
     const card = imageArea.closest(".product-card");
     const id = card?.dataset?.productId;
+    const pendingVariant = card?.dataset?.pendingVariant || null;
     if (id) {
       const isTouch =
         typeof window !== "undefined" &&
@@ -3930,7 +4188,8 @@ document.addEventListener("click", function (e) {
       // mobile or touch device: open full product modal and align the
       // Add to Cart button to the exact location of the clicked image.
       const imageEl = imageArea.querySelector("img");
-      openProductModal(id, null, null, 1, false);
+      openProductModal(id, pendingVariant, null, 1, false);
+      if (card) card.dataset.pendingVariant = "";
 
       setTimeout(() => {
         try {
@@ -3965,33 +4224,14 @@ document.addEventListener("click", function (e) {
   if (t.matches(".add-to-cart") || t.closest(".add-to-cart")) {
     const btn = t.matches(".add-to-cart") ? t : t.closest(".add-to-cart");
     const id = btn.dataset.id;
-    // For the Mug (id '1') show the product modal so user can see details
-    if (String(id) === "1") {
-      openProductModal(id, null, null, 1, true);
-      setTimeout(() => {
-        try {
-          const addBtn = document.getElementById("productModalAddToCart");
-          if (addBtn) {
-            try {
-              addBtn.focus({ preventScroll: true });
-            } catch (err) {
-              addBtn.focus();
-            }
-            addBtn.classList.add("product-add-highlight");
-            setTimeout(
-              () => addBtn.classList.remove("product-add-highlight"),
-              1200,
-            );
-          }
-        } catch (e) {}
-      }, 140);
-      return;
-    }
-
-    // For other products that benefit from confirmation, keep the modal flow
-    const idsToConfirm = ["12"]; // Magnetic Bookmark (12)
-    if (idsToConfirm.includes(String(id))) {
-      openProductModal(id, null, null, 1, false);
+    const card = btn.closest(".product-card");
+    const pendingVariant = card?.dataset?.pendingVariant || null;
+    if (id) {
+      e.preventDefault && e.preventDefault();
+      e.stopPropagation && e.stopPropagation();
+      e.stopImmediatePropagation && e.stopImmediatePropagation();
+      openProductModal(id, pendingVariant, null, 1, true);
+      if (card) card.dataset.pendingVariant = "";
       setTimeout(() => {
         try {
           const modalBody = document.querySelector(
@@ -4014,18 +4254,11 @@ document.addEventListener("click", function (e) {
           // silent fail
         }
       }, 160);
-      return;
     }
-
-    addToCart(id, null, null, 1);
     return;
   }
 
-  if (
-    t.id === "cartButton" ||
-    t.closest("#cartButton") ||
-    t.closest(".bottom-nav-cart")
-  ) {
+  if (t.id === "cartButton" || t.closest("#cartButton")) {
     toggleCart();
     const cartButton = document.getElementById("cartButton");
     if (cartButton) {
@@ -4165,6 +4398,7 @@ document.addEventListener("change", function (e) {
         target.value,
         selectedIndex >= 0 ? selectedIndex : 0,
       );
+      updateProductModalSubtitle(product, target.value);
       const modalElement = document.getElementById("productModal");
       if (modalElement) {
         modalElement.dataset.currentPhotoIndex =
