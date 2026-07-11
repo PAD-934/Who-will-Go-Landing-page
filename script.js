@@ -920,7 +920,7 @@ function initializeBottomNav() {
         window.scrollTo({ top: 0, behavior: "smooth" });
         break;
       case "shop":
-        document.getElementById("shop")?.scrollIntoView({
+        document.getElementById("store-section")?.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
@@ -969,7 +969,7 @@ function setBottomNavActive(action) {
 }
 
 function initializeBottomNavScrollSpy() {
-  const shopSection = document.getElementById("shop");
+  const shopSection = document.getElementById("store-section");
   const donationSection = document.getElementById("donation");
   const gallerySection = document.getElementById("mission-gallery");
   if (!shopSection || !donationSection) return;
