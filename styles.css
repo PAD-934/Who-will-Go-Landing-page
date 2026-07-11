@@ -5373,6 +5373,15 @@ body::before {
       z-index: 100010;
       display: none; /* shown only on small viewports */
       pointer-events: auto;
+      transition: transform 180ms ease, opacity 180ms ease;
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .checkout-fixed-footer.footer-hidden-during-input {
+      display: none !important;
+      transform: translateY(100%);
+      opacity: 0;
     }
 
     .checkout-fixed-footer .footer-inner {

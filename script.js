@@ -1306,6 +1306,7 @@ function initializeCheckoutForm() {
   }
 
   const checkoutForm = document.getElementById("order-form");
+  const detailsPanel = document.getElementById("mobileCheckoutDetailsPanel");
   const mobileCheckoutFooter = document.querySelector(".checkout-fixed-footer");
   if (checkoutForm && mobileCheckoutFooter) {
     const setMobileCheckoutFooter = (visible) => {
@@ -1318,28 +1319,47 @@ function initializeCheckoutForm() {
       }
     };
 
+    const shouldShowMobileFooter = () => {
+      return (
+        detailsPanel?.getAttribute("aria-hidden") === "false" &&
+        !checkoutForm.contains(document.activeElement)
+      );
+    };
+
+    const hideMobileFooter = () => setMobileCheckoutFooter(false);
+    const restoreMobileFooter = () => {
+      if (shouldShowMobileFooter()) {
+        setMobileCheckoutFooter(true);
+      }
+    };
+
     checkoutForm.addEventListener("focusin", (event) => {
       const target = event.target;
       if (
         target instanceof HTMLElement &&
         ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
       ) {
-        setMobileCheckoutFooter(false);
+        hideMobileFooter();
       }
     });
 
     checkoutForm.addEventListener("focusout", () => {
-      window.setTimeout(() => {
-        if (!checkoutForm.contains(document.activeElement)) {
-          const detailsPanel = document.getElementById(
-            "mobileCheckoutDetailsPanel",
-          );
-          if (detailsPanel?.getAttribute("aria-hidden") === "false") {
-            setMobileCheckoutFooter(true);
-          }
-        }
-      }, 120);
+      window.setTimeout(restoreMobileFooter, 120);
     });
+
+    if (window.visualViewport) {
+      let lastViewportHeight = window.visualViewport.height;
+      window.visualViewport.addEventListener("resize", () => {
+        const currentHeight = window.visualViewport.height;
+        const keyboardOpen = currentHeight < lastViewportHeight - 100;
+        lastViewportHeight = currentHeight;
+        if (keyboardOpen) {
+          hideMobileFooter();
+        } else {
+          restoreMobileFooter();
+        }
+      });
+    }
   }
 
   // initial validation run (debounced)
