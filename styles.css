@@ -5379,9 +5379,9 @@ body::before {
     }
 
     .checkout-fixed-footer.footer-hidden-during-input {
-      display: none !important;
-      transform: translateY(100%);
-      opacity: 0;
+      display: block !important;
+      transform: translateY(0);
+      opacity: 1;
     }
 
     .checkout-fixed-footer .footer-inner {

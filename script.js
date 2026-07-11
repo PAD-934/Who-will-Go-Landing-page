@@ -1306,60 +1306,13 @@ function initializeCheckoutForm() {
   }
 
   const checkoutForm = document.getElementById("order-form");
-  const detailsPanel = document.getElementById("mobileCheckoutDetailsPanel");
   const mobileCheckoutFooter = document.querySelector(".checkout-fixed-footer");
   if (checkoutForm && mobileCheckoutFooter) {
-    const setMobileCheckoutFooter = (visible) => {
-      if (visible) {
-        mobileCheckoutFooter.setAttribute("aria-hidden", "false");
-        mobileCheckoutFooter.classList.remove("footer-hidden-during-input");
-      } else {
-        mobileCheckoutFooter.setAttribute("aria-hidden", "true");
-        mobileCheckoutFooter.classList.add("footer-hidden-during-input");
-      }
-    };
-
-    const shouldShowMobileFooter = () => {
-      return (
-        detailsPanel?.getAttribute("aria-hidden") === "false" &&
-        !checkoutForm.contains(document.activeElement)
-      );
-    };
-
-    const hideMobileFooter = () => setMobileCheckoutFooter(false);
-    const restoreMobileFooter = () => {
-      if (shouldShowMobileFooter()) {
-        setMobileCheckoutFooter(true);
-      }
-    };
-
-    checkoutForm.addEventListener("focusin", (event) => {
-      const target = event.target;
-      if (
-        target instanceof HTMLElement &&
-        ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
-      ) {
-        hideMobileFooter();
-      }
-    });
-
-    checkoutForm.addEventListener("focusout", () => {
-      window.setTimeout(restoreMobileFooter, 120);
-    });
-
-    if (window.visualViewport) {
-      let lastViewportHeight = window.visualViewport.height;
-      window.visualViewport.addEventListener("resize", () => {
-        const currentHeight = window.visualViewport.height;
-        const keyboardOpen = currentHeight < lastViewportHeight - 100;
-        lastViewportHeight = currentHeight;
-        if (keyboardOpen) {
-          hideMobileFooter();
-        } else {
-          restoreMobileFooter();
-        }
-      });
-    }
+    // Keep the mobile checkout footer visible while the customer is entering
+    // details. The footer should only be hidden when the details panel is not
+    // active or when the checkout UI changes away from the mobile details view.
+    mobileCheckoutFooter.setAttribute("aria-hidden", "false");
+    mobileCheckoutFooter.classList.remove("footer-hidden-during-input");
   }
 
   // initial validation run (debounced)
