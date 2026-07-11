@@ -773,6 +773,62 @@ function initializeBottomNav() {
         break;
     }
   });
+
+  initializeBottomNavScrollSpy();
+}
+
+function setBottomNavActive(action) {
+  const target = document.querySelector(
+    `.bottom-nav-item[data-action="${action}"]`,
+  );
+  if (!target) return;
+  document.querySelectorAll(".bottom-nav-item").forEach((btn) => {
+    btn.classList.toggle("active", btn === target);
+  });
+}
+
+function initializeBottomNavScrollSpy() {
+  const shopSection = document.getElementById("shop");
+  const donationSection = document.getElementById("donation");
+  if (!shopSection || !donationSection) return;
+
+  let shopTop = 0;
+  let donationTop = 0;
+  let ticking = false;
+
+  const updateOffsets = () => {
+    shopTop = shopSection.getBoundingClientRect().top + window.scrollY;
+    donationTop = donationSection.getBoundingClientRect().top + window.scrollY;
+  };
+
+  const refreshActiveNav = () => {
+    ticking = false;
+    const scrollIndicator = window.scrollY + window.innerHeight * 0.24;
+    if (scrollIndicator >= donationTop) {
+      setBottomNavActive("token");
+    } else if (scrollIndicator >= shopTop) {
+      setBottomNavActive("shop");
+    } else {
+      setBottomNavActive("home");
+    }
+  };
+
+  const onScroll = () => {
+    if (!ticking) {
+      ticking = true;
+      window.requestAnimationFrame(refreshActiveNav);
+    }
+  };
+
+  const onResize = () => {
+    updateOffsets();
+    refreshActiveNav();
+  };
+
+  updateOffsets();
+  refreshActiveNav();
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onResize, { passive: true });
 }
 
 function initializeMessengerVisibilityForHero() {
@@ -1412,6 +1468,11 @@ function openReceiptModal() {
   modal.classList.add("active");
   modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
+  // default receipt format to JPEG for easier image saving
+  try {
+    const fmt = document.getElementById("receiptFormat");
+    if (fmt) fmt.value = "jpeg";
+  } catch (e) {}
 }
 
 function closeReceiptModal() {
