@@ -274,6 +274,74 @@
         </div>
       </div>
 
+      <!-- Thank You Modal - Shows after "I Have Donated" button click -->
+      <div
+        class="modal"
+        id="thankYouModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="thankYouTitle"
+        aria-hidden="true"
+      >
+        <div class="modal-content thank-you-modal-content" role="document">
+          <button class="modal-close" aria-label="Close thank you dialog">
+            &times;
+          </button>
+          
+          <div class="thank-you-container">
+            <!-- Header with Icon -->
+            <div class="thank-you-header">
+              <div class="thank-you-icon">❤️</div>
+              <h2 id="thankYouTitle" class="thank-you-title">Thank You for Your Generosity</h2>
+            </div>
+
+            <!-- Main Message -->
+            <div class="thank-you-message">
+              <p class="thank-you-intro">Your love and support help continue the mission and bring meaningful change to lives in need.</p>
+              
+              <!-- Scripture Quote -->
+              <blockquote class="thank-you-quote">
+                <i class="fas fa-quote-left quote-icon"></i>
+                <p>No one may see the kindness you give, but God sees your heart. Every gift shared with love reflects His grace and becomes a blessing to others.</p>
+                <div class="quote-end">❤️</div>
+              </blockquote>
+
+              <p class="thank-you-faith">Because of God's love, every act of generosity matters.</p>
+            </div>
+
+            <!-- Important Note Section -->
+            <div class="thank-you-important-section">
+              <div class="important-header">
+                <i class="fas fa-exclamation-circle important-icon"></i>
+                <h3>Important:</h3>
+              </div>
+              <div class="important-content">
+                <p>After you have sent your Token Of Love through GCash, please upload your proof of donation to Messenger for proper record keeping.</p>
+                <p class="important-instruction">Upload your receipt or screenshot using this link:</p>
+                <a href="https://www.facebook.com/SGBCTaytay" target="_blank" rel="noopener noreferrer" class="important-link">
+                  <i class="fab fa-facebook"></i> facebook.com/SGBCTaytay
+                </a>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="thank-you-actions">
+              <a href="https://www.facebook.com/SGBCTaytay" target="_blank" rel="noopener noreferrer" class="cta-btn cta-primary">
+                <i class="fab fa-facebook"></i> Go to Messenger
+              </a>
+              <button type="button" class="cta-btn cta-outline" id="closeThankyouModal">
+                <i class="fas fa-check"></i> Done
+              </button>
+            </div>
+
+            <!-- Footer Message -->
+            <div class="thank-you-footer">
+              <p>Thank you for being part of the mission. Your generosity changes lives! 🙏</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Customize Modal (Yarn's Of Joy) -->
       <div
         class="modal"
@@ -881,6 +949,29 @@
 
       <!-- How It Works (moved into Impact Statistics area) -->
       <!-- original section moved to `impact-stats` for a combined impact + process area -->
+
+      <!-- WHO WILL GO STORE Section -->
+      <section class="store-section">
+        <div class="store-hero-banner">
+          <div class="store-hero-content">
+            <span class="store-badge">🛍️ Welcome to Our Store</span>
+            <h2 class="store-headline">
+              The WHO WILL GO <span class="store-accent">Store</span>
+            </h2>
+            <p class="store-description">
+              Intentional products. Eternal impact. From t-shirts to home goods, every purchase supports missionaries worldwide.
+            </p>
+            <div class="store-hero-ctas">
+              <a href="#shop" class="cta-btn cta-primary">
+                <i class="fas fa-shopping-bag"></i> Shop All Products
+              </a>
+              <button type="button" class="cta-btn cta-secondary token-cta" data-action="open-token-modal">
+                <i class="fas fa-heart"></i> Token Of Love
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- Products -->
       <section class="products" id="shop">

@@ -5,6 +5,7 @@ function initializeApp() {
   const initSteps = [
     ["navigation", initializeNavigation],
     ["modals", initializeModals],
+    ["thank you modal", initializeThankYouModal],
     ["token modal", initializeTokenModal],
     ["customize modal", initializeCustomizeModal],
     ["gallery lightbox", initializeGalleryLightbox],
@@ -179,6 +180,82 @@ function initializeGalleryLightbox() {
   });
 }
 
+function initializeThankYouModal() {
+  const modal = document.getElementById("thankYouModal");
+  if (!modal) return;
+
+  const closeBtn = modal.querySelector(".modal-close");
+  const doneBtn = document.getElementById("closeThankyouModal");
+  const triggerBtn = document.getElementById("tokenPrimaryBtn");
+  const tokenModal = document.getElementById("tokenModal");
+  let scrollPosition = 0;
+
+  function openThankYouModal() {
+    scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollPosition}px`;
+    document.body.style.width = "100%";
+
+    if (tokenModal?.classList.contains("active")) {
+      tokenModal.classList.remove("active");
+      tokenModal.style.display = "none";
+      tokenModal.setAttribute("aria-hidden", "true");
+      try {
+        document.body.classList.remove("token-modal-open");
+      } catch (e) {}
+    }
+
+    setTimeout(() => {
+      try {
+        modal.querySelector(".modal-content")?.focus?.();
+      } catch (e) {}
+    }, 60);
+  }
+
+  function closeThankYouModal() {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.width = "";
+    window.scrollTo(0, scrollPosition);
+  }
+
+  if (triggerBtn) {
+    triggerBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openThankYouModal();
+    });
+  }
+
+  closeBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    closeThankYouModal();
+  });
+
+  doneBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    closeThankYouModal();
+  });
+
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeThankYouModal();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("active")) {
+      closeThankYouModal();
+    }
+  });
+}
+
 /* Token modal: open/close and handlers */
 function initializeTokenModal() {
   // target both header token trigger and bottom-nav token action
@@ -278,19 +355,17 @@ function initializeTokenModal() {
       showToast("Downloading QR..."),
     );
 
-  // primary donation flow: simple UX — quick acknowledgement and reveal thank-you panel
+  // primary donation flow: keep the button responsive and let the dedicated thank-you modal handle the popup
   if (primaryBtn) {
     primaryBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       try {
         primaryBtn.disabled = true;
         primaryBtn.classList.add("loading");
         const original = primaryBtn.textContent;
         primaryBtn.textContent = "Processing...";
-        // simulate small delay for UX
-        await new Promise((r) => setTimeout(r, 900));
-        if (thanks) {
-          thanks.hidden = false;
-        }
+        await new Promise((r) => setTimeout(r, 700));
         showToast("Thank you — your gift is appreciated.");
         primaryBtn.textContent = original;
         primaryBtn.classList.remove("loading");
