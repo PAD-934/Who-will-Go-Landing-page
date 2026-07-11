@@ -1305,6 +1305,43 @@ function initializeCheckoutForm() {
     });
   }
 
+  const checkoutForm = document.getElementById("order-form");
+  const mobileCheckoutFooter = document.querySelector(".checkout-fixed-footer");
+  if (checkoutForm && mobileCheckoutFooter) {
+    const setMobileCheckoutFooter = (visible) => {
+      if (visible) {
+        mobileCheckoutFooter.setAttribute("aria-hidden", "false");
+        mobileCheckoutFooter.classList.remove("footer-hidden-during-input");
+      } else {
+        mobileCheckoutFooter.setAttribute("aria-hidden", "true");
+        mobileCheckoutFooter.classList.add("footer-hidden-during-input");
+      }
+    };
+
+    checkoutForm.addEventListener("focusin", (event) => {
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)
+      ) {
+        setMobileCheckoutFooter(false);
+      }
+    });
+
+    checkoutForm.addEventListener("focusout", () => {
+      window.setTimeout(() => {
+        if (!checkoutForm.contains(document.activeElement)) {
+          const detailsPanel = document.getElementById(
+            "mobileCheckoutDetailsPanel",
+          );
+          if (detailsPanel?.getAttribute("aria-hidden") === "false") {
+            setMobileCheckoutFooter(true);
+          }
+        }
+      }, 120);
+    });
+  }
+
   // initial validation run (debounced)
   scheduleUpdateCheckoutSubmitState(60);
 }

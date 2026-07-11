@@ -5409,6 +5409,10 @@ body::before {
       .checkout-fixed-footer[aria-hidden="true"] {
         display: none;
       }
+
+      .checkout-fixed-footer.footer-hidden-during-input {
+        display: none !important;
+      }
     }
 
     /* Ensure form has enough bottom padding so fields don't scroll under button */
