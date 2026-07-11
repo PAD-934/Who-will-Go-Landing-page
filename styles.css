@@ -1415,6 +1415,10 @@ body::before {
   color: var(--color-primary-gold);
 }
 
+.hero .eyebrow {
+  color: rgba(255, 255, 255, 0.78);
+}
+
 .hero-subheading {
   font-size: 1.05rem;
   font-weight: 600;
