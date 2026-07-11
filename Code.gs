@@ -64,6 +64,7 @@ function doPost(e) {
       ? payload.products
           .map((p) => {
             const options = [];
+
             if (p.options && typeof p.options === "object") {
               Object.entries(p.options).forEach(([key, value]) => {
                 if (!value) return;
@@ -71,9 +72,15 @@ function doPost(e) {
                 options.push(`${label}: ${value}`);
               });
             }
+
+            if (options.length === 0 && p.variantLabel) {
+              options.push(`Variant: ${p.variantLabel}`);
+            }
+
             const optionsString =
               options.length > 0 ? ` (${options.join(", ")})` : "";
-            return `${p.name}${optionsString} x${p.quantity}`;
+            const quantity = Number(p.quantity) || 0;
+            return `${p.name}${optionsString} x${quantity}`;
           })
           .join("; ")
       : "";

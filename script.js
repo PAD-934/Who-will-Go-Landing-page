@@ -1357,9 +1357,16 @@ async function handleCheckoutSubmit(event) {
     const options = {};
     const product = findProduct(item.id);
     if (item.sizeLabel) options.size = item.sizeLabel;
-    if (item.variantLabel) {
+
+    if (!product?.suppressOptionSelect) {
       const optionKey = product?.optionLabel || "color";
-      options[optionKey] = item.variantLabel;
+      const variantValue =
+        item.variantLabel ||
+        (item.variantId && getVariant(product, item.variantId)?.label) ||
+        null;
+      if (variantValue) {
+        options[optionKey] = variantValue;
+      }
     }
 
     return {
@@ -1368,6 +1375,7 @@ async function handleCheckoutSubmit(event) {
       price: item.price,
       subtotal: item.price * item.qty,
       options,
+      variantLabel: item.variantLabel || null,
     };
   });
 
@@ -1377,7 +1385,19 @@ async function handleCheckoutSubmit(event) {
     0,
   );
   const orderDetails = orderItems
-    .map((item) => `${item.name} x${item.quantity}`)
+    .map((item) => {
+      const optionText = item.options
+        ? Object.entries(item.options)
+            .map(([key, value]) => {
+              if (!value) return "";
+              const label = `${key.charAt(0).toUpperCase()}${key.slice(1)}`;
+              return `${label}: ${value}`;
+            })
+            .filter(Boolean)
+            .join(", ")
+        : "";
+      return `${item.name}${optionText ? ` (${optionText})` : ""} x${item.quantity}`;
+    })
     .join("; ");
 
   if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL.includes("YOUR_")) {
@@ -2844,12 +2864,16 @@ function addToCart(id, variantId = null, sizeId = null, qty = 1) {
     return;
   }
 
-  const selectedVariant = variantId ? getVariant(product, variantId) : null;
+  const selectedVariant = product.suppressOptionSelect
+    ? null
+    : variantId
+      ? getVariant(product, variantId)
+      : null;
   const selectedSize = sizeId ? getSize(product, sizeId) : null;
   const productPrice = getProductPrice(product, selectedSize?.id);
   const cartKey = formatCartKey(
     product.id,
-    selectedVariant?.id,
+    product.suppressOptionSelect ? null : selectedVariant?.id,
     selectedSize?.id,
   );
   const existing = cart.find((item) => getCartItemKey(item) === cartKey);
@@ -2864,8 +2888,12 @@ function addToCart(id, variantId = null, sizeId = null, qty = 1) {
       price: productPrice,
       img: selectedVariant?.img || product.img,
       qty,
-      variantId: selectedVariant?.id || null,
-      variantLabel: selectedVariant?.label || null,
+      variantId: product.suppressOptionSelect
+        ? null
+        : selectedVariant?.id || null,
+      variantLabel: product.suppressOptionSelect
+        ? null
+        : selectedVariant?.label || null,
       sizeId: selectedSize?.id || null,
       sizeLabel: selectedSize?.label || null,
     });
@@ -3280,8 +3308,10 @@ window.toggleCart = toggleCart;
 function getCheckoutOrderText() {
   return cart
     .map((item) => {
+      const product = findProduct(item.id);
       const parts = [item.title];
-      if (item.variantLabel) parts.push(item.variantLabel);
+      if (!product?.suppressOptionSelect && item.variantLabel)
+        parts.push(item.variantLabel);
       if (item.sizeLabel) parts.push(item.sizeLabel);
       return `${parts.join(" / ")} x${item.qty} = PHP ${(
         item.price * item.qty
@@ -3315,8 +3345,10 @@ function openCheckoutModal() {
   totalEl.textContent = `PHP ${grandTotal.toFixed(2)}`;
   summaryEl.innerHTML = cart
     .map((item) => {
+      const product = findProduct(item.id);
       const parts = [item.title];
-      if (item.variantLabel) parts.push(item.variantLabel);
+      if (!product?.suppressOptionSelect && item.variantLabel)
+        parts.push(item.variantLabel);
       if (item.sizeLabel) parts.push(item.sizeLabel);
       return `
         <div class="checkout-summary-item">
