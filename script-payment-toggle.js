@@ -63,12 +63,12 @@ function updatePaymentMethodFields(paymentMethod) {
     } else if (paymentMethod === "COD") {
       paymentMethodNote.hidden = false;
       paymentMethodNote.innerHTML =
-        "<strong>Cash on Delivery selected.</strong> Required: provide your contact number and address. No GCash screenshot is needed.";
+        "<strong>Cash on Delivery selected.</strong> Required: provide your contact number and address. We will contact you to confirm delivery details and payment upon arrival. No GCash screenshot is needed.";
       paymentMethodNote.style.display = "block";
     } else if (paymentMethod === "Cash On Pick-up") {
       paymentMethodNote.hidden = false;
       paymentMethodNote.innerHTML =
-        "<strong>Cash on Pick-up selected.</strong> Required: provide your contact number and address. We will send you the pick-up details once your order is confirmed.";
+        "<strong>Cash on Pick-up selected.</strong> Required: provide your contact number and address. We will contact you to arrange pick-up details and schedule once your order is confirmed.";
       paymentMethodNote.style.display = "block";
     } else {
       paymentMethodNote.hidden = true;
