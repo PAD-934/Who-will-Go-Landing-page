@@ -4885,10 +4885,6 @@ body::before {
   color: #4b5563;
   line-height: 1.6;
 }
-.mobile-swipe-hint {
-  color: #6b7280;
-  font-size: 0.92rem;
-}
 .mobile-checkout-totals {
   margin-top: 0.9rem;
 }
@@ -5102,10 +5098,6 @@ body::before {
 
   .mobile-checkout-subtitle {
     font-size: 0.92rem;
-  }
-
-  .mobile-swipe-hint {
-    font-size: 0.88rem;
   }
 }
 
@@ -5540,7 +5532,6 @@ body::before {
 
 @media (min-width: 992px) {
   .mobile-checkout-tabs,
-  .mobile-swipe-hint,
   .mobile-checkout-details-top {
     display: none !important;
   }

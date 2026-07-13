@@ -3557,9 +3557,6 @@ function openCheckoutModal() {
 
   // Don't auto-focus the customer name field on mobile, as it's in the details panel
   // Users will navigate there via the Continue button or tab click
-
-  // Initialize mobile gesture support
-  initMobileCheckoutGestures();
 }
 
 function switchMobileCheckoutTab(tab) {
@@ -3607,47 +3604,6 @@ function closeCheckoutModal() {
   modal.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
   document.documentElement.style.overflow = "";
-}
-
-// Mobile checkout touch/swipe gesture support
-function initMobileCheckoutGestures() {
-  const panels = document.getElementById("mobileCheckoutPanels");
-  if (!panels || window.innerWidth > 920 || mobileCheckoutGesturesInitialized)
-    return;
-
-  mobileCheckoutGesturesInitialized = true;
-  let touchStartX = 0;
-  let touchEndX = 0;
-  const minSwipeDistance = 50;
-
-  panels.addEventListener(
-    "touchstart",
-    (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    },
-    false,
-  );
-
-  panels.addEventListener(
-    "touchend",
-    (e) => {
-      touchEndX = e.changedTouches[0].screenX;
-      handleSwipe();
-    },
-    false,
-  );
-
-  function handleSwipe() {
-    const diff = touchStartX - touchEndX;
-    const screen = document.getElementById("mobileCheckoutScreen");
-    if (!screen) return;
-
-    if (diff > minSwipeDistance) {
-      switchMobileCheckoutTab("details");
-    } else if (diff < -minSwipeDistance) {
-      switchMobileCheckoutTab("summary");
-    }
-  }
 }
 
 /* ==================== PRODUCT MODAL ==================== */
