@@ -36,6 +36,10 @@ function initializeApp() {
   } catch (e) {
     console.warn("Cart UI init failed", e);
   }
+  // Expose for inline handlers and external calls
+  try {
+    window.updatePaymentMethodFields = updatePaymentMethodFields;
+  } catch (e) {}
 }
 
 /* Customize modal behavior */
@@ -1280,19 +1284,36 @@ function initializeCheckoutForm() {
       scheduleUpdateCheckoutSubmitState();
     });
 
+  const paymentMethodSelect = document.getElementById("paymentMethod");
+  if (paymentMethodSelect) {
+    paymentMethodSelect.addEventListener("change", () => {
+      updatePaymentMethodFields(paymentMethodSelect.value);
+      updateCheckoutSubmitState();
+    });
+    updatePaymentMethodFields(paymentMethodSelect.value);
+  }
+
   const mobileSubmitButton = document.getElementById("mobileSubmitBtn");
   if (mobileSubmitButton) {
     mobileSubmitButton.addEventListener("click", function (event) {
       event.preventDefault();
-      if (form.dataset.submitting === "true" || mobileSubmitButton.disabled)
-        return;
-      mobileSubmitButton.disabled = true;
+      if (form.dataset.submitting === "true") return;
       if (form && typeof form.requestSubmit === "function") {
         form.requestSubmit();
       } else if (form) {
         form.dispatchEvent(new Event("submit", { cancelable: true }));
       }
     });
+  }
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.removeAttribute("disabled");
+  }
+  if (mobileSubmitButton) {
+    mobileSubmitButton.disabled = false;
+    mobileSubmitButton.removeAttribute("disabled");
   }
 
   // sanitize contact input: digits only and max 11
@@ -1404,38 +1425,43 @@ async function handleCheckoutSubmit(event) {
     return;
   }
 
-  // GCash reference is required for GCash payment method
-  if (
-    paymentMethod === "GCash" &&
-    (!transactionId || transactionId.length < 6)
-  ) {
-    showOrderFeedback(
-      "error",
-      "Please enter a valid Transaction ID or GCash reference.",
-    );
-    setCheckoutSubmitting(form, false);
-    return;
+  // GCash reference and screenshot are required only for GCash payments.
+  let paymentFile = null;
+  let paymentScreenshotBase64 = null;
+  if (paymentMethod === "GCash") {
+    if (!transactionId || transactionId.length < 6) {
+      showOrderFeedback(
+        "error",
+        "Please enter a valid Transaction ID or GCash reference.",
+      );
+      setCheckoutSubmitting(form, false);
+      return;
+    }
+
+    if (
+      !paymentInput ||
+      !paymentInput.files ||
+      paymentInput.files.length === 0
+    ) {
+      showOrderFeedback("error", "Please upload a screenshot of your payment.");
+      setCheckoutSubmitting(form, false);
+      return;
+    }
+    paymentFile = paymentInput.files[0];
   }
 
-  if (!paymentInput || !paymentInput.files || paymentInput.files.length === 0) {
-    showOrderFeedback("error", "Please upload a screenshot of your payment.");
-    setCheckoutSubmitting(form, false);
-    return;
-  }
-
-  const paymentFile = paymentInput.files[0];
-  let paymentScreenshotBase64;
-
-  try {
-    paymentScreenshotBase64 = await fileToBase64(paymentFile);
-  } catch (error) {
-    console.error(error);
-    showOrderFeedback(
-      "error",
-      "Unable to read the payment screenshot. Please try a different file.",
-    );
-    setCheckoutSubmitting(form, false);
-    return;
+  if (paymentMethod === "GCash") {
+    try {
+      paymentScreenshotBase64 = await fileToBase64(paymentFile);
+    } catch (error) {
+      console.error(error);
+      showOrderFeedback(
+        "error",
+        "Unable to read the payment screenshot. Please try a different file.",
+      );
+      setCheckoutSubmitting(form, false);
+      return;
+    }
   }
 
   const orderItems = cart.map((item) => {
@@ -1506,19 +1532,23 @@ async function handleCheckoutSubmit(event) {
     customerAddress,
     customerChurch,
     paymentMethod,
-    transactionId,
-    gcashReference: transactionId,
+    transactionId: paymentMethod === "GCash" ? transactionId : "",
+    gcashReference: paymentMethod === "GCash" ? transactionId : "",
     notes: specialNotes,
     specialNotes,
     status: "Pending",
-    paymentScreenshot: {
-      contentBase64: paymentScreenshotBase64,
-      fileName: paymentFile.name,
-      fileType: paymentFile.type,
-    },
-    screenshotFile: paymentScreenshotBase64,
-    screenshotFilename: paymentFile.name,
-    screenshotMimeType: paymentFile.type || "image/png",
+    paymentScreenshot:
+      paymentMethod === "GCash"
+        ? {
+            contentBase64: paymentScreenshotBase64,
+            fileName: paymentFile.name,
+            fileType: paymentFile.type,
+          }
+        : null,
+    screenshotFile: paymentMethod === "GCash" ? paymentScreenshotBase64 : null,
+    screenshotFilename: paymentMethod === "GCash" ? paymentFile.name : null,
+    screenshotMimeType:
+      paymentMethod === "GCash" ? paymentFile.type || "image/png" : null,
     products: orderItems,
     totalItems,
     totalAmount,
@@ -1574,6 +1604,16 @@ async function handleCheckoutSubmit(event) {
       renderCartItems();
     }
     form.reset();
+    const paymentMethodSelect = document.getElementById("paymentMethod");
+    if (paymentMethodSelect) {
+      paymentMethodSelect.value = "GCash";
+      updatePaymentMethodFields("GCash");
+    }
+    updateCheckoutSubmitState();
+    showOrderFeedback(
+      "success",
+      `Order submitted successfully. Your order ID is ${serverOrderId}. Please continue with GCash if you're placing another order.`,
+    );
     // Keep checkout modal open so the user can view the confirmation receipt.
     // The receipt will be closed by the user with the Close Receipt button.
   } catch (error) {
@@ -1794,6 +1834,7 @@ function updateCheckoutSubmitState() {
   const transactionIdRequired = paymentMethod === "GCash";
   const transactionIdValid =
     !transactionIdRequired || (transactionId && transactionId.length >= 6);
+  const paymentProofValid = paymentMethod !== "GCash" || hasPayment;
 
   const requiredFieldsValid =
     name &&
@@ -1801,15 +1842,16 @@ function updateCheckoutSubmitState() {
     contactValid &&
     address &&
     paymentMethod &&
-    hasPayment;
+    paymentProofValid;
 
   const isSubmitting = form.dataset.submitting === "true";
   const mobileBtn = document.getElementById("mobileSubmitBtn");
+  const checkoutValid = requiredFieldsValid && transactionIdValid;
 
   btn.disabled = isSubmitting;
   if (mobileBtn) mobileBtn.disabled = isSubmitting;
 
-  const canGlow = requiredFieldsValid && transactionIdValid && !isSubmitting;
+  const canGlow = checkoutValid && !isSubmitting;
   if (canGlow) {
     btn.classList.add("glow");
     if (mobileBtn) mobileBtn.classList.add("glow");
@@ -1832,6 +1874,8 @@ function updateCheckoutSubmitState() {
       );
     }
   }
+
+  // payment method toggling is implemented in a global helper below
 }
 
 // Show inline field error message
@@ -1931,11 +1975,13 @@ function validateCheckoutForm(form) {
         msg: "Please enter the GCash Transaction ID or reference number.",
       });
   }
-  if (!paymentInput || !paymentInput.files || paymentInput.files.length === 0)
-    errors.push({
-      el: paymentInput || form.paymentScreenshot,
-      msg: "Please upload a screenshot of your payment.",
-    });
+  if (paymentMethod === "GCash") {
+    if (!paymentInput || !paymentInput.files || paymentInput.files.length === 0)
+      errors.push({
+        el: paymentInput || form.paymentScreenshot,
+        msg: "Please upload a screenshot of your payment.",
+      });
+  }
 
   return errors;
 }

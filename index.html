@@ -211,7 +211,7 @@
               <div class="gcash-card">
                 <div class="gcash-number-row">
                   <div class="gcash-number">
-                    <strong id="tokenGcashNumber">09550463152</strong>
+                    <strong id="tokenGcashNumber">09197595425</strong>
                   </div>
                   <button
                     id="tokenCopyBtn"
@@ -226,8 +226,8 @@
                 <div class="gcash-qr-wrap">
                   <img
                     id="tokenGcashQr"
-                    src="payment%20method/GCASH%20QR.png"
-                    alt="GCash QR code for 09550463152"
+                    src="payment%20method/GCASH%20QR%20NEW.jpg"
+                    alt="New GCash QR code for 09197595425"
                   />
                 </div>
 
@@ -237,7 +237,7 @@
                   </button>
                   <a
                     id="tokenDownloadQr"
-                    href="payment%20method/GCASH%20QR.png"
+                    href="payment%20method/GCASH%20QR%20NEW.jpg"
                     download
                     class="cta-btn cta-outline"
                     >⬇ Download QR Code</a
@@ -605,31 +605,33 @@
                         />
                       </label>
                       <label class="checkout-field full-width">
-                        <span>Payment Method <small>(GCash only)</small></span>
-                        <select
-                          id="paymentMethod"
-                          name="paymentMethod"
-                          required
-                        >
+                        <span>Payment Method</span>
+                        <select id="paymentMethod" name="paymentMethod" required onchange="(function(v){ try{ if(window.updatePaymentMethodFields) updatePaymentMethodFields(v); }catch(e){} })(this.value)">
                           <option value="GCash">GCash</option>
+                          <option value="COD">COD (Cash On Delivery)</option>
+                          <option value="Cash On Pick-up">Cash On Pick-up</option>
                         </select>
+                        <small>
+                          Available payment options include GCash, COD, and Cash On Pick-up. Select the one that works best for you.
+                        </small>
                       </label>
-                      <label class="checkout-field full-width">
-                        <span
-                          >Transaction ID / GCash Reference
-                          <small>(Required)</small></span
-                        >
+                      <label
+                        id="gcashTransactionSection"
+                        class="checkout-field full-width"
+                      >
+                        <span>
+                          Transaction ID / GCash Reference
+                          <small>(Required for GCash)</small>
+                        </span>
                         <input
                           type="text"
                           id="transactionId"
                           name="transactionId"
                           placeholder="e.g. 1234567890 or TRX-2024-0001"
                           autocomplete="off"
-                          required
-                          aria-required="true"
                         />
                       </label>
-                      <div class="gcash-instructions">
+                      <div id="gcashDetailsSection" class="gcash-instructions">
                         <div>
                           <div class="gcash-instructions-title">
                             <strong>GCash payment details</strong>
@@ -647,8 +649,8 @@
                         />
                         <div class="gcash-instructions-meta">
                           <p class="gcash-note">
-                            Only GCash is accepted. Use the QR code or number
-                            above to complete your payment before submitting.
+                            Use the official GCash QR code or number above to
+                            complete your payment before submitting.
                           </p>
                           <button
                             type="button"
@@ -659,6 +661,13 @@
                           </button>
                         </div>
                       </div>
+                      <div
+                        id="paymentMethodNote"
+                        class="checkout-note payment-method-note"
+                        role="status"
+                        aria-live="polite"
+                        hidden
+                      ></div>
                       <label class="checkout-field full-width">
                         <span>Special Notes <small>(Optional)</small></span>
                         <textarea
@@ -667,14 +676,16 @@
                           placeholder="Enter any delivery instructions or order notes"
                         ></textarea>
                       </label>
-                      <label class="checkout-field full-width">
+                      <label
+                        id="paymentScreenshotSection"
+                        class="checkout-field full-width"
+                      >
                         <span>Proof of Payment (Screenshot)</span>
                         <input
                           type="file"
                           id="paymentScreenshot"
                           name="paymentScreenshot"
                           accept="image/*"
-                          required
                         />
                       </label>
                     </div>
@@ -682,7 +693,6 @@
                       type="submit"
                       id="submitOrderBtn"
                       class="cta-btn primary"
-                      disabled
                     >
                       Submit Order
                     </button>
@@ -706,7 +716,6 @@
                 type="button"
                 id="mobileSubmitBtn"
                 class="cta-btn primary"
-                disabled
               >
                 Submit Order
               </button>
@@ -2332,6 +2341,7 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
       crossorigin="anonymous"
     ></script>
+    <script src="script-payment-toggle.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
